@@ -13,4 +13,4 @@ Không gọi bản chạy trên xe thành công nếu chỉ build hoặc chạy 
 Không xóa dữ liệu/force-stop app bên thứ ba để chia màn hình.
 X là tắt chia; chevron là ẩn/hiện thanh. Popup thuộc THT Voice, không dành chỗ cố định.
 Ưu tiên EX2 Android 9; firmware khác cần kiểm tra khả năng API trước.
-Không phụ thuộc EX2VNControl hoặc GSplit APK; không sao chép nguồn không rõ giấy phép.
+Ứng dụng chia màn hình độc lập, không cần APK chia màn bên ngoài; không sao chép nguồn không rõ giấy phép.

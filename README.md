@@ -1,7 +1,7 @@
 # THT Split
 
 Ứng dụng Android độc lập cho Geely EX2, package `com.tht.split`. Bản đầu `0.1.0-test`.
-Không phụ thuộc GSplit APK hay EX2VNControl. Không cần root; điều khiển task cần bridge
+Không cần cài ứng dụng chia màn hình bên ngoài. Không cần root; điều khiển task cần bridge
 ADB riêng chạy bằng quyền shell. ADB của xe phải được mở sẵn.
 
 ## Chức năng đã có mã
@@ -24,7 +24,7 @@ Có thể gửi nguyên [prompt bàn giao](docs/NEXT_AGENT_PROMPT.md) cho ngư�
 |---|---|
 | [Yêu cầu](docs/REQUIREMENTS.md) | Quyết định đã chốt |
 | [Kiến trúc và sơ đồ](docs/ARCHITECTURE.md) | Luồng lệnh, module, mốc triển khai |
-| [Nguồn tham khảo](docs/REFERENCE_NOTES.md) | GSplit, APK, hai video, AOSP |
+| [Nguồn tham khảo](docs/REFERENCE_NOTES.md) | GSplit, hai video, AOSP |
 | [UI](docs/UI_SPEC.md) | Giao diện và hành vi nút |
 | [Voice API](docs/VOICE_API.md) | Token, extras, lệnh và tích hợp |
 | [Cài và test EX2](docs/DEVICE_TEST.md) | Quyền, bridge, ma trận kiểm thử và log |

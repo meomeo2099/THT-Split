@@ -1,6 +1,6 @@
 # Yêu cầu chốt ngày 04/10/2026
 
-- App độc lập: THT Split (`com.tht.split`). Không liên quan EX2VNControl khi chạy.
+- App độc lập: THT Split (`com.tht.split`). Có bộ điều khiển chia màn riêng, không gọi app chia màn bên ngoài.
 - EX2 IHU629G MT8788, Android 9, 6 GB RAM, 1920×1080/160dpi là đích kiểm thử đầu tiên.
 - UI tiếng Việt, navy/cyan; icon chữ THT có vạch chia giữa. Thanh icon nhỏ, cùng kích thước/nét.
 - Chọn 2 app bên trái/phải; tỷ lệ 30:70,40:60,50:50,60:40,70:30 và kéo vạch giữa.

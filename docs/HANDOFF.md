@@ -40,7 +40,7 @@ GitHub Actions đã build thành công ở commit7c84d3e; xem run mới nhất s
    Repo đang riêng tư: unauthenticated ReleasesAPI có thể404; app báo đúng giới hạn.
 
 ## Quyết định không đổi
-- App độc lập, không cần EX2VNControl hoặc GSplit APK.
+- App độc lập, không cần cài APK chia màn bên ngoài.
 - X tắt chia; chevron ẩn/hiện thanh. Tắt mặc định về app trái, nếu trái đã đóng dùng app còn lại.
 - Popup Voice do Voice di chuyển/tự tắt; Split không giữ chỗ.
 - Không điều khiển HVAC/cửa/kính/camera trong repo này.
@@ -67,3 +67,7 @@ Mỗi mốc sửa hoàn chỉnh phải commit backup và cập nhật HANDOFF c�
 
 Đã tách Store session khỏi draft UI để chọn app/cài đặt chưa áp dụng không điều khiển nhầm cặp.
 Callback service không vẽ overlay sau onDestroy; X có xử lý app bên kia đã đóng.
+
+## Cập nhật tài liệu 04/10/2026
+Đã làm gọn mô tả ứng dụng độc lập và nguồn tham khảo theo yêu cầu chủ dự án.
+Không thay đổi mã ứng dụng hoặc API; kiểm tra diff và rà lại tên/package/link tham chiếu trong toàn bộ tệp được git theo dõi.

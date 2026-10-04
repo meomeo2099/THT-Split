@@ -6,6 +6,6 @@ Kiểm tra git log -5, git status và Actions mới nhất. Không làm lại UI
 Chạy ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug trước commit.
 Tiếp tục từ danh sách ưu tiên trong HANDOFF. Commit backup theo từng mốc và cập nhật
 HANDOFF trong cùng commit. Phân biệt build/test máy phát triển với kết quả trên EX2.
-Không phụ thuộc EX2VNControl, không sao chép source không rõ giấy phép.
+Duy trì bộ chia màn độc lập; không sao chép source không rõ giấy phép.
 Không sửa repo THTVoice trước khi được giao phần tích hợp và đọc AGENTS riêng.
 Không đưa khóa ký/token vào git. Nút X tắt chia, nút chevron ẩn/hiện thanh.

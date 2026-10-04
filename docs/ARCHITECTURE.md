@@ -30,7 +30,7 @@ Mốc 1–5 đã có mã và kiểm tra máy phát triển. Mốc 6–7 cần th
 | Tệp | Trách nhiệm |
 |---|---|
 | MainActivity | Trang chính, cặp đã lưu, 5 nhóm settings |
-| Store | SharedPreferences; JSON preset; token bridge/Voice riêng biệt |
+| Store | SharedPreferences; JSON preset; token bridge/Voice riêng biệt; namespace session tách bản chọn trong UI |
 | AppPicker | Tìm kiếm các ứng dụng có launcher; không hard-code app package |
 | Ui | Palette, button và icon Canvas đồng đều |
 | SplitService | Foreground notification, hàng đợi một tác vụ, overlay và session |
@@ -68,9 +68,12 @@ không cam kết hỗ trợ firmware mới. Không sửa hidden_api_policy toàn
 ShellServer hiện không auto-start sau reboot; APK cập nhật cũng cần chạy lại bridge.
 
 ## Build và phân phối
-JDK17 / Gradle8.9 / AGP8.7.3 / compile35 / min26 / target32.
+JDK 17 / Gradle 8.9 / AGP 8.7.3 / compile35 / min 26 / target 32.
 Target32 dành bản sideload headunit; chỉ tắt lint ExpiredTargetSdkVersion do không đưa
 Google Play. Các kiểm tra API/permission khác vẫn chạy, không dùng lint baseline che lỗi.
 Không sử dụng khóa ký release trong git. CI build APK debug mỗi lần push main,
 artifact giữ 7 ngày. Khóa debug CI thay theo runner; bản CI có thể không cập nhật đè
 bản test ký tại máy khác. Cần provisioning khóa ký ngoài repo trước phát hành ổn định.
+
+Cặp/mode/insets đang chạy nằm trong tht_split_session, độc lập với lựa chọn UI chưa áp dụng.
+Start nhận selection explicit; preset/restore nhận cấu hình mới, hide/ratio/X thao tác session hiện hành.

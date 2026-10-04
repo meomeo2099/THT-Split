@@ -54,6 +54,11 @@ public final class ShellServer {
         return TaskParser.find(exec("dumpsys","activity","activities"),p);
     }
     private static int awaitTask(String p)throws Exception{for(int i=0;i<20;i++){int id=task(p);if(id>=0)return id;Thread.sleep(100);}throw new IOException("Không tìm thấy task: "+p);}
+    private static int windowMode(int taskId)throws Exception {
+        List<?> infos=(List<?>)invoke("getAllStackInfos",new Class<?>[]{});
+        for(Object info:infos){int[] ids=(int[])info.getClass().getField("taskIds").get(info);for(int id:ids)if(id==taskId){Object config=info.getClass().getField("configuration").get(info);Object wc=config.getClass().getField("windowConfiguration").get(config);return (Integer)wc.getClass().getMethod("getWindowingMode").invoke(wc);}}
+        return -1;
+    }
     private static void setMode(int id,int mode)throws Exception{invoke("setTaskWindowingMode",new Class<?>[]{int.class,int.class,boolean.class},id,mode,true);}
     private static void launch(String comp,int mode)throws Exception{String output=exec("am","start","-W","--user","current","--windowingMode",String.valueOf(mode),"-a","android.intent.action.MAIN","-c","android.intent.category.LAUNCHER","-f","0x10000000","-n",comp);if(output.contains("Error:")||output.contains("Exception"))throw new IOException(output);}
     private static String exec(String...command)throws Exception{
@@ -87,7 +92,10 @@ public final class ShellServer {
             Rect l=rect(q,"leftBounds"),r=rect(q,"rightBounds");
             launch(lc,mode.equals("native")?3:5);int lt=awaitTask(leftPkg);setMode(lt,mode.equals("native")?3:5);
             launch(rc,mode.equals("native")?4:5);int rt=awaitTask(rightPkg);setMode(rt,mode.equals("native")?4:5);
-            resize(lt,rt,mode,l,r);return out.put("leftTask",lt).put("rightTask",rt);
+            resize(lt,rt,mode,l,r);
+            int lm=windowMode(lt),rm=windowMode(rt);
+            if(lm!=(mode.equals("native")?3:5)||rm!=(mode.equals("native")?4:5))throw new IOException("Firmware không giữ chế độ chia yêu cầu: "+lm+"/"+rm);
+            return out.put("leftTask",lt).put("rightTask",rt).put("leftMode",lm).put("rightMode",rm);
         }
         int lt=task(leftPkg),rt=task(rightPkg);
         if(op.equals("RESIZE")){if(lt<0||rt<0)throw new IOException("Một app đã đóng; hãy khôi phục cặp");resize(lt,rt,mode,rect(q,"leftBounds"),rect(q,"rightBounds"));return out;}

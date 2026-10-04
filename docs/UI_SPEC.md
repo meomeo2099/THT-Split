@@ -1,21 +1,27 @@
 # UI đã chốt
 
-Bố cục app nội bộ: header THT, menu trái Chia màn hình / Cặp đã lưu / Cài đặt.
-Trang chính: card app trái/phải, nút đổi bên giữa, tỷ lệ segmented, Lưu cặp, Bắt đầu chia.
-Trang cặp: tên, hai app, tỷ lệ; Mở cặp; menu ⋮ có Sửa/Xóa; confirm xóa/hủy.
+App nội bộ có header THT và menu trái: Chia màn hình / Cặp đã lưu / Cài đặt.
+Trang chính có hai card chọn app trái/phải, nút đổi bên ở giữa, thanh chọn tỷ lệ,
+Lưu cặp và Bắt đầu chia. Trang cặp có tên, hai app, tỷ lệ, Mở cặp và menu ⋮ Sửa/Xóa.
+Xóa cần xác nhận; hủy thì giữ nguyên cặp, xóa cặp không gỡ ứng dụng.
 
-Cài đặt5nhóm:
-1. Chia màn hình: native/freeform, top/bottom px, khôi phục khoảng chừa.
-2. Thanh: tựẩn,3/5/8/10s, nútnhỏ/lớn, alpha40–100%, nútmini trái/giữa/phải.
-3. Voice: bật API, copy/rotate token; không có popup nghe cố định.
-4. Kết nối: overlay, pingbridge, copy bootstrapcommand, bật/khôi phụcfreeform.
-5. Cập nhật: phiênbản, latestrelease check, mở GitHub tải, xuấtlog.
+## Cài đặt
+1. Chia màn hình: native/freeform, khoảng chừa trên/dưới theo pixel, khôi phục mặc định EX2.
+2. Thanh điều khiển: tự ẩn sau 3/5/8/10 giây, nút nhỏ/lớn, độ hiển thị 40–100%, nút mở lại trái/giữa/phải.
+3. THT Voice: bật nhận API, xem/sao chép/đổi token; không đặt popup nghe thường trực trong Split.
+4. Kết nối & quyền: quyền nổi, kiểm tra bridge, lệnh khởi động, bật/khôi phục hỗ trợ freeform.
+5. Cập nhật: phiên bản, kiểm tra Releases, mở trang tải và xuất log.
 
+## Hình thức
 Palette navy #07121F, card #112233, line #2F4A60, cyan #10CBE5, text #EEF5FA,
-red #F45364. Icon vẽ Canvas cùng stroke2 ở viewport40, không dùng6glyphkhácfont.
-Launcher icon là vector chữTHT/vạch giữa trong adaptive mask, không đưa mockup raster vào APK.
+red #F45364. Icon Canvas cùng độ dày nét 2 trong viewport40; tránh trộn glyph nhiều font.
+Launcher icon là vector THT có vạch chia giữa trong adaptive mask.
 
-Toolbar rất nhỏ: brand + 5ratios + apps/swap/full/home/hide/X. Hidecyan và Xred riêng.
-App không vẽ lại giao diện Vietmap/YouTube hoặc HVAC; screenshot tham khảo là minh họa.
-Overlay native/freeform đặt ngoài phần chừa hệ thống. Phải dùng ảnh xe thật xác nhận.
-Nútmini khiẩn trảdiệntíchtoolbar; fullscreenmini khôiphụccặp. Divider hiện lúcchia.
+Thanh nhỏ có brand + 5 tỷ lệ + chọn app/đổi bên/toàn màn/Home/ẩn/X.
+Nút ẩn màu cyan và X màu đỏ là hai thao tác riêng biệt.
+Ẩn trả diện tích thanh cho hai app và còn nút nổi mở lại. Khi toàn màn hình, nút nổi
+khôi phục cặp. Vạch kéo hiện khi đang chia; bản đầu resize hai app khi thả tay.
+
+App không vẽ lại giao diện Vietmap/YouTube hoặc thanh HVAC của xe.
+Ảnh mockup trước đó minh họa bố cục; ảnh từ APK chạy trên xe mới xác nhận đúng insets.
+OEM status/HVAC phải còn dùng được. Khoảng chừa native/freeform cần đo trên firmware thật.

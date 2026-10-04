@@ -44,7 +44,7 @@ thì bỏ từ nohup và giữ phiên adb shell trong thời gian test.
 | Kiểm tra | Cách làm / kết quả cần có | Trạng thái |
 |---|---|---|
 | Hai app | Chọn app launcher thật trên máy; Bắt đầu chia | Chờ xe |
-| Native | Mode3/4, không recents/filler đè app | Chờ xe |
+| Native | Mode 3/4, không recents/filler đè app | Chờ xe |
 | 5 tỷ lệ | Chọn lần lượt30/40/50/60/70; nhìn bounds hai app | Chờ xe |
 | Kéo vạch | Kéo, thả; 2 cửa sổ cập nhật, không task mới | Chờ xe |
 | Thanh ẩn/hiện | Chevron trả chiều cao thanh; vẫn2app; nút nổi hiện lại | Chờ xe |

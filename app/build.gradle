@@ -5,8 +5,23 @@ android {
     buildFeatures { buildConfig true }
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
-    defaultConfig { applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 1; versionName '0.1.0-test' }
+    defaultConfig { applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 2; versionName '0.2.0-test' }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
     buildTypes { release { minifyEnabled false } }
 }
 dependencies { testImplementation 'junit:junit:4.13.2' }
+
+// Compile-only API signatures; the real Unsafe is supplied by Android's boot classloader.
+tasks.register('compileHiddenApiStubs', JavaCompile) {
+    source = fileTree('../third_party/hidden_api_stubs') { include '**/*.java' }
+    classpath = files()
+    destinationDirectory = layout.buildDirectory.dir('hidden-api-stubs/classes')
+    options.release = 8
+}
+tasks.register('hiddenApiStubsJar', Jar) {
+    dependsOn 'compileHiddenApiStubs'
+    from layout.buildDirectory.dir('hidden-api-stubs/classes')
+    archiveFileName = 'hidden-api-stubs.jar'
+    destinationDirectory = layout.buildDirectory.dir('hidden-api-stubs')
+}
+dependencies { compileOnly files(tasks.named('hiddenApiStubsJar')) }

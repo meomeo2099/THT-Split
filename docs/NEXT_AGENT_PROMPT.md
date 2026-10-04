@@ -1,11 +1,12 @@
-Bạn làm việc trên repo meomeo2099/THT-Split, package com.tht.split.
-Luôn trả lời bằng tiếng Việt. Đọc AGENTS.md → docs/HANDOFF.md → REQUIREMENTS.md
-→ ARCHITECTURE.md → REFERENCE_NOTES.md. Sửa Voice đọc VOICE_API.md; backend đọc DEVICE_TEST.md.
+Bạn làm việc trên meomeo2099/THT-Split, package com.tht.split. Luôn dùng tiếng Việt.
+Đọc AGENTS.md → docs/HANDOFF.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
+Đọc VOICE_API.md và THTVOICE_INTEGRATION.md khi ghép Voice, DEVICE_TEST.md khi thử xe.
 
-Kiểm tra git log -5, git status và Actions mới nhất. Không làm lại UI/preset/API đã có.
-Chạy ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug trước commit.
-Tiếp tục từ danh sách ưu tiên trong HANDOFF. Commit backup theo từng mốc và cập nhật
-HANDOFF trong cùng commit. Phân biệt build/test máy phát triển với kết quả trên EX2.
-Duy trì bộ chia màn độc lập; không sao chép source không rõ giấy phép.
-Không sửa repo THTVoice trước khi được giao phần tích hợp và đọc AGENTS riêng.
-Không đưa khóa ký/token vào git. Nút X tắt chia, nút chevron ẩn/hiện thanh.
+Kiểm tra git log/status và Actions mới nhất. Đã có ADB nội bộ tự mở bridge, Off mở
+ActivityOptions, system có kiểm quyền, API v2 PendingIntent/requestId và signature receiver.
+Không làm lại UI/preset/backend. Không thêm Telnet/Shizuku. Không đổi khóa ký/package.
+Off chỉ yêu cầu mở, không coi layout verified; ratio live bị khóa đúng giới hạn.
+Thử local ADB trên xe, xác nhận khóa/cổng/reboot và ghi bằng chứng firmware/insets.
+Phía THTVoice chưa ghép client; dùng THTVOICE_INTEGRATION.md làm hướng dẫn tại repo Voice.
+Không nói đã test xe nếu chỉ build. Commit tiếng Việt, cập nhật HANDOFF và push GitHub.
+Không đưa token bridge/Voice, khóa ADB hoặc keystore vào git/log.

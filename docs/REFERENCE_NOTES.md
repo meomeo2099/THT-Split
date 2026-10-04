@@ -26,3 +26,13 @@ https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-9.
 - Bridge app_process chạy dưới UID shell, gọi API bằng tên; không hard-code Binder transaction code.
 - Không yêu cầu chữ ký platform, không sao chép mã decompile.
 - Khoảng chừa mặc định trên 72px/dưới 112px là cấu hình thử nghiệm; phải đo và chỉnh theo firmware xe thực tế.
+
+## Bổ sung 05/10/2026
+- Off tham khảo hành vi GSplit: ActivityOptions + launch windowing mode/bounds;
+  không có helper không có nghĩa app được cấp quyền shell. THT không copy source GSplit.
+- ADB wire/RSA tham khảo giao thức AOSP; client được viết riêng, có kiểm tra framing
+  và RSA Android public key/challenge.
+  https://android.googlesource.com/platform/packages/modules/adb/+/refs/heads/main/OVERVIEW.TXT
+  https://android.googlesource.com/platform/packages/modules/adb/+/refs/heads/main/crypto/rsa_2048_key.cpp
+- Scoped hidden API library LSPosed v6.1 được tích hợp dưới Apache-2.0;
+  xem THIRD_PARTY.md. Thư viện không cấp permission quản lý task hoặc chữ ký platform.

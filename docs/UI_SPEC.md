@@ -25,3 +25,12 @@ khôi phục cặp. Vạch kéo hiện khi đang chia; bản đầu resize hai a
 App không vẽ lại giao diện Vietmap/YouTube hoặc thanh HVAC của xe.
 Ảnh mockup trước đó minh họa bố cục; ảnh từ APK chạy trên xe mới xác nhận đúng insets.
 OEM status/HVAC phải còn dùng được. Khoảng chừa native/freeform cần đo trên firmware thật.
+
+## Bổ sung 0.2.0-test
+Kết nối & quyền có bộ chọn ADB nội bộ / Off / Quyền hệ thống, trạng thái và Kiểm tra.
+ADB chỉnh host/cổng, tùy chọn chuẩn bị lúc boot và lệnh thủ công dự phòng.
+Không chuyển phương thức/cổng khi phiên đang chạy hoặc còn thao tác đang xử lý.
+System không được chọn khi thiếu quyền thực tế. Off không có vạch kéo/nút tỷ lệ live;
+tỷ lệ được chọn trước khi mở và thanh nổi không làm resize ứng dụng.
+THT Voice có API v2: cùng signer có thể dùng receiver signature không nhập token;
+khác signer giữ token, không tự đổi khóa ký app đang cài.

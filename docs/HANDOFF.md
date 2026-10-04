@@ -1,73 +1,58 @@
-# Bàn giao THT Split — bản 0.1.0-test
+# Bàn giao THT Split — 0.2.0-test, 05/10/2026
 
-## Đọc trước khi sửa
+## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
-Sửa backend đọc DEVICE_TEST.md; sửa tích hợp đọc VOICE_API.md.
-Prompt gửi cho người/agent mới: NEXT_AGENT_PROMPT.md.
+Ghép Voice đọc VOICE_API.md và THTVOICE_INTEGRATION.md; thử xe đọc DEVICE_TEST.md.
+Không làm lại UI, preset hoặc bộ chia đã có. Lịch sử commit là nguồn xác định mốc tiếp tục.
 
-## Trạng thái thực tế
-Repo khởi tạo mới ngày 04/10/2026; package `com.tht.split`.
-Có mã ứng dụng và APK debug, không còn chỉ là ảnh mockup.
-Đã build + 11 unit test + lint thành công tại máy phát triển. APK xác minh chữ ký v2.
-GitHub Actions đã build thành công ở commit7c84d3e; xem run mới nhất sau mỗi commit code.
-**Chưa chạy trên EX2 hoặc điện thoại/emulator. Không coi bảng chức năng là kết quả test xe.**
+## Quyết định mới của chủ dự án
+Chỉ giữ ADB nội bộ, Off theo cơ chế mở ActivityOptions và quyền hệ thống có điều kiện.
+Không triển khai Telnet/Shizuku. Mỗi phiên chỉ dùng một phương thức; phải tắt phiên
+trước chuyển backend/cổng. Mục tiêu không nhập lệnh máy tính mỗi lần lên xe.
+Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiếp tục làm client.
 
-| Phần | Đã làm | Cần tiếp |
-|---|---|---|
-| UI | Trang chính, app picker có tìm, preset CRUD,5 nhóm settings,icon THT | Chụp UI thật, sửa kích thước trên xe/phone |
-| Presets | ID ổn định; tên/app/tỷ lệ; sửa/xóa xác nhận; nhớ qua restart | Thử CRUD trên Android thực |
-| Native | Shell launch mode 3/4, named Binder methods, resizeDockedStack, kiểm mode sau mở | Kiểm tra IHU629G và đo OEM insets |
-| Freeform | Mode 5, resizeTask, bật/khôi phục global settings | Caption và hỗ trợ firmware; chưa NoCaption |
-| Overlay | Ratio buttons, swap/replace/full/Home/X, hide/show,auto-hide | Kiểm tra task/overlay lifecycle và focus OEM |
-| Divider | Kéo grip, cập nhật bounds khi thả | Live resize theo debounce sau đo performance |
-| Voice | Explicit receiver + token + allowlist; commandcontract | ACK/requestId, rồi ghép repo THTVoice |
-| Kết nối | Bridge localhost có token, UIDshell, timeout,error | Chạy lại sau reboot; optional Shizuku về sau |
-| Cập nhật | Check latest/mở Releases/xuất log | Ký ổn định, tải/cài APK có kiểm chữ ký |
-| CI | Build/unit/lint; artifact7ngày | Không dùng khóa debug thay đổi cho phát hành chính thức |
+## Đã có mã
+| Phần | Kết quả |
+|---|---|
+| UI/preset/overlay | Giữ chọn hai app, CRUD, ẩn/hiện, tỷ lệ, đổi bên, fullscreen, Home/X |
+| ADB nội bộ | Client RSA TCP original; khóa private lưu noBackupFiles; localhost mặc định, cổng chỉnh được; chỉ địa chỉ chính thiết bị |
+| Bridge | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
+| Boot/cập nhật | Foreground ConnectionService chuẩn bị bridge nếu tùy chọn bật; khi lệnh tới tiếp tục thử kết nối |
+| Off | ActivityOptions freeform với bounds và scoped hidden API access; status=requested; không giả lập resize task |
+| Hệ thống | Kiểm MANAGE_ACTIVITY_STACKS trước chọn/chạy; gọi backend trực tiếp, không shared UID trong APK thường |
+| Voice API v2 | Token tương thích v1 hoặc receiver bảo vệ signature; requestId + caller-owned PendingIntent; lỗi/busy/timeout ở phía client |
+| Hướng dẫn Voice | THTVOICE_INTEGRATION.md có manifest/client Java/mapping/callback và các phần cần sửa ở Voice |
 
-## Bước tiếp theo theo ưu tiên
-1. Cài APK lên EX2, cấp overlay, khởi động bridge bằng lệnh lấy trong app. Làm DEVICE_TEST.
-   Ghi firmware/API/packages/ảnh và log. Nếu API bị chặn, sửa backend theo log thật;
-   không tự mở quyền platform, không copy decompile hoặc đoán binder transaction code.
-2. Chốt native/freeform nào đúng trên xe và profile chừa OEM. ShellServer đã kiểm mode
-   quan sát được sau layout; còn phải nhìn bounds/insets thật. Nếu không có getAllStackInfos
-   đúng firmware, bổ sung parser/adapter, không báo thành công mặc định.
-3. Làm divider live resize, coalesce lệnh và kiểm thử không tái tạo task/nhấp nháy.
-   Bản đầu không force-stop app; không cam kết “không restart” nếu OEM tự tái tạo Activity.
-4. Bổ sung API phản hồi có requestId/status, rồi tích hợp THTVoice theo AGENTS repo đó.
-   Split hiện chưa sửa repo Voice, chưa có STT/TTS và popup nghe riêng.
-5. Provision khóa ký ngoài git, build bản test ký ổn định, rồi cập nhật tải/cài có xác minh.
-   Repo đang riêng tư: unauthenticated ReleasesAPI có thể404; app báo đúng giới hạn.
+## Giới hạn thật
+- Chưa chạy EX2/điện thoại/emulator; không coi build/unit test là kiểm thử xe.
+- ADB nội bộ hỗ trợ ADB TCP RSA cổ điển, không ADB TLS/pairing Android 11+.
+- Phải xác nhận khóa ADB lần đầu nếu firmware bật xác thực. Không tự vượt hộp thoại.
+- ADB phải được firmware bật sau reboot; app không tự mở khóa/bật adbd.
+- Boot có thể đến trước adbd/Wi-Fi; sẽ thử lại khi chia. Force-stop app có thể chặn boot receiver.
+- Bridge 0.1 cũ đang chạy cần reboot màn để nạp bridge v2; không tự kill theo tên chung.
+- Off chỉ yêu cầu hệ thống mở cửa sổ, không xác minh được task của app khác;
+  tỷ lệ chọn trước khi mở, ratio/drag đang chạy bị khóa. Hide/show chỉ đổi overlay.
+- Hệ thống vẫn cần chữ ký/quyền phù hợp; không có khóa platform được tạo hoặc đưa vào git.
+- Backend quyền hệ thống là nhánh có điều kiện, không phải APK debug tự có quyền.
+- Native Android 9 ưu tiên; reflection Android mới/OEM có thể khác và báo lỗi.
+- API Voice đã có phía Split; chưa sửa repo THTVoice. Không nói đã tích hợp Voice hoàn chỉnh.
+- Popup, HVAC, tìm đường Vietmap thuộc Voice; Split không làm phần đó.
+- Đã thêm thư viện LSPosed v6.1 có Apache-2.0, dùng bản source có ghi rõ adaptation và
+  license trong APK; không copy mã GSplit không rõ giấy phép.
 
-## Quyết định không đổi
-- App độc lập, không cần cài APK chia màn bên ngoài.
-- X tắt chia; chevron ẩn/hiện thanh. Tắt mặc định về app trái, nếu trái đã đóng dùng app còn lại.
-- Popup Voice do Voice di chuyển/tự tắt; Split không giữ chỗ.
-- Không điều khiển HVAC/cửa/kính/camera trong repo này.
-- Token Voice và bridge khác nhau; allowBackup=false; không ghi token/keystore vào git/log.
-- Bridge chỉ loopback và typed operation allowlist, không API chạy shell tùy ý.
-- Các phương thức backend dùng tên API, không transaction number của firmware khác.
+## Kiểm tra cần tiếp trên xe
+1. Cài APK cùng signer bản test trước; cấp overlay, chọn ADB nội bộ/cổng thực tế, Kiểm tra.
+2. Xác nhận khóa nếu có → bridge UID2000/version2 → thử native/freeform.
+3. Reboot thật, đổi mạng Wi-Fi → gọi chia; ghi log/cổng/ảnh/insets/mode thật.
+4. Bật freeform bằng ADB lần đầu → chọn Off → quan sát cả hai app, thử swap/stop/fullscreen.
+5. Kiểm certificate/quyền platform trước thử system; không suy ra quyền từ cài được APK.
+6. Dự án Voice triển khai client theo THTVOICE_INTEGRATION.md rồi test end-to-end.
 
-## Lệnh kiểm tra
-```sh
-git status
-git log -5 --oneline
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
-```
-APK: app/build/outputs/apk/debug/app-debug.apk. JDK 17 / SDK 35 / Gradle 8.9 / AGP 8.7.3.
-CI workflow: .github/workflows/android.yml. Artifact THT-Split-test-apk giữ 7 ngày.
-Mỗi mốc sửa hoàn chỉnh phải commit backup và cập nhật HANDOFF cùng commit.
+## Build
+JDK17/SDK35/Gradle8.9/AGP8.7.3. `./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`.
+Chi tiết kết quả thật ở VALIDATION.md. Khóa ký release/token/khóa ADB không ở git.
+APK CI dùng debug key của runner; không đảm bảo cập nhật đè bản test ký máy khác.
 
-## Các commit mốc ban đầu
-- 9f4022a: khởi tạo phạm vi app.
-- 5299b10: scaffold Android, lưu yêu cầu và ghi chú nguồn.
-- b40b808: app/preset/overlay/backend/Voice API bản đầu.
-- 7c84d3e: sửa lint và SDK CI, thêm kiến trúc/Voice/cài-test.
-- Xem git log / commit mới nhất cho mốc xác minh và bàn giao cuối, không quay lại làm từ đầu.
-
-Đã tách Store session khỏi draft UI để chọn app/cài đặt chưa áp dụng không điều khiển nhầm cặp.
-Callback service không vẽ overlay sau onDestroy; X có xử lý app bên kia đã đóng.
-
-## Cập nhật tài liệu 04/10/2026
-Đã làm gọn mô tả ứng dụng độc lập và nguồn tham khảo theo yêu cầu chủ dự án.
-Không thay đổi mã ứng dụng hoặc API; kiểm tra diff và rà lại tên/package/link tham chiếu trong toàn bộ tệp được git theo dõi.
+## Kết quả máy phát triển ở mốc này
+Build APK0.2, 17 unit tests và lint đạt (0 lỗi). Apksigner v2 hợp lệ;
+compile-only Unsafe stub không có trong APK. Xem VALIDATION.md cho giới hạn và checksum.

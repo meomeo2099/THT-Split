@@ -14,3 +14,11 @@
 - Repo lưu sơ đồ, tài liệu nguồn, danh sách việc và kiểm thử; commit theo từng mốc.
 
 Không đưa HVAC, cửa/kính, camera, TTS/STT, server kích hoạt vào phạm vi ứng dụng này.
+
+## Chốt bổ sung 05/10/2026
+- Phương thức: ADB nội bộ mặc định / Off mở cửa sổ trực tiếp / quyền hệ thống có điều kiện.
+- Bỏ Telnet/Shizuku, không cần app hỗ trợ bên ngoài.
+- Tự mở bridge khi cần, tùy chọn chuẩn bị lúc boot; giữ khóa RSA ADB và token qua reboot.
+- API v2 có requestId và kết quả, giữ token v1; thêm signature API khi hai app cùng signer.
+- Off không dùng shell; không hứa resize task hoặc bố cục đã thành công nếu chỉ gửi launch.
+- Giữ khóa ký/package, commit tiếng Việt, cập nhật hướng dẫn tích hợp trên GitHub.

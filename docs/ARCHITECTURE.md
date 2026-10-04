@@ -1,79 +1,57 @@
-# Kiến trúc và sơ đồ thực hiện
+# Kiến trúc THT Split 0.2
 
-## Luồng lệnh
 ```mermaid
 flowchart TD
-  A["Giao diện / cặp đã lưu"] --> C["SplitService: tuần tự hóa lệnh"]
-  B["THT Voice: token + broadcast"] --> V["VoiceReceiver: xác thực và lọc lệnh"]
-  V --> C
-  C --> G["SplitEngine: package + vùng chia"]
-  G --> S["ShellClient: loopback + token"]
-  S --> H["ShellServer: uid shell"]
-  H --> N["Android 9: mode 3/4 + docked bounds"]
-  H --> F["Freeform: mode 5 + resize task"]
-  C --> O["Overlay: thanh, nút mở lại, vạch kéo"]
+  U["Giao diện / preset"] --> S["SplitService: một thao tác mỗi lần"]
+  V["Voice: token hoặc signature"] --> R["Receiver: lọc lệnh và callback"]
+  R --> S
+  S --> E["SplitEngine: session và vùng chia"]
+  E --> B["Backend theo cài đặt"]
+  B --> A["ADB nội bộ: RSA TCP"]
+  A --> H["Bridge shell: token và UID"]
+  B --> O["Off: ActivityOptions"]
+  B --> P["Hệ thống: kiểm quyền"]
+  H --> W["Android task / cửa sổ"]
+  O --> W
+  P --> W
+  S --> C["PendingIntent kết quả → Voice"]
 ```
 
-## Mốc triển khai
-```mermaid
-flowchart TD
-  R["1. Chốt yêu cầu và tài liệu nguồn"] --> U["2. UI, preset, settings, icon"]
-  U --> E["3. Backend shell và overlay"]
-  E --> V["4. API nhận lệnh Voice"]
-  V --> T["5. Build, unit test, lint"]
-  T --> D["6. Thử EX2 và chỉnh theo firmware"]
-  D --> I["7. Ghép THTVoice, ký phát hành"]
-```
-Mốc 1–5 đã có mã và kiểm tra máy phát triển. Mốc 6–7 cần thiết bị / tích hợp repo khác.
+- Session giữ transport/mode/insets/cặp độc lập bản chọn UI. Không chuyển phương thức
+  khi phiên đang chạy hoặc thao tác đang xử lý. Backend không tự fallback sang cách khác.
+- LocalAdb: TCP tới loopback/địa chỉ chính thiết bị, RSA2048, AUTH/SHA1 digest đã băm,
+  khung ADB/checksum/stream ID/deadline/giới hạn output. Không có API shell tùy ý.
+- ConnectionManager: serialized bootstrap, ping và kiểm UID/version, không kill listener
+  lạ. Cổng ADB mặc định5555 khác bridge39871; chỉ bridge bind127.0.0.1.
+- Bridge cần được tạo lại sau reboot, nhưng app chuẩn bị lúc boot hoặc trước lệnh.
+  Khóa RSA và token vẫn được giữ; lần đầu có thể cần xác nhận khóa trên màn.
+- Socket ADB đóng sau bootstrap. Chuyển Off không mở/gửi lệnh shell; daemon bridge
+  đã mở trước đó có thể còn sống nhưng không được Off sử dụng. Không tự kill tiến trình.
+- Off luôn freeform, geometry không trừ toolbar vì không resize được khi ẩn/hiện;
+  toolbar là overlay tạm. Không vạch kéo/tỷ lệ live. Launch trả requested, verified=false.
+- System dùng MANAGE_ACTIVITY_STACKS được Android cấp; không giả mạo UID/certificates.
+  Bản thường không dùng sharedUserId, chỉ cho chọn system nếu quyền thực đã có.
+- Scoped hidden API exemptions chỉ trong process ứng dụng; không sửa hidden_api_policy
+  toàn hệ thống và không cấp thêm permission. Source thư viện được ghi tại THIRD_PARTY.md.
+- API result dùng PendingIntent do Voice/Dashboard tạo; kiểm creator package và requestId,
+  không gửi broadcast phản hồi công khai hoặc theo callbackPackage tùy ý.
+- Khi overlay hỏng trả error; khi gửi Off trả requested. Unit tests không chứng minh
+  nội dung app/insets/cửa sổ trên firmware xe.
 
-## Tệp và trách nhiệm
+## Tệp chính
 | Tệp | Trách nhiệm |
 |---|---|
-| MainActivity | Trang chính, cặp đã lưu, 5 nhóm settings |
-| Store | SharedPreferences; JSON preset; token bridge/Voice riêng biệt; namespace session tách bản chọn trong UI |
-| AppPicker | Tìm kiếm các ứng dụng có launcher; không hard-code app package |
-| Ui | Palette, button và icon Canvas đồng đều |
-| SplitService | Foreground notification, hàng đợi một tác vụ, overlay và session |
-| SplitEngine | Đọc cấu hình, resolve component, tính bounds và gọi bridge |
-| core/LayoutMath | Hình học px; chừa OEM bars; clamp ratio 30–70 |
-| core/TaskParser | Fallback tìm task trong dumpsys, match package chính xác |
-| bridge/ShellClient | Socket 127.0.0.1:39871; timeouts; token |
-| bridge/ShellServer | app_process chạy shell; chỉ nhận lệnh allowlist |
-| VoiceReceiver | API broadcast explicit; bật/tắt và so token constant time |
+| MainActivity / Store | UI/preset/cài đặt và secrets private |
+| SplitService / SplitEngine | Tuần tự hóa lệnh, session, overlay và geometry |
+| connection/Backend | Chọn một backend, không fallback âm thầm |
+| connection/LocalAdb | Khóa RSA private AtomicFile, xác thực/stream TCP |
+| core/AdbWire / AdbRsa | Framing, public key Android, chữ ký challenge |
+| connection/ConnectionManager | Kiểm tra và bootstrap ShellServer |
+| connection/BootReceiver / ConnectionService | Chuẩn bị quyền lúc boot/cập nhật, không tự mở hai app |
+| connection/DirectWindows / HiddenAccess | Off và truy cập scoped hidden APIs |
+| bridge/ShellClient / ShellServer | Giao thức bridge/token và API task Android9 |
+| VoiceReceiver / SignatureVoiceReceiver / VoiceReplies | API token/signature/callback v2 |
 
-Không dùng WebView, dịch vụ cloud, Firebase, root hoặc platform certificate.
-GSplit được tham khảo hành vi, không copy nguồn không rõ giấy phép.
-
-## Trạng thái giao diện
-| Trạng thái | Diện tích app | Nút nổi |
-|---|---|---|
-| Thanh mở | Trừ chiều cao thanh, giữ OEM bars | Thanh có ratios + apps/swap/full/home/hide/X |
-| Thanh ẩn | Trả lại chiều cao thanh cho 2 app | Chevron để hiện thanh |
-| Một app toàn màn | Backend chuyển window mode; không vạch kéo | Nút khôi phục cặp |
-| Home | Giữ cặp trong bộ nhớ, bỏ overlay | Mở app/notification để tiếp tục |
-| Tắt chia | App trái toàn màn (hoặc app còn lại nếu trái đã đóng) | Dừng service và overlay |
-
-Divider kéo bằng pixel theo tọa độ màn hình; bản đầu cập nhật cửa sổ khi thả để tránh
-hàng đợi resize và app OEM bị nhấp nháy. Kéo liên tục/live resize là tối ưu sau thử xe.
-
-## Quyền và giao thức
-App thường không được MANAGE_ACTIVITY_STACKS. User mở ADB rồi khởi động ShellServer
-qua app_process dưới UID 2000. Shell bridge bind loopback, không mở cổng LAN.
-Mỗi kết nối gửi JSON bằng DataOutputStream.writeUTF, nhận JSON bằng readUTF.
-Không có lệnh shell tùy ý từ ứng dụng/API. Package/component/mode/bounds được kiểm tra.
-Reflection dùng tên method, không binder transaction numbers cố định.
-
-Native Android 9 được ưu tiên. Reflection Android 10+ chỉ là best effort,
-không cam kết hỗ trợ firmware mới. Không sửa hidden_api_policy toàn hệ thống.
-ShellServer hiện không auto-start sau reboot; APK cập nhật cũng cần chạy lại bridge.
-
-## Build và phân phối
-JDK 17 / Gradle 8.9 / AGP 8.7.3 / compile35 / min 26 / target 32.
-Target32 dành bản sideload headunit; chỉ tắt lint ExpiredTargetSdkVersion do không đưa
-Google Play. Các kiểm tra API/permission khác vẫn chạy, không dùng lint baseline che lỗi.
-Không sử dụng khóa ký release trong git. CI build APK debug mỗi lần push main,
-artifact giữ 7 ngày. Khóa debug CI thay theo runner; bản CI có thể không cập nhật đè
-bản test ký tại máy khác. Cần provisioning khóa ký ngoài repo trước phát hành ổn định.
-
-Cặp/mode/insets đang chạy nằm trong tht_split_session, độc lập với lựa chọn UI chưa áp dụng.
-Start nhận selection explicit; preset/restore nhận cấu hình mới, hide/ratio/X thao tác session hiện hành.
+## Mốc tiếp tục
+Mã cho ADB/Off/system có điều kiện và API phía Split đã có. Còn thử firmware xe,
+chữ ký platform nếu có, ghép client trong Voice và ký phát hành ổn định ngoài git.

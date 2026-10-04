@@ -16,6 +16,12 @@ import java.util.concurrent.*;
 public final class ShellServer {
     private static String secret;
     private static Object manager;
+    @android.annotation.SuppressLint("StaticFieldLeak") // Set only inside a synchronized call; cleared in finally.
+    private static android.content.Context systemContext;
+    public static synchronized JSONObject systemCall(android.content.Context context,JSONObject q)throws Exception {
+        if(context.checkSelfPermission("android.permission.MANAGE_ACTIVITY_STACKS")!=android.content.pm.PackageManager.PERMISSION_GRANTED)throw new SecurityException("Thiếu quyền hệ thống");
+        systemContext=context.getApplicationContext();try{return handle(q).put("ok",true);}finally{systemContext=null;}
+    }
     private static final ExecutorService IO=Executors.newCachedThreadPool();
     public static void main(String[] args)throws Exception {
         if(Process.myUid()!=2000 && Process.myUid()!=0)throw new SecurityException("Bridge cần uid shell (ADB)");
@@ -60,7 +66,9 @@ public final class ShellServer {
         return -1;
     }
     private static void setMode(int id,int mode)throws Exception{invoke("setTaskWindowingMode",new Class<?>[]{int.class,int.class,boolean.class},id,mode,true);}
-    private static void launch(String comp,int mode)throws Exception{String output=exec("am","start","-W","--user","current","--windowingMode",String.valueOf(mode),"-a","android.intent.action.MAIN","-c","android.intent.category.LAUNCHER","-f","0x10000000","-n",comp);if(output.contains("Error:")||output.contains("Exception"))throw new IOException(output);}
+    private static void launch(String comp,int mode)throws Exception{
+        if(systemContext!=null){android.app.ActivityOptions options=android.app.ActivityOptions.makeBasic();android.app.ActivityOptions.class.getMethod("setLaunchWindowingMode",int.class).invoke(options,mode);systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_LAUNCHER).setComponent(android.content.ComponentName.unflattenFromString(comp)).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),options.toBundle());return;}
+        String output=exec("am","start","-W","--user","current","--windowingMode",String.valueOf(mode),"-a","android.intent.action.MAIN","-c","android.intent.category.LAUNCHER","-f","0x10000000","-n",comp);if(output.contains("Error:")||output.contains("Exception"))throw new IOException(output);}
     private static String exec(String...command)throws Exception{
         java.lang.Process p=new ProcessBuilder(command).redirectErrorStream(true).start();
         Future<String> output=IO.submit(()->{ByteArrayOutputStream bytes=new ByteArrayOutputStream();byte[] b=new byte[2048];int n;try(InputStream in=p.getInputStream()){while((n=in.read(b))!=-1){if(bytes.size()<24000)bytes.write(b,0,Math.min(n,24000-bytes.size()));}}return bytes.toString("UTF-8");});
@@ -75,15 +83,20 @@ public final class ShellServer {
         }
     }
     private static String mode(JSONObject q){String m=q.optString("mode","native");if(!m.equals("native")&&!m.equals("freeform"))throw new IllegalArgumentException("Mode");return m;}
+    private static void writeSetting(String key,String value)throws Exception {
+        if(value.equals("null"))exec("settings","delete","global",key);
+        else{if(!value.matches("[0-9]+"))throw new IllegalArgumentException("Setting");exec("settings","put","global",key,value);}
+    }
     private static JSONObject handle(JSONObject q)throws Exception{
         String op=q.getString("op");JSONObject out=new JSONObject();
-        if(op.equals("PING"))return out.put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
-        if(op.equals("HOME")){exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
+        if(op.equals("PING"))return out.put("bridgeVersion",2).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
+        if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
-            for(String k:new String[]{"enable_freeform_support","force_resizable_activities"}){
-                if(op.equals("FREEFORM_ENABLE")){out.put(k,exec("settings","get","global",k).trim());exec("settings","put","global",k,"1");}
-                else {String v=q.optString(k,"null");if(v.equals("null"))exec("settings","delete","global",k);else{if(!v.matches("[0-9]+"))throw new IllegalArgumentException("Setting");exec("settings","put","global",k,v);}}
-            }return out;
+            String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];
+            for(int n=0;n<2;n++)before[n]=exec("settings","get","global",keys[n]).trim();
+            try{for(int n=0;n<2;n++){String value=op.equals("FREEFORM_ENABLE")?"1":q.optString(keys[n],"null");writeSetting(keys[n],value);out.put(keys[n],before[n]);}}
+            catch(Exception e){for(int n=0;n<2;n++)try{writeSetting(keys[n],before[n]);}catch(Exception ignored){}throw e;}
+            return out;
         }
         String leftPkg=pkg(q,"left"),rightPkg=pkg(q,"right");if(leftPkg.equals(rightPkg))throw new IllegalArgumentException("Chọn hai ứng dụng khác nhau");
         String mode=mode(q);

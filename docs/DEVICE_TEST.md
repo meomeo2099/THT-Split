@@ -1,73 +1,82 @@
-# Cài và kiểm thử EX2
+# Cài và kiểm thử 0.2.0-test trên EX2
 
-Bản đầu: test APK, chưa xác nhận trên xe. Không thay firmware/OTA. Android headunit phải
-có ADB mở sẵn; tài liệu này không mở khóa ADB. Dùng trên xe đang đỗ để quan sát layout.
+Chưa test xe thật. Android headunit phải có ADB mở sẵn; app không mở khóa ADB hoặc
+thay firmware/OTA. Quan sát bố cục khi xe đang đỗ.
 
-## 1. Build và cài
+## Cài lần đầu
 ```sh
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
-Nếu khác chữ ký: không uninstall khi còn preset cần giữ. Dùng lại khóa ký cũ để build,
-hoặc xuất/ghi lại preset trước khi chủ động cài mới. Package luôn com.tht.split.
-
-## 2. Cấp overlay
-Mở app → Cài đặt → Kết nối & quyền → Cấp quyền hiển thị nổi.
-Có thể dùng trên máy có ADB:
-```sh
+adb install -r THT-Split-0.2.0-test.apk
 adb shell appops set com.tht.split SYSTEM_ALERT_WINDOW allow
 ```
-OEM có thể hạn chế appops/settings; kiểm tra trạng thái thật trong app.
+Nếu khác chữ ký, không gỡ app khi còn dữ liệu cặp cần giữ. Dùng khóa cũ hoặc ghi lại
+cấu hình trước khi chủ động cài mới. Package com.tht.split không đổi.
+Mở app ít nhất một lần sau cài; app force-stop có thể không nhận boot broadcast.
 
-## 3. Chạy bridge (mỗi lần reboot / cập nhật APK)
-Mở app → Cài đặt → Kết nối & quyền → Lấy lệnh khởi động bridge.
-Trên máy tính/điện thoại đã kết nối ADB:
-```sh
-adb shell
-```
-Sau đó dán **nguyên lệnh riêng của máy lấy trong app**, dạng:
-```sh
-CLASSPATH=$(pm path com.tht.split | head -n 1 | cut -d: -f2) nohup app_process /system/bin   com.tht.split.bridge.ShellServer TOKEN_RIENG_CUA_MAY   >/data/local/tmp/tht-split-bridge.log 2>&1 </dev/null &
-```
-Không dùng placeholder TOKEN_RIENG_CUA_MAY để chạy. Token thật phải đủ 64 hex.
-App kiểm tra bridge phải báo UID2000 (shell) hoặc 0; chưa có UID đúng thì chưa thử chia.
-Bridge ở localhost39871. Nếu Address already in use / token không đúng: đọc log,
-dừng đúng tiến trình bridge cũ rồi chạy lại; không dùng killall app_process.
-Ví dụ sau khi xác minh PID bằng `ps -A | grep com.tht.split.bridge.ShellServer`:
-```sh
-kill PID_CUA_THT_SPLIT_BRIDGE
-```
-Không đóng app server khác. Reboot cũng dừng bridge. `nohup` không có trên firmware nào
-thì bỏ từ nohup và giữ phiên adb shell trong thời gian test.
+## ADB nội bộ (ưu tiên)
+1. Cài đặt → Kết nối & quyền → ADB nội bộ.
+2. Mặc định127.0.0.1:5555. Nếu xe dùng7777 hoặc cổng khác, nhập cổng thực tế của xe.
+   Host chỉ cho phép loopback hoặc địa chỉ thuộc chính màn, không máy tính/xe khác.
+3. Bấm Kiểm tra / kết nối. Xác nhận “luôn cho phép” khóa THT Split nếu xe hiện hộp thoại.
+   Khóa của app khác khóa máy tính: máy tính đã được cho phép không đảm bảo app đã được cho phép.
+4. Nếu timeout vì chờ xác nhận: xác nhận rồi bấm lại; private RSA được giữ nguyên.
+5. Sau khi bridge sẵn sàng UID2000/API xe: chọn cặp, Bắt đầu chia và quan sát hai app.
+6. Bật “Chuẩn bị ADB sau khởi động / cập nhật”. Boot chưa sẵn sàng vẫn sẽ thử khi lệnh tới.
 
-## 4. Ma trận test
-| Kiểm tra | Cách làm / kết quả cần có | Trạng thái |
+ADB nội bộ cổ điển RSA TCP, không Android11+ TLS pairing. Wi-Fi/firmware/adbd phải
+sẵn sàng, không cam kết boot hook chạy được trên mọi firmware. Đổi Wi-Fi không đổi localhost.
+Bridge0.1 cũ còn chạy: reboot màn rồi thử; không tự kill mọi app_process.
+
+## Off — mở trực tiếp
+Bật freeform lần đầu bằng ADB nội bộ trong app hoặc từ máy tính:
+```sh
+adb shell settings get global enable_freeform_support
+adb shell settings get global force_resizable_activities
+adb shell settings put global enable_freeform_support 1
+adb shell settings put global force_resizable_activities 1
+```
+Ghi giá trị cũ của hai lệnh get trước khi đổi bằng máy tính. Nếu dùng nút trong app,
+app lưu giá trị cũ và có nút khôi phục. Có thể cần reboot; không tự thay policy hidden API toàn hệ thống.
+
+Tắt phiên đang chia → Cài đặt → Off. Chọn tỷ lệ trước khi mở cặp. Không có bridge,
+không vạch kéo/nút tỷ lệ live; toolbar là overlay tạm, hide/show không resize app.
+Quan sát native launch: firmware/app có thể bỏ qua bounds hoặc tái tạo Activity.
+Off trả requested, verified=false; không coi đó là đã chia thành công.
+
+## Quyền hệ thống
+Chỉ chọn được khi Android đã cấp MANAGE_ACTIVITY_STACKS. APK ký debug thường không
+được cấp; cài được APK hoặc cùng chữ ký Voice không chứng minh có quyền platform.
+Không có sharedUserId trong bản thường. Provision khóa phù hợp ngoài git nếu có;
+kiểm permission/certificate trên chính xe trước dùng. Không tự tạo khóa giả hoặc flash OTA.
+
+## Lệnh bridge thủ công dự phòng
+Cài đặt → Kết nối & quyền → ADB nội bộ → Lấy lệnh bridge thủ công.
+Trên máy tính nhập `adb shell`, rồi dán nguyên lệnh lấy trong app có token riêng:
+```sh
+CLASSPATH=$(pm path com.tht.split | head -n 1 | cut -d: -f2) nohup app_process /system/bin com.tht.split.bridge.ShellServer TOKEN_RIENG_CUA_MAY >/data/local/tmp/tht-split-bridge.log 2>&1 </dev/null &
+```
+Không chạy chữ placeholder TOKEN_RIENG_CUA_MAY. Token bridge khác token Voice.
+Nếu port bị chiếm/token không khớp: đọc log, xác minh đúng PID trước dừng; không killall app_process.
+
+## Ma trận cần xác minh
+| Ca thử | Điều kiện đạt | Trạng thái |
 |---|---|---|
-| Hai app | Chọn app launcher thật trên máy; Bắt đầu chia | Chờ xe |
-| Native | Mode 3/4, không recents/filler đè app | Chờ xe |
-| 5 tỷ lệ | Chọn lần lượt30/40/50/60/70; nhìn bounds hai app | Chờ xe |
-| Kéo vạch | Kéo, thả; 2 cửa sổ cập nhật, không task mới | Chờ xe |
-| Thanh ẩn/hiện | Chevron trả chiều cao thanh; vẫn2app; nút nổi hiện lại | Chờ xe |
-| Tự ẩn | 3/5/8/10 giây, tương tác reset timer | Chờ xe |
-| Đổi từng app | Thay bên trái/phải, app còn lại giữ nội dung | Chờ xe |
-| Đổi bên | Nội dung hai bên đổi; không force-stop mất nhạc | Chờ xe |
-| Toàn màn/restore | Chọn từng bên; bấm nút nổi khôi phục cặp | Chờ xe |
-| Home/X | Home launcher; X app trái toàn màn, service/overlay dừng | Chờ xe |
-| App tự đóng | X không kẹt chỉ vì app bên kia không còn task | Chờ xe |
-| OEM bars | Thanh trạng thái, HVAC không bị che; chỉnh top/bottom | Chờ xe |
-| Preset CRUD | Tạo, mở, sửa app/tên/tỷ lệ, xóa/hủy xác nhận, rebootapp | Chờ UI máy |
-| API Voice | Bật API, token đúng/sai; lệnh trong VOICE_API | Chờ tích hợp |
-| Mất bridge | Có lỗi rõ; không báo thành công hoặc tự cấp quyền | Chờ xe |
-| Freeform | Bật hỗ trợ, reboot nếu cần; mode5 và caption OEM | Chờ xe |
+| ADB lần đầu | Xác nhận khóa → UID2000/version2 | Chờ xe |
+| Reboot thật | Khi lệnh tới app tự kết nối, không máy tính | Chờ xe |
+| Đổi Wi-Fi | localhost/cổng vẫn dùng được khi adbd hoạt động | Chờ xe |
+| Native/freeform | Hai app, mode/bounds/insets thật đúng | Chờ xe |
+| Resize/drag ADB | Năm tỷ lệ, kéo/thả; không mất trạng thái app | Chờ xe |
+| Off | Hai app được mở đúng bounds hoặc ghi rõ firmware không hỗ trợ | Chờ xe |
+| Off ratio live | UI khóa; API báo hạn chế | Chờ xe |
+| Hide/show/Home/X | Đúng hành vi, không nhét launcher xe vào ô phụ | Chờ xe |
+| Presets | Lưu/sửa/xóa/restart không mất cấu hình | Chờ xe |
+| Voice v2 | Token/signature/callback/requested/error/busy/timeout | Chờ tích hợp Voice |
+| System | Certificate/quyền thực được kiểm trước thao tác | Chờ điều kiện |
 
-Khoảng chừa72/112px chỉ là mặc định tham khảo. Native resizeDockedStack có thể bỏ qua
-insets hoặc ép chia ngang tùy OEM; nếu vậy không dùng ảnh mockup để kết luận đã đúng.
-Freeform có caption; chưa có NoCaption cho Android9. Không tự force-stop/gỡ app.
-Thao tác replace/swap dùng launch lại task hiện có; việc OEM tái tạo Activity phải đo thực tế.
+Khoảng chừa72/112px chỉ là mặc định thử. Native có thể bỏ qua OEM insets. Phải nhìn
+ảnh thật; không dựa ảnh mockup hoặc các unit test để kết luận layout xe.
 
-## 5. Thu log khi lỗi
-Trong app → Cập nhật → Xuất log hỗ trợ (không token).
-Trên máy có ADB:
+## Thu log và khôi phục
+App → Cập nhật → Xuất log hỗ trợ. Trên máy tính:
 ```sh
 adb logcat -d -s THTSplit AndroidRuntime
 adb shell cat /data/local/tmp/tht-split-bridge.log
@@ -75,10 +84,6 @@ adb shell dumpsys activity activities
 adb shell wm size
 adb shell wm density
 ```
-Dumpsys có tên app/hoạt động; xem và ẩn thông tin cá nhân trước chia sẻ.
-Ghi firmware, API, mode, app packages, thao tác, ảnh thật và lỗi. Không chỉ gửi “không chạy”.
-
-## 6. Khôi phục
-X hoặc Home; nếu bridge mất, mở launcher bằng thanh OEM. Khởi động lại bridge, thử X.
-Freeform global settings có nút khôi phục giá trị cũ; nếu bật xong reboot phải kết nối bridge
-lại trước khi khôi phục. Không đổi hidden_api_policy, không flash OTA hoặc gỡ app xe.
+Log xuất từ app không gồm token/private key. Dumpsys có tên app, xem trước khi chia sẻ.
+Ghi firmware/API/cổng/mode/ảnh/thao tác. Khi lỗi dùng Home/thanh xe, thử lại X sau
+khi kết nối. Freeform có nút khôi phục trong app với ADB/system; Off không có quyền đổi settings.

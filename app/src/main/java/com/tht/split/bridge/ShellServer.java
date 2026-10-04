@@ -89,14 +89,18 @@ public final class ShellServer {
             launch(rc,mode.equals("native")?4:5);int rt=awaitTask(rightPkg);setMode(rt,mode.equals("native")?4:5);
             resize(lt,rt,mode,l,r);return out.put("leftTask",lt).put("rightTask",rt);
         }
-        int lt=awaitTask(leftPkg),rt=awaitTask(rightPkg);
-        if(op.equals("RESIZE")){resize(lt,rt,mode,rect(q,"leftBounds"),rect(q,"rightBounds"));return out;}
+        int lt=task(leftPkg),rt=task(rightPkg);
+        if(op.equals("RESIZE")){if(lt<0||rt<0)throw new IOException("Một app đã đóng; hãy khôi phục cặp");resize(lt,rt,mode,rect(q,"leftBounds"),rect(q,"rightBounds"));return out;}
         if(op.equals("FULLSCREEN")||op.equals("STOP")){
             String side=q.optString("side","left");if(!side.equals("left")&&!side.equals("right"))throw new IllegalArgumentException("Side");
             // Collapse the primary first so the secondary becomes a regular window; then focus chosen task.
-            if(mode.equals("native"))setMode(lt,1);
-            else {setMode(lt,1);setMode(rt,1);}
-            setMode(side.equals("right")?rt:lt,1);return out;
+            if(lt>=0)setMode(lt,1);
+            if(mode.equals("freeform")&&rt>=0)setMode(rt,1);
+            int focus=side.equals("right")?rt:lt;
+            if(focus<0&&op.equals("STOP"))focus=lt>=0?lt:rt;
+            if(focus>=0)setMode(focus,1);
+            else if(op.equals("FULLSCREEN"))throw new IOException("Ứng dụng đã đóng");
+            return out;
         }
         throw new IllegalArgumentException("Lệnh không hỗ trợ");
     }

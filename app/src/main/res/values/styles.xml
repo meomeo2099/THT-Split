@@ -3,5 +3,5 @@
 <item name="android:fontFamily">sans</item><item name="android:colorAccent">#10CBE5</item>
 <item name="android:windowLightStatusBar">false</item><item name="android:statusBarColor">#07121F</item>
 <item name="android:navigationBarColor">#07121F</item><item name="android:windowActionModeOverlay">true</item>
-<item name="android:windowBackground">#07121F</item><item name="android:windowLightNavigationBar">false</item>
+<item name="android:windowBackground">#07121F</item>
 </style></resources>

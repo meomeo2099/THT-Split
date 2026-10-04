@@ -15,17 +15,20 @@ public final class Ui {
     public static LinearLayout row(Context c){LinearLayout l=new LinearLayout(c);l.setOrientation(LinearLayout.HORIZONTAL);l.setGravity(Gravity.CENTER_VERTICAL);return l;}
     public static void pad(View v,int n){int p=dp(v.getContext(),n);v.setPadding(p,p,p,p);}
     public static final class Icon extends View {
-        private final String kind;private final int color;private final Paint p=new Paint(3);
+        private final String kind;private final int color;private final Paint p=new Paint(3);private final Path path=new Path();
+        private static final int[] GRID={12,22}, CORNERS={12,28}, DOTS={14,20,26};
+        public Icon(Context c){this(c,"brand",CYAN);}
+        @Override public boolean performClick(){return super.performClick();}
         public Icon(Context c,String k,int col){super(c);kind=k;color=col;setContentDescription(k);setBackground(bg(CARD,dp(c,9)));}
         @Override protected void onDraw(Canvas canvas){super.onDraw(canvas);canvas.save();float scale=Math.min(getWidth(),getHeight())/40f;canvas.translate((getWidth()-40*scale)/2,(getHeight()-40*scale)/2);canvas.scale(scale,scale);p.setColor(color);p.setStrokeWidth(2);p.setStyle(Paint.Style.STROKE);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeJoin(Paint.Join.ROUND);
-            Path a=new Path();switch(kind){
-                case "apps":for(int x:new int[]{12,22})for(int y:new int[]{12,22})canvas.drawRoundRect(x,y,x+6,y+6,1,1,p);break;
+            Path a=path;a.reset();switch(kind){
+                case "apps":for(int x:GRID)for(int y:GRID)canvas.drawRoundRect(x,y,x+6,y+6,1,1,p);break;
                 case "swap":canvas.drawLine(11,16,29,16,p);canvas.drawLine(11,24,29,24,p);a.moveTo(25,12);a.lineTo(29,16);a.lineTo(25,20);a.moveTo(15,20);a.lineTo(11,24);a.lineTo(15,28);canvas.drawPath(a,p);break;
-                case "full":for(int x:new int[]{12,28})for(int y:new int[]{12,28}){canvas.drawLine(x,y,x+(x==12?5:-5),y,p);canvas.drawLine(x,y,x,y+(y==12?5:-5),p);}break;
+                case "full":for(int x:CORNERS)for(int y:CORNERS){canvas.drawLine(x,y,x+(x==12?5:-5),y,p);canvas.drawLine(x,y,x,y+(y==12?5:-5),p);}break;
                 case "home":a.moveTo(10,19);a.lineTo(20,10);a.lineTo(30,19);a.moveTo(13,17);a.lineTo(13,29);a.lineTo(27,29);a.lineTo(27,17);a.moveTo(18,29);a.lineTo(18,22);a.lineTo(22,22);a.lineTo(22,29);canvas.drawPath(a,p);break;
                 case "up":case "down":boolean up=kind.equals("up");a.moveTo(13,up?23:17);a.lineTo(20,up?16:24);a.lineTo(27,up?23:17);canvas.drawPath(a,p);break;
                 case "close":canvas.drawLine(13,13,27,27,p);canvas.drawLine(27,13,13,27,p);break;
-                case "grip":p.setStyle(Paint.Style.FILL);for(int y:new int[]{14,20,26})canvas.drawCircle(20,y,1.7f,p);break;
+                case "grip":p.setStyle(Paint.Style.FILL);for(int y:DOTS)canvas.drawCircle(20,y,1.7f,p);break;
                 case "gear":canvas.drawCircle(20,20,8,p);canvas.drawCircle(20,20,3,p);for(int d=0;d<360;d+=45){double n=Math.toRadians(d);canvas.drawLine(20+(float)Math.cos(n)*8,20+(float)Math.sin(n)*8,20+(float)Math.cos(n)*11,20+(float)Math.sin(n)*11,p);}break;
                 default:p.setStyle(Paint.Style.FILL);p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setTextSize(13);p.setTextAlign(Paint.Align.CENTER);canvas.drawText("THT",20,25,p);p.setStrokeWidth(2);canvas.drawLine(20,9,20,31,p);
             }canvas.restore();

@@ -16,6 +16,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platforms;android-35 build-tools;35.0.0 platform-tools
       - uses: gradle/actions/setup-gradle@v4
       - run: chmod +x gradlew && ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
       - uses: actions/upload-artifact@v4

@@ -78,3 +78,14 @@ APK: com.tht.split/versionCode8/0.2.6-test/min26/target32.
 SHA256: 79d53b3b1263f12408a7b904a6fc2d1386ad999519ba7395d425df6e961afbe2.
 Bridge v4 cần reboot/kết nối lại; APK CI có thể khác signer bản test cũ.
 Cửa sổ Off sai từ phiên cũ phải đóng bằng Android một lần; X THT chỉ dừng overlay.
+
+## Mốc0.2.7 — khoảng chừa secondary native
+CI đầu bắt JSONException chưa khai báo trong bounds(JSONArray); đã sửa.
+Bản cuối5012d4f24ae8adb8de4f0c82f6ee0157e4cb861a build/unit/lint đạt:
+https://github.com/meomeo2099/THT-Split/actions/runs/37272679706
+Thêm3 tests bounds: secondary tràn display, snapped ratio khác yêu cầu, sai số pixel.
+Không chứng minh resizeStack/getTaskBounds trên LDPlayer/xe thực tế.
+APK: com.tht.split/versionCode9/0.2.7-test/min26/target32.
+SHA256: 12eccd8bb789296f147d37624fa9041c2c87ca2049a3388518c8337221eb88b6.
+Bridge v5 cần reboot/kết nối lại. APK CI có thể khác signer bản cũ.
+Nếu read-back khác yêu cầu, verified=false/callback requested và log có expected/actual.

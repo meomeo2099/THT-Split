@@ -1,5 +1,24 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Mốc0.3.3 — nhóm nút trái/phải và Sửa/Xóa rõ hơn
+Code e1dd80bad24ef73b447507c7bb49faf52fd97cc1; CI success:
+https://github.com/meomeo2099/THT-Split/actions/runs/37343461485.
+Build/unit/lint, Node tests, QR đúng profile/CRC và Wrangler dry-run đều đạt.
+git diff --check đạt. SplitService chỉ đổi3 dòng hiển thị căn nhóm nút trong render;
+đã đối chiếu xử lý onStartCommand và phần mini/grip/dialog toolbar giữ nguyên.
+SplitEngine/Ui/Store/connection/bridge/core/remote/Voice/res/server không đổi;
+không thay bounds/task/Bridge v6. Không bổ sung unit test mô phỏng style/layout.
+APK artifact11358899820: com.tht.split /code15 /0.3.3-test /min26 /target32;
+apksigner verify thành công. SHA256:
+`2f3549fb93a3eaa120ee980374d1883587d19f558aca0ae44650f574f722ec17`.
+QR trong APK trùng bytes repo, thông tin ngân hàng giữ nguyên.
+Cert SHA256 `914b65e63a3fe8996f8559b426836ca1408ed50cb89a400baebc2d84c87c6d26`
+khác0.3.2 đã gửi; không cài đè bản0.3.2 với signer đó. Không tự gỡ hoặc hứa giữ
+token/RSA/config khi gỡ cài lại; cần khóa ký ổn định cho bản phát hành lâu dài.
+Chưa chạy bản sửa trên LDPlayer/xe. Cần chọn trái/phải rồi ẩn/hiện lại toolbar,
+kiểm đủ tỷ lệ/icon, X/ẩn/Home/Off lock, cặp Sửa → Lưu/Hủy, Xóa → Hủy/Xác nhận;
+Hủy không đổi preset và Xóa không gỡ hai app. Kiểm tương phản/cắt chữ/vùng chạm.
+
 ## Mốc0.3.2 — giao diện bên trong và ủng hộ
 Code9c62c0400a0f181c0ccf62f769cdbae6b3ebc9e7; CI hoàn tất success:
 https://github.com/meomeo2099/THT-Split/actions/runs/37340679665.

@@ -9,7 +9,11 @@ Không chuyển thanh thành cột, không đổi toolbar height/insets/geometry
 Sửa/Xóa/Mở cặp là3 nút riêng52dp ngay trên card, bỏ menu⋮ khó nhìn theo ảnh.
 Xóa màu đỏ/nền riêng và vẫn có xác nhận rõ tên cặp; Hủy không đổi dữ liệu,
 xóa chỉ xóa preset. Logic editPair/openPair/Store giữ nguyên.
-0.3.3-test/code15 đang chờ CI. Chưa thử thao tác và hiển thị trên LDPlayer/xe.
+0.3.3-test/code15: CI build/unit/lint, Node tests, kiểm QR và Wrangler dry-run đạt:
+https://github.com/meomeo2099/THT-Split/actions/runs/37343461485.
+Code e1dd80bad24ef73b447507c7bb49faf52fd97cc1. Đã lấy APK/kiểm package/code/cert
+và bytes QR; xem VALIDATION. Chưa thử thao tác và hiển thị trên LDPlayer/xe.
+Signer test khác0.3.2 đã gửi, không cài đè bản đó; không gỡ khi chưa giữ cấu hình.
 Không nâng bridge v6 hay cần khởi động lại bridge chỉ vì thêm vị trí nhóm nút.
 
 

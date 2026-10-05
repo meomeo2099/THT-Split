@@ -11,6 +11,8 @@ Bridge v6, API Voice, Store hay remote/server; không thay launcher icon.
 LDPlayer/xe; cần kiểm tương phản/cắt chữ/danh mục/sao chép/QR/chọn app/cặp.
 Chữ ký test vẫn phụ thuộc runner nếu chưa cấu hình keystore ổn định; không tự gỡ
 app đang dùng hoặc hứa cài đè giữ dữ liệu. Worker thật chưa có URL/deploy.
+Rà bố cục màn nhỏ: nút tỷ lệ giữ một dòng, padding2dp và vùng bấm48dp để tránh
+nhãn30:70 bị xuống dòng khi năm nút chia đều chiều ngang.
 
 ## Mốc mới nhất — ủng hộ dùng ngay, bỏ duyệt thiết bị
 Chủ dự án đã cung cấp STK/holder/link VietQR và yêu cầu nhúng vào app.0.3.1

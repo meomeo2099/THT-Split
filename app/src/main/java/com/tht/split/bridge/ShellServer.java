@@ -124,7 +124,7 @@ public final class ShellServer {
         }
     }
     private static LayoutMath.Box box(Rect r){return new LayoutMath.Box(r.left,r.top,r.right,r.bottom);}
-    private static JSONArray bounds(Rect r){return new JSONArray(new int[]{r.left,r.top,r.right,r.bottom});}
+    private static JSONArray bounds(Rect r)throws JSONException{return new JSONArray(new int[]{r.left,r.top,r.right,r.bottom});}
     private static JSONObject observedBounds(int lt,int rt,Rect left,Rect right)throws Exception {
         Rect actualLeft=null,actualRight=null;boolean match=false;
         for(int i=0;i<5;i++){

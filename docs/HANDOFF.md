@@ -142,4 +142,5 @@ tính secondary theo display, chưa áp bounds phải.
   callback requested + note; UI báo và log last_layout lưu requested/actual/stack/mode.
 - Tests bắt secondary tràn display, tỷ lệ bị snap khác yêu cầu, sai số pixel.
 - Bridge v5 cần reboot/kết nối lại. Không thay Off đã khóa task controls.
-- Chưa thử bản sửa trên LDPlayer/xe; CI sẽ kiểm build/unit/lint.
+- CI lần đầu bắt lỗi thiếu khai báo JSONException ở hàm bounds; đã sửa và chạy lại.
+  Chưa thử bản sửa trên LDPlayer/xe; CI sẽ kiểm build/unit/lint.

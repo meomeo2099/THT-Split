@@ -55,3 +55,8 @@ Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đ�
   cập nhật phạm vi giữ toolbar của chốt23:12 chỉ ở phần căn nhóm nút.
 - Sửa/Xóa cặp rõ hơn: nút riêng, Xóa đỏ, giữ xác nhận và không gỡ hai app.
 - Giữ tất cả lệnh/geometry/chức năng chia và các giới hạn Off.
+
+## Phản hồi23:57 — hộp thoại khó đọc
+- Sửa hộp xác nhận không có nền rõ, chữ lẫn trang phía sau; rà và sửa tất cả
+  phần chọn/nhập/xác nhận/thông báo có cùng vấn đề trong cài đặt.
+- Giữ validation, xác nhận trước thao tác và toàn bộ chức năng kết nối/chia.

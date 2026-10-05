@@ -1,4 +1,24 @@
-# Bàn giao THT Split — 0.3.3-test, 05/10/2026
+# Bàn giao THT Split — 0.3.4-test
+
+## Mốc sửa nền hộp thoại và chữ cài đặt
+Ảnh phản hồi cuối05/10: hộp Bật freeform có chữ lẫn trang phía sau, thiếu nền
+opaque rõ ràng. Rà tất cả callsites dùng Ui.dialog/AppUi.dialog, gồm cấp overlay,
+bật freeform, đổi transport, token/đổi token, nhập px/ADB, sửa/xóa cặp, kết quả
+kết nối, cập nhật/lỗi, chọn app và dialog toolbar.
+Ui.dialog tạo window nền navy FF112233 + viền/bo16dp, dim72%, width≤720dp và
+chừa20dp hai mép, adjustResize khi bàn phím. Theme có drawable nền/floating/dim
+tường minh; không chỉ dựa colorBackground của theme/OEM. Không gắn OnShowListener
+chung để tránh ghi đè validation Lưu trong editPair/ADB hay màu đỏ Xóa.
+Custom view không có ListView được bọc vùng cuộn, cao tối đa55% màn; message/list
+native vẫn giữ cơ chế cuộn. AppPicker giới hạn width/height theo màn, tên/package
+chung cột có weight để không tràn ngang. Filter/chọn package giữ nguyên.
+Spinner chọn/dropdown sáng trên navy, tối đa2 dòng; bỏ ép control48dp để nhãn
+được đo đủ chiều cao. Nút cài đặt nhiều chữ cao theo nội dung, tối thiểu52dp;
+dòng setting/opacity co giãn, màn<600dp tách nhãn và ô chọn thành2 hàng.
+0.3.4-test/code16 chờ CI. Chưa chạy UI bản sửa trên LDPlayer/xe. Service/engine/
+backend/Bridge v6/Voice/Store/remote/server/QR và căn toolbar trái/phải giữ nguyên;
+dialog toolbar hưởng style chung, nội dung thanh/grip không đổi.
+
 
 ## Mốc mới — nhóm nút trái/phải và thao tác cặp rõ hơn
 Theo ảnh người dùng và chốt chọn Bên trái/Bên phải: thêm toolbar_side trong

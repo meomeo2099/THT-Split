@@ -75,3 +75,15 @@ riêng vì vị trí nhóm nút không đổi vùng chia. Off vẫn khóa task c
 Cặp lưu có3 nút nhìn thấy ngay: Sửa cặp (sáng), Xóa cặp (đỏ), Mở cặp (cyan),
 cao52dp; màn nhỏ chia đều hàng. Bỏ dialog menu⋮; xác nhận Xóa nêu rõ tên cặp,
 giữ Hủy và màu đỏ cho nút xác nhận. Không thay nội dung QR/icon launcher.
+
+## 0.3.4 — hộp thoại và chữ rõ hơn
+Một factory cho tất cả AlertDialog trong app/overlay: nền navy opaque/viền/bo16dp,
+dim72%, width≤720dp và chừa20dp mỗi mép, floating tường minh; apply cả theme và
+window thật tại create. Giữ listener của callsite để validation Lưu/Xóa còn chạy.
+Các form/token/lệnh dài có cuộn bounded55% chiều cao và adjustResize cho keyboard;
+list native không bọc ScrollView. App picker capped chiều cao và rộng≤620dp,
+tên/package có weight/ellipsize để không tràn ra khung.
+Dropdown chọn/nội dung popup sáng trên navy,2 dòng và cao theo nội dung. Nút cài
+đặt cao tối thiểu52dp/không cố định48dp; setting/slider co giãn và màn<600dp dùng
+nhãn trên/control dưới. Không chỉnh thao tác hay hình thức toolbar/grip đang chia;
+các dialog từ toolbar dùng nền chung đã sửa.

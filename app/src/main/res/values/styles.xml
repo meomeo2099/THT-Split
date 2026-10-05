@@ -18,7 +18,15 @@
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#10CBE5</item>
         <item name="android:colorBackground">#112233</item>
-        <item name="android:windowBackground">#112233</item>
+        <item name="android:windowBackground">@drawable/dialog_panel_background</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.72</item>
+        <item name="android:windowElevation">12dp</item>
+        <item name="android:windowMinWidthMajor">56%</item>
+        <item name="android:windowMinWidthMinor">88%</item>
+        <item name="android:textColor">#EEF5FA</item>
         <item name="android:textColorPrimary">#EEF5FA</item>
         <item name="android:textColorSecondary">#9CB3C6</item>
         <item name="android:textColorHint">#9CB3C6</item>

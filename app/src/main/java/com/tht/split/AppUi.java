@@ -34,7 +34,7 @@ public final class AppUi {
         Button b=new Button(c);b.setText(value);b.setAllCaps(false);b.setTextSize(16);
         b.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
         b.setTextColor(primary?BG:TEXT);b.setMinHeight(dp(c,48));
-        b.setMinimumWidth(0);b.setMinWidth(0);b.setPadding(dp(c,12),0,dp(c,12),0);
+        b.setMinimumWidth(0);b.setMinWidth(0);b.setPadding(dp(c,12),dp(c,8),dp(c,12),dp(c,8));
         b.setElevation(0);b.setStateListAnimator(null);
         GradientDrawable d=new GradientDrawable(GradientDrawable.Orientation.TL_BR,
                 primary?new int[]{0xFF24D9ED,CYAN}:new int[]{0xFF152B3E,0xFF0C1B2A});

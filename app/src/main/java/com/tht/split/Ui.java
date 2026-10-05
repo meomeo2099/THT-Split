@@ -7,7 +7,35 @@ import android.widget.*;
 
 public final class Ui {
     public static final int BG=Color.rgb(7,18,31),CARD=Color.rgb(17,34,51),LINE=Color.rgb(47,74,96),CYAN=Color.rgb(16,203,229),TEXT=Color.rgb(238,245,250),MUTED=Color.rgb(156,179,198),RED=Color.rgb(244,83,100);
-    public static android.app.AlertDialog.Builder dialog(Context c){return new android.app.AlertDialog.Builder(c,R.style.SplitDialogTheme);}
+    public static int dialogWidth(Context c){return Math.max(1,Math.min(dp(c,720),c.getResources().getDisplayMetrics().widthPixels-dp(c,40)));}
+    private static boolean containsList(View v){if(v instanceof AbsListView)return true;if(v instanceof ViewGroup){ViewGroup group=(ViewGroup)v;for(int n=0;n<group.getChildCount();n++)if(containsList(group.getChildAt(n)))return true;}return false;}
+    public static android.app.AlertDialog.Builder dialog(Context c){
+        return new android.app.AlertDialog.Builder(c,R.style.SplitDialogTheme){
+            @Override public android.app.AlertDialog create(){
+                android.app.AlertDialog d=super.create();Window w=d.getWindow();
+                if(w!=null){
+                    // Apply to the actual window as well as the theme: OEM dialog panels
+                    // may be transparent. Do not consume the caller's OnShowListener.
+                    w.setBackgroundDrawable(bg(CARD,dp(c,16)));
+                    w.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);w.setDimAmount(0.72f);
+                    w.setLayout(dialogWidth(c),WindowManager.LayoutParams.WRAP_CONTENT);
+                    w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                }return d;
+            }
+            @Override public android.app.AlertDialog.Builder setView(View view){
+                if(view==null||containsList(view))return super.setView(view); // Keep list scrolling native.
+                ScrollView scroll=new ScrollView(getContext()){
+                    @Override protected void onMeasure(int widthSpec,int heightSpec){
+                        int maximum=Math.max(dp(c,96),Math.round(c.getResources().getDisplayMetrics().heightPixels*0.55f));
+                        if(MeasureSpec.getMode(heightSpec)!=MeasureSpec.UNSPECIFIED)maximum=Math.min(maximum,MeasureSpec.getSize(heightSpec));
+                        super.onMeasure(widthSpec,MeasureSpec.makeMeasureSpec(maximum,MeasureSpec.AT_MOST));
+                    }
+                };
+                scroll.setFillViewport(false);scroll.setClipToPadding(false);scroll.addView(view);
+                return super.setView(scroll);
+            }
+        };
+    }
     public static EditText input(Context c){
         EditText t=new EditText(new ContextThemeWrapper(c,R.style.SplitDialogTheme));
         t.setTextColor(TEXT);t.setHintTextColor(MUTED);t.setBackgroundTintList(android.content.res.ColorStateList.valueOf(CYAN));return t;
@@ -17,7 +45,7 @@ public final class Ui {
         spin.setPopupBackgroundDrawable(bg(CARD,dp(c,10)));
         spin.setBackgroundTintList(android.content.res.ColorStateList.valueOf(CYAN));
         spin.setAdapter(new ArrayAdapter<String>(c,android.R.layout.simple_spinner_item,labels){
-            private View row(int position){TextView t=text(c,getItem(position),17,TEXT);t.setBackgroundColor(CARD);t.setMinHeight(dp(c,48));t.setPadding(dp(c,12),dp(c,8),dp(c,12),dp(c,8));return t;}
+            private View row(int position){TextView t=text(c,getItem(position),17,TEXT);t.setBackgroundColor(CARD);t.setMinHeight(dp(c,48));t.setMaxLines(2);t.setEllipsize(android.text.TextUtils.TruncateAt.END);t.setPadding(dp(c,12),dp(c,8),dp(c,12),dp(c,8));return t;}
             @Override public View getView(int position,View old,ViewGroup parent){return row(position);}
             @Override public View getDropDownView(int position,View old,ViewGroup parent){return row(position);}
         });return spin;

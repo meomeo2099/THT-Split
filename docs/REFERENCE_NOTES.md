@@ -62,3 +62,13 @@ https://android.googlesource.com/platform/external/conscrypt/+/refs/tags/android
 https://android.googlesource.com/platform/external/conscrypt/+/refs/tags/android-9.0.0_r54/common/src/main/java/org/conscrypt/OpenSSLRSAKeyPairGenerator.java
 KeyFactory hỗ trợ RSAPrivateKeySpec cho key không có CRT; generator mặc định e65537.
 THT không import private key ngoài app; sinh mới dùng RSAKeyGenParameterSpec2048/F4.
+
+## Dialog nền rõ0.3.4
+Android AlertDialog.Builder: create không show; show gọi create rồi show. Set
+window background trong theme và window thật tại create dùng cho cả hai đường,
+không thay OnShowListener riêng của form validation. setInverseBackgroundForced
+không dành cho Material; nguồn API chỉ dẫn windowBackground trong theme.
+https://developer.android.com/reference/android/app/AlertDialog.Builder
+https://android.googlesource.com/platform/prebuilts/fullsdk/sources/android-29/+/refs/heads/main/android/app/AlertDialog.java
+Ảnh của người dùng là bằng chứng lớp nền chưa tách rõ; không kết luận OEM hay
+LDPlayer là nguyên nhân duy nhất. Sửa nền/insets/style cần kiểm ảnh thiết bị tiếp.

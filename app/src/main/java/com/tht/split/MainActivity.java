@@ -30,7 +30,7 @@ public final class MainActivity extends Activity {
     private LinearLayout.LayoutParams lp(int width,int height){return new LinearLayout.LayoutParams(width,height);}
     private void space(LinearLayout l,int n){View v=new View(this);l.addView(v,lp(1,AppUi.dp(this,n)));}
     private TextView title(String s){TextView t=AppUi.text(this,s,22,AppUi.TEXT);t.setTypeface(null,Typeface.BOLD);return t;}
-    private Button button(LinearLayout l,String s,boolean selected,Runnable click){Button b=AppUi.button(this,s,selected);LinearLayout.LayoutParams p=lp(-1,AppUi.dp(this,48));p.setMargins(0,AppUi.dp(this,4),0,AppUi.dp(this,4));l.addView(b,p);b.setOnClickListener(v->click.run());return b;}
+    private Button button(LinearLayout l,String s,boolean selected,Runnable click){Button b=AppUi.button(this,s,selected);b.setMinHeight(AppUi.dp(this,52));LinearLayout.LayoutParams p=lp(-1,-2);p.setMargins(0,AppUi.dp(this,4),0,AppUi.dp(this,4));l.addView(b,p);b.setOnClickListener(v->click.run());return b;}
     private boolean landscapeLayout(){return screenWidth>=900;}
     private void line(LinearLayout parent){View v=new View(this);v.setBackgroundColor(AppUi.LINE);parent.addView(v,lp(-1,AppUi.dp(this,1)));}
     private void scrollBody(LinearLayout parent){
@@ -152,20 +152,21 @@ public final class MainActivity extends Activity {
         body.addView(sw,lp(-1,-2));sw.setOnCheckedChangeListener((v,checked)->store.set(key,checked));
     }
     private LinearLayout settingRow(String label){
-        LinearLayout row=AppUi.row(this);AppUi.pad(row,8);row.setMinimumHeight(AppUi.dp(this,56));body.addView(row,lp(-1,-2));
-        TextView text=AppUi.text(this,label,17,AppUi.TEXT);LinearLayout.LayoutParams t=new LinearLayout.LayoutParams(0,-2,1);t.rightMargin=AppUi.dp(this,12);row.addView(text,t);return row;
+        LinearLayout row=screenWidth<600?AppUi.column(this):AppUi.row(this);AppUi.pad(row,8);row.setMinimumHeight(AppUi.dp(this,56));body.addView(row,lp(-1,-2));
+        TextView text=AppUi.text(this,label,17,AppUi.TEXT);LinearLayout.LayoutParams t=screenWidth<600?lp(-1,-2):new LinearLayout.LayoutParams(0,-2,1);t.rightMargin=AppUi.dp(this,12);row.addView(text,t);if(screenWidth<600)space(row,8);return row;
     }
     private int selectorWidth(){return screenWidth>=1100?250:screenWidth>=900?200:150;}
+    private LinearLayout.LayoutParams controlParams(){return lp(screenWidth<600?-1:AppUi.dp(this,selectorWidth()),-2);}
     private void choice(String label,String key,String[] values,String[] labels,String def){
         LinearLayout row=settingRow(label);Spinner spin=AppUi.spinner(this,labels);String current=store.s(key,def);for(int n=0;n<values.length;n++)if(values[n].equals(current))spin.setSelection(n);
-        row.addView(spin,lp(AppUi.dp(this,selectorWidth()),AppUi.dp(this,48)));spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> a){}public void onItemSelected(AdapterView<?> a,View v,int n,long id){store.set(key,values[n]);}});
+        row.addView(spin,controlParams());spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> a){}public void onItemSelected(AdapterView<?> a,View v,int n,long id){store.set(key,values[n]);}});
     }
     private void intChoice(String label,String key,int[] values,String[] labels,int def){
         LinearLayout row=settingRow(label);Spinner spin=AppUi.spinner(this,labels);int val=store.i(key,def);for(int n=0;n<values.length;n++)if(values[n]==val)spin.setSelection(n);
-        row.addView(spin,lp(AppUi.dp(this,selectorWidth()),AppUi.dp(this,48)));spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> a){}public void onItemSelected(AdapterView<?> a,View v,int n,long id){store.set(key,values[n]);}});
+        row.addView(spin,controlParams());spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> a){}public void onItemSelected(AdapterView<?> a,View v,int n,long id){store.set(key,values[n]);}});
     }
     private void number(String label,String key,int def,int max){
-        LinearLayout row=settingRow(label);Button b=AppUi.button(this,store.i(key,def)+" px",false);row.addView(b,lp(AppUi.dp(this,selectorWidth()),AppUi.dp(this,48)));
+        LinearLayout row=settingRow(label);Button b=AppUi.button(this,store.i(key,def)+" px",false);row.addView(b,controlParams());
         b.setOnClickListener(v->{EditText input=AppUi.input(this);input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);input.setText(String.valueOf(store.i(key,def)));AppUi.dialog(this).setTitle(label).setView(input).setPositiveButton("Lưu",(d,n)->{try{int x=Integer.parseInt(input.getText().toString());if(x<0||x>max)throw new NumberFormatException();store.set(key,x);render();}catch(NumberFormatException e){toast("Giá trị từ 0 đến "+max);}}).setNegativeButton("Hủy",null).show();});
     }
     private void layoutSettings(){body.addView(title("Chia màn hình"));choice("Chế độ chia","mode",new String[]{"native","freeform"},new String[]{"Chia đôi (EX2)","Cửa sổ tự do"},"native");
@@ -177,10 +178,9 @@ public final class MainActivity extends Activity {
         toggle("Tự ẩn thanh điều khiển","auto_hide",true);line(body);
         intChoice("Ẩn sau","hide_seconds",new int[]{3,5,8,10},new String[]{"3 giây","5 giây","8 giây","10 giây"},5);line(body);
         choice("Kích thước nút","button_size",new String[]{"small","large"},new String[]{"Nhỏ","Lớn"},"small");line(body);
-        LinearLayout opacity=AppUi.row(this);AppUi.pad(opacity,8);body.addView(opacity,lp(-1,AppUi.dp(this,56)));
-        TextView alpha=AppUi.text(this,"Độ hiển thị: "+store.i("opacity",90)+"%",17,AppUi.TEXT);opacity.addView(alpha,new LinearLayout.LayoutParams(0,-2,1));
+        LinearLayout opacity=settingRow("Độ hiển thị: "+store.i("opacity",90)+"%");TextView alpha=(TextView)opacity.getChildAt(0);
         SeekBar slider=new SeekBar(this);slider.setProgressTintList(android.content.res.ColorStateList.valueOf(AppUi.CYAN));slider.setThumbTintList(android.content.res.ColorStateList.valueOf(AppUi.TEXT));slider.setMax(60);slider.setProgress(store.i("opacity",90)-40);
-        opacity.addView(slider,lp(AppUi.dp(this,selectorWidth()),-1));slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int value,boolean user){alpha.setText("Độ hiển thị: "+(40+value)+"%");if(user)store.set("opacity",40+value);}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});line(body);
+        slider.setMinimumHeight(AppUi.dp(this,48));opacity.addView(slider,controlParams());slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int value,boolean user){alpha.setText("Độ hiển thị: "+(40+value)+"%");if(user)store.set("opacity",40+value);}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});line(body);
         choice("Vị trí nút mở lại","mini_position",new String[]{"center","left","right"},new String[]{"Giữa phía trên","Góc trái","Góc phải"},"center");line(body);
         intChoice("Chờ ổn định sau khi mở cặp","launch_wait_ms",new int[]{0,500,1500,3000},new String[]{"Không chờ","0,5 giây","1,5 giây","3 giây"},0);
         note("Ẩn thanh vẫn giữ hai app đang chạy. Nút X tắt chia và đưa app trái về toàn màn hình khi dùng ADB/quyền hệ thống. Với Off, X dừng thanh điều khiển và giữ cửa sổ hiện tại.");

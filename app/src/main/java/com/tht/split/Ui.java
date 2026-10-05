@@ -7,6 +7,21 @@ import android.widget.*;
 
 public final class Ui {
     public static final int BG=Color.rgb(7,18,31),CARD=Color.rgb(17,34,51),LINE=Color.rgb(47,74,96),CYAN=Color.rgb(16,203,229),TEXT=Color.rgb(238,245,250),MUTED=Color.rgb(156,179,198),RED=Color.rgb(244,83,100);
+    public static android.app.AlertDialog.Builder dialog(Context c){return new android.app.AlertDialog.Builder(c,R.style.SplitDialogTheme);}
+    public static EditText input(Context c){
+        EditText t=new EditText(new ContextThemeWrapper(c,R.style.SplitDialogTheme));
+        t.setTextColor(TEXT);t.setHintTextColor(MUTED);t.setBackgroundTintList(android.content.res.ColorStateList.valueOf(CYAN));return t;
+    }
+    public static Spinner spinner(Context c,String[] labels){
+        Spinner spin=new Spinner(new ContextThemeWrapper(c,R.style.SplitDialogTheme),Spinner.MODE_DROPDOWN);
+        spin.setPopupBackgroundDrawable(bg(CARD,dp(c,10)));
+        spin.setBackgroundTintList(android.content.res.ColorStateList.valueOf(CYAN));
+        spin.setAdapter(new ArrayAdapter<String>(c,android.R.layout.simple_spinner_item,labels){
+            private View row(int position){TextView t=text(c,getItem(position),17,TEXT);t.setBackgroundColor(CARD);t.setMinHeight(dp(c,48));t.setPadding(dp(c,12),dp(c,8),dp(c,12),dp(c,8));return t;}
+            @Override public View getView(int position,View old,ViewGroup parent){return row(position);}
+            @Override public View getDropDownView(int position,View old,ViewGroup parent){return row(position);}
+        });return spin;
+    }
     public static int dp(Context c,float n){return Math.round(n*c.getResources().getDisplayMetrics().density);}
     public static GradientDrawable bg(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(radius);d.setStroke(1,LINE);return d;}
     public static TextView text(Context c,String s,int size,int color){TextView t=new TextView(c);t.setText(s);t.setTextColor(color);t.setTextSize(size);t.setGravity(Gravity.CENTER_VERTICAL);return t;}

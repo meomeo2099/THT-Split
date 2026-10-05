@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.2.3-test, 05/10/2026
+# Bàn giao THT Split — 0.2.4-test, 05/10/2026
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
@@ -83,3 +83,11 @@ APK CI0.2.2 khác signer bản0.2.1; không gỡ bản cũ khi chưa giữ cấu
 ## Điều chỉnh0.2.3
 Chừa bên phải thanh40dp thay8dp: nhóm nút dịch trái32dp, giữ kích thước nút.
 Theo yêu cầu người dùng để dễ với tay từ ghế lái. Chưa quan sát trên xe.
+
+## Sửa tương phản0.2.4
+Ảnh người dùng: dialog Toàn màn hình từ thanh công cụ chữ đen trên nền navy.
+- Mọi AlertDialog dùng SplitDialogTheme rõ ràng qua Ui.dialog, gồm cả Service overlay.
+- Chữ chính trắng, chữ phụ/hint sáng, nhấn chọn và nút cyan; không phụ thuộc theme OEM.
+- Spinner cài đặt và tỷ lệ preset dùng adapter riêng cho cả dòng chọn/dropdown:
+  chữ sáng/nền navy, popup cùng palette. Ô nhập ADB/insets/preset/tìm app cùng màu.
+- Chưa quan sát bản sửa trên LDPlayer/xe; kiểm title/dòng chọn/ô nhập/button/dropdown.

@@ -41,3 +41,6 @@ Từ0.2.2 bấm chia/mở preset đưa MainActivity xuống nền như bản cũ
 12×32dp, touch48×80dp trong suốt xung quanh; chạm không kéo không mở lại hai app.
 
 0.2.3: thanh công cụ chừa phải40dp, dịch nhóm nút sang trái32dp so với0.2.2.
+
+0.2.4: dialog overlay và trong app dùng chung theme navy/chữ trắng. Dropdown cài đặt,
+tỷ lệ preset và ô nhập dùng màu tường minh để không bị chữ tối trên nền tối.

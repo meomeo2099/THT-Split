@@ -1,7 +1,29 @@
 <resources>
-<style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
-<item name="android:fontFamily">sans</item><item name="android:colorAccent">#10CBE5</item>
-<item name="android:windowLightStatusBar">false</item><item name="android:statusBarColor">#07121F</item>
-<item name="android:navigationBarColor">#07121F</item><item name="android:windowActionModeOverlay">true</item>
-<item name="android:windowBackground">#07121F</item>
-</style></resources>
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#10CBE5</item>
+        <item name="android:textColorPrimary">#EEF5FA</item>
+        <item name="android:textColorSecondary">#9CB3C6</item>
+        <item name="android:textColorHint">#9CB3C6</item>
+        <item name="android:colorBackground">#07121F</item>
+        <item name="android:alertDialogTheme">@style/SplitDialogTheme</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#07121F</item>
+        <item name="android:navigationBarColor">#07121F</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">#07121F</item>
+    </style>
+    <!-- Explicit for dialogs created by a Service as well as MainActivity. -->
+    <style name="SplitDialogTheme" parent="android:style/Theme.Material.Dialog.Alert">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#10CBE5</item>
+        <item name="android:colorBackground">#112233</item>
+        <item name="android:windowBackground">#112233</item>
+        <item name="android:textColorPrimary">#EEF5FA</item>
+        <item name="android:textColorSecondary">#9CB3C6</item>
+        <item name="android:textColorHint">#9CB3C6</item>
+        <item name="android:colorControlNormal">#9CB3C6</item>
+        <item name="android:colorControlActivated">#10CBE5</item>
+        <item name="android:colorControlHighlight">#334A60</item>
+    </style>
+</resources>

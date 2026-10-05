@@ -43,3 +43,13 @@ launch cho phép; không suy ra mọi lần reuse task trên firmware đều đ�
 Nguồn: https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-9.0.0_r54/services/core/java/com/android/server/am/ActivityStarter.java
 ActivityOptions.setLaunchBounds có thể bị bỏ qua khi hệ thống không hỗ trợ cửa sổ tự do.
 Nguồn: https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/java/android/app/ActivityOptions.java
+
+## Native và task reuse0.2.6
+AOSP Android9 ActivityManagerService: setTaskWindowingMode đổi stack chứa task;
+mode3 gọi split primary với showRecents=true. Bản0.2.6 isolate task qua
+createStackOnDisplay/moveTaskToStack, gọi primary với showRecents=false và focus
+app phải cuối cùng. Không suy mode3/4 là app đã vẽ đúng.
+ActivityStarter: FLAG_ACTIVITY_LAUNCH_ADJACENT có nhánh dùng stack đang focus;
+Off bỏ flag này, giữ NEW_TASK/RESET_TASK_IF_NEEDED để reuse, không MULTIPLE_TASK.
+Nguồn: https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-9.0.0_r54/services/core/java/com/android/server/am/ActivityManagerService.java
+https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-9.0.0_r54/services/core/java/com/android/server/am/ActivityStarter.java

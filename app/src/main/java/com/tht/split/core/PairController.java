@@ -11,6 +11,7 @@ public final class PairController {
         void isolate(int task) throws Exception;
         void setMode(int task, int mode) throws Exception;
         void resize(int left, int right) throws Exception;
+        void focus(int task) throws Exception;
     }
     private final Tasks tasks;
     private final boolean nativeMode;
@@ -28,6 +29,7 @@ public final class PairController {
         tasks.resize(left,right);
         if(tasks.stack(left)==tasks.stack(right)||tasks.mode(left)!=(nativeMode?3:5)||tasks.mode(right)!=(nativeMode?4:5))
             throw new java.io.IOException("Firmware không giữ chế độ chia yêu cầu");
+        tasks.focus(right);
     }
     public void resize() throws Exception {
         int left=tasks.find(true),right=tasks.find(false);

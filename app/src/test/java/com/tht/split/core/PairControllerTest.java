@@ -23,11 +23,12 @@ public final class PairControllerTest {
             if(!refuseMode)for(Map.Entry<Integer,Integer> e:modes.entrySet())if(stack(e.getKey())==stack(id))e.setValue(mode);
         }
         public void resize(int l,int r){calls.add("resize:"+l+":"+r);}
+        public void focus(int id){calls.add("focus:"+id);}
     }
     @Test public void swapDismissesOldPrimaryBeforeAssigningNewPrimary()throws Exception{
         Fake f=new Fake();f.modes.put(1,3);f.modes.put(2,4);f.left=2;f.right=1;
         new PairController(f,true).layout();
-        assertEquals(Arrays.asList("clear","launch:2:1","launch:1:1","isolate:2","isolate:1","mode:2:3","mode:1:4","resize:2:1"),f.calls);
+        assertEquals(Arrays.asList("clear","launch:2:1","launch:1:1","isolate:2","isolate:1","mode:2:3","mode:1:4","resize:2:1","focus:1"),f.calls);
         assertEquals(3,f.mode(2));assertEquals(4,f.mode(1));
     }
     @Test public void closedAppIsReopenedBeforeResize()throws Exception{

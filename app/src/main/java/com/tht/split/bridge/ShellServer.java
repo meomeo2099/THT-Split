@@ -66,7 +66,12 @@ public final class ShellServer {
         for(Object info:infos){int[] ids=(int[])info.getClass().getField("taskIds").get(info);for(int id:ids)if(id==taskId){Object config=info.getClass().getField("configuration").get(info);Object wc=config.getClass().getField("windowConfiguration").get(config);return (Integer)wc.getClass().getMethod("getWindowingMode").invoke(wc);}}
         return -1;
     }
-    private static void setMode(int id,int mode)throws Exception{invoke("setTaskWindowingMode",new Class<?>[]{int.class,int.class,boolean.class},id,mode,true);}
+    private static void setMode(int id,int mode)throws Exception{
+        if(mode==3){
+            // The generic mode3 call opens Recents on the other side on Android 9.
+            invoke("setTaskWindowingModeSplitScreenPrimary",new Class<?>[]{int.class,int.class,boolean.class,boolean.class,Rect.class,boolean.class},id,0,true,false,null,false);
+        }else invoke("setTaskWindowingMode",new Class<?>[]{int.class,int.class,boolean.class},id,mode,true);
+    }
     private static Object stackInfo(int taskId)throws Exception {
         List<?> infos=(List<?>)invoke("getAllStackInfos",new Class<?>[]{});
         for(Object info:infos)for(int id:(int[])info.getClass().getField("taskIds").get(info))if(id==taskId)return info;
@@ -143,6 +148,7 @@ public final class ShellServer {
                 public void isolate(int id)throws Exception{ShellServer.isolate(id);}
                 public void setMode(int id,int windowMode)throws Exception{ShellServer.setMode(id,windowMode);}
                 public void resize(int lt,int rt)throws Exception{ShellServer.resize(lt,rt,mode,l,r);}
+                public void focus(int id)throws Exception{invoke("setFocusedTask",new Class<?>[]{int.class},id);}
             },mode.equals("native"));
             if(op.equals("LAYOUT"))controller.layout();else controller.resize();
             int lt=task(leftPkg),rt=task(rightPkg);

@@ -50,3 +50,9 @@ không đảm bảo cập nhật đè APK0.2.0. Không gỡ bản cũ để vư�
 ## Mốc0.2.2
 Sửa nền launcher sau start/preset, handle nhỏ, mặc định chờ0ms và gesture touch slop.
 Chưa chạy UI trên thiết bị; cần workflow commit0.2.2 xác minh build/unit/lint.
+
+CI0.2.2 build/unit/lint đạt tại commit8083a19c8135ca1504c8723ad01e4c614e55a2ec:
+https://github.com/meomeo2099/THT-Split/actions/runs/37262534677
+APK artifact: com.tht.split / versionCode4 /0.2.2-test/min26/target32.
+SHA256: 3eb9758bc98f7e119cfa09b88bcb7c1c1935f05a54fe2df00cc8110c99ff6a24.
+Cert v2 APK CI0.2.2 khác bản0.2.1 đã gửi; không cài đè được bản đó.

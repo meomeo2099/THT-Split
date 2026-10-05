@@ -33,6 +33,9 @@ Không chuyển phương thức/cổng khi phiên đang chạy hoặc còn thao 
 System không được chọn khi thiếu quyền thực tế. Từ 0.2.1 Off có vạch kéo/nút tỷ lệ;
 gửi lại launch bounds khi thả tay, nhãn Off yêu cầu tỷ lệ, không xác minh task.
 Màn chờ che vùng app khi mở/khôi phục/đổi cặp; chờ ổn định 0/500/1500/3000ms,
-mặc định1500ms sau khi backend trả về. Không coi thời gian chờ là nội dung tải xong.
+từ0.2.2 mặc định0ms sau khi backend trả về. Không coi thời gian chờ là nội dung tải xong.
 THT Voice có API v2: cùng signer có thể dùng receiver signature không nhập token;
 khác signer giữ token, không tự đổi khóa ký app đang cài.
+
+Từ0.2.2 bấm chia/mở preset đưa MainActivity xuống nền như bản cũ. Handle nhìn thấy
+12×32dp, touch48×80dp trong suốt xung quanh; chạm không kéo không mở lại hai app.

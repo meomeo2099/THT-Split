@@ -95,3 +95,10 @@ khi kết nối. Freeform có nút khôi phục trong app với ADB/system; Off 
 3. Cài đặt → Thanh điều khiển → Chờ ổn định: thử1,5s và3s với app khởi động nguội.
 4. Thử app thiếu/quyền nổi bị thu hồi: màn chờ phải dọn, không kẹt overlay.
 5. Tắt/khôi phục/swap/replace rồi ẩn/hiện: không tạo task trùng hoặc mất cặp.
+
+## Kiểm tra0.2.2 theo phản hồi LDPlayer
+- Start và preset: launcher phía sau hai cửa sổ, không còn trang cấu hình Split.
+- Dấu kéo nhỏ12×32dp, chạm đơn không đổi tỷ lệ/mở app, kéo/thả không nhảy vị trí.
+- Off: kiểm thực tế cửa sổ đổi hay chỉ handle đổi. Nếu task không nhận launch bounds,
+  thử ADB nội bộ/freeform; không gọi Off resize thành công chỉ vì handle di chuyển.
+- Thử Không chờ và1,5s; mở app thiếu phải dọn overlay và báo lỗi.

@@ -46,3 +46,7 @@ APK tải từ artifact: package com.tht.split, versionCode3,0.2.1-test,min26,ta
 SHA256: e34bc1e70d87650b0c400188f5c1c65c9e8826d0ed3795bd24ffee1fe55cd968.
 APK CI dùng khóa debug runner; khóa ký máy phát triển cũ không còn trong workspace,
 không đảm bảo cập nhật đè APK0.2.0. Không gỡ bản cũ để vượt lỗi chữ ký khi chưa giữ cấu hình.
+
+## Mốc0.2.2
+Sửa nền launcher sau start/preset, handle nhỏ, mặc định chờ0ms và gesture touch slop.
+Chưa chạy UI trên thiết bị; cần workflow commit0.2.2 xác minh build/unit/lint.

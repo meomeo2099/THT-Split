@@ -61,9 +61,9 @@ public final class SplitService extends Service {
                 }
                 // Off cannot observe another app's first drawn frame. This is a bounded,
                 // configurable settling interval, not a readiness assertion.
-                if(opening)Thread.sleep(Math.max(0,Math.min(3000,store.i("launch_wait_ms",1500))));
+                if(opening)Thread.sleep(Math.max(0,Math.min(3000,store.i("launch_wait_ms",0))));
                 final boolean v=nextVisible,f=nextFull,a=nextActive,end=stop;
-                main.post(()->{if(destroyed)return;visible=v;full=f;active=a;if(java.util.Arrays.asList("start","restore","preset","ratio","swap","replace").contains(action)){store.set("left",session.s("left",""));store.set("right",session.s("right",""));store.set("ratio",session.i("ratio",50));}busy.set(false);store.set("session_busy",false);store.set("session_active",active);store.set("session_full",full);try{if(end)stopSelf();else{render();scheduleHide();}boolean verified=engine.lastResult.optBoolean("verified",false);if(action.equals("hide")||action.equals("show")){verified=true;try{engine.lastResult.put("verified",true);}catch(JSONException ignored){}}VoiceReplies.send(this,i,verified?"success":"requested",verified?"OK":"LAYOUT_UNVERIFIED",verified?"Đã thực hiện lệnh":"Đã gửi yêu cầu cửa sổ, chưa xác minh bố cục",engine.lastResult);}catch(RuntimeException overlayError){clear();store.set("last_error","Không hiện được thanh điều khiển");VoiceReplies.send(this,i,"error","OVERLAY_FAILED","Không hiện được thanh điều khiển",null);stopSelf();}});
+                main.post(()->{if(destroyed)return;visible=v;full=f;active=a;if(java.util.Arrays.asList("start","restore","preset","ratio","swap","replace").contains(action)){store.set("left",session.s("left",""));store.set("right",session.s("right",""));store.set("ratio",session.i("ratio",50));}busy.set(false);store.set("session_busy",false);store.set("session_active",active);store.set("session_full",full);try{if(end)stopSelf();else{render();scheduleHide();}if(action.equals("ratio")&&!engine.supportsTaskResize())toast("Off đã gửi yêu cầu tỷ lệ. Nếu cửa sổ không đổi, dùng ADB nội bộ để điều khiển kích thước.");boolean verified=engine.lastResult.optBoolean("verified",false);if(action.equals("hide")||action.equals("show")){verified=true;try{engine.lastResult.put("verified",true);}catch(JSONException ignored){}}VoiceReplies.send(this,i,verified?"success":"requested",verified?"OK":"LAYOUT_UNVERIFIED",verified?"Đã thực hiện lệnh":"Đã gửi yêu cầu cửa sổ, chưa xác minh bố cục",engine.lastResult);}catch(RuntimeException overlayError){clear();store.set("last_error","Không hiện được thanh điều khiển");VoiceReplies.send(this,i,"error","OVERLAY_FAILED","Không hiện được thanh điều khiển",null);stopSelf();}});
             }catch(Exception e){session.set("left",oldL);session.set("right",oldR);session.set("ratio",oldRatio);session.set("top_px",oldTop);session.set("bottom_px",oldBottom);session.set("mode",oldMode);session.set("transport",oldTransport);VoiceReplies.send(this,i,"error","OPERATION_FAILED",e.getMessage()==null?"Không thực hiện được lệnh":e.getMessage(),null);android.util.Log.e("THTSplit",action+" failed",e);
                 main.post(()->{if(destroyed)return;busy.set(false);store.set("session_busy",false);toast("Không thực hiện được: "+e.getMessage());store.set("last_error",e.getClass().getSimpleName()+": "+e.getMessage());if(!active)stopSelf();else{render();scheduleHide();}});
             }
@@ -93,7 +93,23 @@ public final class SplitService extends Service {
         }else{Ui.Icon open=new Ui.Icon(this,full?"apps":"down",Ui.CYAN);open.setContentDescription(full?"Khôi phục chia màn hình":"Hiện thanh điều khiển");int w=Ui.dp(this,44),h=Ui.dp(this,32),x=size.x/2-w/2;String pos=store.s("mini_position","center");if(pos.equals("left"))x=Ui.dp(this,8);if(pos.equals("right"))x=size.x-w-Ui.dp(this,8);
             open.setOnClickListener(v->send(full?"restore":"show"));mini=open;wm.addView(mini,params(w,h,x,session.i("top_px",72)));}
         if(!full){Ui.Icon grip=new Ui.Icon(this,"grip",Ui.TEXT);grip.setContentDescription("Kéo để đổi tỷ lệ");int w=Ui.dp(this,48),h=Ui.dp(this,80);WindowManager.LayoutParams p=params(w,h,g.splitX-w/2,(g.left.top+g.left.bottom)/2-h/2);divider=grip;wm.addView(divider,p);
-            grip.setOnTouchListener(new View.OnTouchListener(){int ratio;public boolean onTouch(View v,android.view.MotionEvent event){switch(event.getActionMasked()){case MotionEvent.ACTION_DOWN:main.removeCallbacks(autoHide);return true;case MotionEvent.ACTION_MOVE:ratio=LayoutMath.clamp(Math.round(event.getRawX()*100/size.x));p.x=size.x*ratio/100-w/2;wm.updateViewLayout(v,p);return true;case MotionEvent.ACTION_UP:v.performClick();ratio=LayoutMath.clamp(Math.round(event.getRawX()*100/size.x));startForegroundService(new Intent(SplitService.this,SplitService.class).putExtra("command","ratio").putExtra("ratio",ratio));return true;case MotionEvent.ACTION_CANCEL:render();scheduleHide();return true;}return false;}});
+            grip.setOnTouchListener(new View.OnTouchListener(){
+                int startRatio,ratio;float downX;boolean dragging;
+                public boolean onTouch(View v,MotionEvent event){switch(event.getActionMasked()){
+                    case MotionEvent.ACTION_DOWN:
+                        if(busy.get())return false;
+                        main.removeCallbacks(autoHide);downX=event.getRawX();startRatio=session.i("ratio",50);ratio=startRatio;dragging=false;return true;
+                    case MotionEvent.ACTION_MOVE:
+                        float delta=event.getRawX()-downX;
+                        if(!dragging&&Math.abs(delta)<ViewConfiguration.get(SplitService.this).getScaledTouchSlop())return true;
+                        dragging=true;ratio=LayoutMath.clamp(startRatio+Math.round(delta*100/size.x));
+                        p.x=size.x*ratio/100-w/2;wm.updateViewLayout(v,p);return true;
+                    case MotionEvent.ACTION_UP:
+                        if(dragging&&ratio!=startRatio)startForegroundService(new Intent(SplitService.this,SplitService.class).putExtra("command","ratio").putExtra("ratio",ratio));
+                        else{v.performClick();scheduleHide();}return true;
+                    case MotionEvent.ACTION_CANCEL:render();scheduleHide();return true;
+                }return false;}
+            });
         }
     }
     private void showDialog(AlertDialog d){if(d.getWindow()!=null)d.getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);d.show();if(d.getWindow()!=null)d.getWindow().setBackgroundDrawable(Ui.bg(Ui.CARD,Ui.dp(this,12)));}

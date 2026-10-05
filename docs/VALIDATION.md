@@ -67,3 +67,14 @@ SHA256: 7ae9e2577c6081658b3f06103cd685c16c66970faa666a6b269bcfa3beb9bf8d.
 Bridge v3 cần reboot/kết nối lại để không dùng code v2 còn sống; không tự kill listener.
 APK CI dùng debug signer runner, không đảm bảo cập nhật đè bản test trước.
 Chưa kiểm bản mới trên LDPlayer/xe; Off không có quyền quản lý task.
+
+## Mốc0.2.6 — stack riêng và Off
+Commit e0856f96cd3ada4ccfa5e9fee2a5d0e62c3e7df4; CI build/unit/lint đạt:
+https://github.com/meomeo2099/THT-Split/actions/runs/37271611577
+Fake task manager mô hình hóa setMode thay cả stack và launch reuse bỏ qua mode.
+Thêm3 tests shared/native/freeform/reuse,2 tests policy Off; sửa test thứ tự có focus.
+Đây là kiểm logic, chưa kiểm Binder/LDPlayer/xe thực tế. Không gọi Off mở lại đã đúng.
+APK: com.tht.split/versionCode8/0.2.6-test/min26/target32.
+SHA256: 79d53b3b1263f12408a7b904a6fc2d1386ad999519ba7395d425df6e961afbe2.
+Bridge v4 cần reboot/kết nối lại; APK CI có thể khác signer bản test cũ.
+Cửa sổ Off sai từ phiên cũ phải đóng bằng Android một lần; X THT chỉ dừng overlay.

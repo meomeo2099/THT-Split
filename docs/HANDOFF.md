@@ -126,4 +126,5 @@ cấu hình THT còn ở bên phải. Video7,8s: Off mở lại thành YouTube f
   sau dựng cặp focus app phải để không dừng ở màn chọn app gần đây.
 - Bridge v4 cần reboot/kết nối lại để nạp code; không kill listener cũ.
 - Thêm test stack-wide mode, task reuse bỏ qua launch mode, shared freeform và policy.
-- Chưa thử bản sửa trên LDPlayer/xe; build/unit/lint xác minh bằng CI.
+- Chưa thử bản sửa trên LDPlayer/xe; CI build/unit/lint đạt:
+  https://github.com/meomeo2099/THT-Split/actions/runs/37271611577.

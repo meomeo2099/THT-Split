@@ -103,3 +103,17 @@ SHA256: 24db6193704236693a0dc0b78502be13796e6caac6b5067597ce2640f7041b11.
 Bridge v6 cần reboot/kết nối lại. APK debug CI có thể khác signer bản trước;
 không gỡ app khi chưa giữ cấu hình. Cần khóa ký ổn định ngoài git trước release.
 Full read-back đúng chỉ xác nhận mode/bounds, không chứng minh lớp bản đồ đã vẽ hết.
+
+## Mốc0.2.9 — khóa ADB không có CRT trên Android9
+Log thực14:48:13: ClassCastException OpenSSLRSAPrivateKey → RSAPrivateCrtKey tại
+LocalAdb.loadKey, trước socket.connect. Đã sửa, commit1a20e672c9d6dae2f21179d9a41a118df890918d.
+CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37280998296.
+Thêm2 tests non-CRT/sign/identity/PKCS8 reload và2 tests cause/redaction.
+Test RSA dùng provider JVM với wrapper không có CRT, không chứng minh Conscrypt
+Android9 hoặc ADB xác thực/socket/bootstrap thật. Cần thử APK trên LDPlayer9/EX2.
+APK: com.tht.split/versionCode11/0.2.9-test/min26/target32; bridge vẫn v6.
+SHA256: ed58fb8452914290bae0b341411498483c5df2e7a14f0e9e50a2249e0e9c330d.
+Không thay khóa ADB đã lưu. Chỉ giữ được khóa/cấu hình khi cài đè cùng signer giữ
+app data; APK debug CI có thể khác signer bản trước, cần giữ cấu hình trước cài mới.
+Test tự mở bridge:127.0.0.1:5555, Kiểm tra khi chưa chạy dự phòng; thử reboot thật.
+Không coi cổng TCP đang nghe hoặc build đạt là xác thực ADB thành công trên xe.

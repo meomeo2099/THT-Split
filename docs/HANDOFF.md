@@ -180,4 +180,5 @@ Nguồn0.2.2 cũng có cast này; khác provider có thể giải thích bản A
   JVM không chứng minh Conscrypt/ADB xác thực trên thiết bị; cần thử Android9 thật.
 - Sau cài đặt127.0.0.1:5555, Kiểm tra khi chưa mở bridge thủ công, xác nhận RSA nếu
   có; reboot rồi thử tự mở lại. Không yêu cầu chạy lệnh dự phòng như điều kiện test.
-- Chưa có kết quả CI/thiết bị ở mốc commit; xem VALIDATION khi build hoàn tất.
+- CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37280998296.
+  Chưa thử APK sửa trên LDPlayer/xe; xem VALIDATION cho checksum và giới hạn.

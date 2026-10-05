@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.2.2-test, 05/10/2026
+# Bàn giao THT Split — 0.2.3-test, 05/10/2026
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
@@ -79,3 +79,7 @@ compile-only Unsafe stub không có trong APK. Xem VALIDATION.md cho giới hạ
 
 CI0.2.2 build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37262534677.
 APK CI0.2.2 khác signer bản0.2.1; không gỡ bản cũ khi chưa giữ cấu hình.
+
+## Điều chỉnh0.2.3
+Chừa bên phải thanh40dp thay8dp: nhóm nút dịch trái32dp, giữ kích thước nút.
+Theo yêu cầu người dùng để dễ với tay từ ghế lái. Chưa quan sát trên xe.

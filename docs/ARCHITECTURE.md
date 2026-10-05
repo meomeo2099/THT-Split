@@ -1,5 +1,14 @@
 # Kiến trúc THT Split 0.2
 
+## Quản lý từ xa0.3.0
+RemoteControl dùng HTTPS origin cố định trong BuildConfig, id scoped hash + private
+credential tự sinh, cache policy riêng. Worker/admin secret không trong APK.
+AccessRules chặn lệnh tại service dùng chung UI/Voice/toolbar; Stop/Home/Hide thoát
+được, khóa chỉ dừng overlay, không đóng app khác. Poll ≤5 phút online, lease ngoại
+tuyến hữu hạn. ApkUpdates kiểm SHA256/package/version/signer rồi PackageInstaller.
+Worker Durable Object transaction giữ lock khi heartbeat/đăng ký lại. UI ủng hộ
+đọc cùng policy, QR tải riêng không mang credential. Chi tiết REMOTE_CONTROL.md.
+
 ```mermaid
 flowchart TD
   U["Giao diện / preset"] --> S["SplitService: một thao tác mỗi lần"]

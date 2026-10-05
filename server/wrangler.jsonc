@@ -1,0 +1,7 @@
+{
+  "name": "tht-split-control",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-05",
+  "durable_objects": { "bindings": [{ "name": "CONTROL", "class_name": "Control" }] },
+  "exports": { "Control": { "type": "durable-object", "storage": "sqlite" } }
+}

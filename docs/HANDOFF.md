@@ -1,4 +1,18 @@
-# Bàn giao THT Split — 0.2.9-test, 05/10/2026
+# Bàn giao THT Split — 0.3.0-test, 05/10/2026
+
+## Mốc mới nhất — quản lý/cập nhật/ủng hộ
+Người dùng đã xác nhận0.2.9 kết nối ADB và test OK trên LDPlayer9; chưa xác nhận
+reboot tự kết nối lại hoặc EX2 thật. Giữ nguyên bridge v6 và cơ chế cửa sổ.
+0.3.0 bỏ ba nút tài liệu/phát hành trong app, giữ tài liệu tích hợp trong repo.
+RemoteControl + AccessRules áp quyền dùng ở UI/service/Voice/toolbar, cache lock,
+lease ngoại tuyến7 ngày; máy mới pending. APK HTTPS/SHA256/package/version/signer
+trước PackageInstaller; không tự cài im lặng hoặc gỡ bản cũ. Ủng hộ lấy QR/STK từ
+Worker. `server/` có quản trị duyệt/khóa/cập nhật/ủng hộ và transaction chống ghi
+đè lock. Xem REMOTE_CONTROL.md cho triển khai/cấu hình và giới hạn bảo mật.
+Chưa deploy Worker, chưa có URL/ngân hàng/QR thật/keystore ổn định. Test build khi
+thiếu CONTROL_URL hiện rõ chưa cấu hình và vẫn dùng bộ chia để kiểm thử.
+Release workflow bắt buộc endpoint/secrets ký; không coi test APK là bản đã khóa từ xa.
+Node server regression đạt6 tests local. Android CI đang chờ kiểm tra ở mốc này.
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.

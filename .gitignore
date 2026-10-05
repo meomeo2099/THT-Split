@@ -5,3 +5,7 @@ local.properties
 *.keystore
 .idea/
 *.log
+server/.wrangler/
+server/node_modules/
+server/.dev.vars
+server/.env*

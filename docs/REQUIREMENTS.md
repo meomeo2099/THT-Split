@@ -13,7 +13,7 @@
 - Chừa thanh hệ thống và điều hòa của xe. Khoảng chừa phải chỉnh được và kiểm tra trên xe.
 - Repo lưu sơ đồ, tài liệu nguồn, danh sách việc và kiểm thử; commit theo từng mốc.
 
-Không đưa HVAC, cửa/kính, camera, TTS/STT, server kích hoạt vào phạm vi ứng dụng này.
+Không đưa HVAC, cửa/kính, camera, TTS/STT vào phạm vi ứng dụng này.
 
 ## Chốt bổ sung 05/10/2026
 - Phương thức: ADB nội bộ mặc định / Off mở cửa sổ trực tiếp / quyền hệ thống có điều kiện.
@@ -27,3 +27,12 @@ Không đưa HVAC, cửa/kính, camera, TTS/STT, server kích hoạt vào phạm
 Khóa các thao tác task không chạy được trên toolbar Off: tỷ lệ/kéo/đổi bên/đổi app/
 toàn màn/khôi phục. API Voice cùng giới hạn. X chỉ dừng điều khiển Off, giữ cửa sổ
 Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đầy đủ chức năng.
+
+## Chốt giao diện/quản lý05/10/2026
+- Bỏ nút tài liệu Voice, hướng dẫn kiểm thử và mở trang phát hành khỏi app.
+- Cập nhật trong app, có phiên bản tối thiểu bắt buộc; kiểm APK trước cài.
+- Không nhập key; tự đăng ký thiết bị, chủ dự án duyệt/khóa/mở từ xa.
+- Người dùng chọn Worker Cloudflare riêng cho THT Split.
+- Thêm ủng hộ có QR/STK thật của chủ dự án; thông tin chưa được cung cấp.
+- Không lưu tài khoản/khóa ký/admin credential vào git. Endpoint và signer cần
+  cấu hình trước bản dùng chính thức; không giả định đã deploy.

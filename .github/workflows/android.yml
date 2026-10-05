@@ -19,7 +19,28 @@ jobs:
         with:
           packages: platforms;android-35 build-tools;35.0.0 platform-tools
       - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test server/worker.test.mjs
+      - name: Kiểm tra gói Worker không triển khai
+        working-directory: server
+        run: npx --yes wrangler@4 deploy --dry-run --outdir "$RUNNER_TEMP/worker-check"
+      - name: Chuẩn bị khóa ký ổn định nếu đã cấu hình
+        env:
+          KEYSTORE_B64: ${{ secrets.THT_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/tht-signing.jks"
+            chmod 600 "$RUNNER_TEMP/tht-signing.jks"
+            echo "THT_KEYSTORE_PATH=$RUNNER_TEMP/tht-signing.jks" >> "$GITHUB_ENV"
+          fi
       - run: chmod +x gradlew && ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+        env:
+          THT_CONTROL_URL: ${{ vars.THT_CONTROL_URL }}
+          THT_STORE_PASSWORD: ${{ secrets.THT_STORE_PASSWORD }}
+          THT_KEY_ALIAS: ${{ secrets.THT_KEY_ALIAS }}
+          THT_KEY_PASSWORD: ${{ secrets.THT_KEY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: THT-Split-test-apk

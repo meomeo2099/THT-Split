@@ -5,9 +5,27 @@ android {
     buildFeatures { buildConfig true }
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
-    defaultConfig { applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 11; versionName '0.2.9-test' }
+    defaultConfig {
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 12; versionName '0.3.0-test'
+        def controlUrl = providers.environmentVariable('THT_CONTROL_URL').getOrElse('')
+        if (controlUrl && !(controlUrl ==~ /https:\/\/[a-zA-Z0-9.-]+/)) throw new GradleException('THT_CONTROL_URL phải là HTTPS origin')
+        buildConfigField 'String', 'CONTROL_URL', '"' + controlUrl + '"'
+    }
+    signingConfigs {
+        stable {
+            if (System.getenv('THT_KEYSTORE_PATH')) {
+                storeFile file(System.getenv('THT_KEYSTORE_PATH'))
+                storePassword System.getenv('THT_STORE_PASSWORD')
+                keyAlias System.getenv('THT_KEY_ALIAS')
+                keyPassword System.getenv('THT_KEY_PASSWORD')
+            }
+        }
+    }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
-    buildTypes { release { minifyEnabled false } }
+    buildTypes {
+        debug { if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
+        release { minifyEnabled false; if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
+    }
 }
 dependencies { testImplementation 'junit:junit:4.13.2' }
 

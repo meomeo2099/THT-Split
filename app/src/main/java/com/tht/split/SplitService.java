@@ -21,11 +21,13 @@ public final class SplitService extends Service {
     private volatile boolean destroyed;
     private View toolbar,mini,divider,loading;private boolean visible=true,full=false,active=false;
     private final Runnable autoHide=()->send("hide");
+    private final Runnable policyPoll=new Runnable(){public void run(){if(destroyed)return;main.postDelayed(this,60000);if(busy.get())return;worker.execute(()->{com.tht.split.remote.RemoteControl r=new com.tht.split.remote.RemoteControl(SplitService.this);try{r.refresh(false);}catch(Exception ignored){}String denied=r.denial();if(!denied.isEmpty())main.post(()->{if(!destroyed){toast(denied);stopSelf();}});});}};
     @Override public void onCreate(){super.onCreate();store=new Store(this);store.set("session_busy",false);session=new Store(this,"tht_split_session");
         session.set("left",store.s("left",""));session.set("right",store.s("right",""));session.set("ratio",store.i("ratio",50));captureLayoutSettings();engine=new SplitEngine(this,session);wm=(WindowManager)getSystemService(WINDOW_SERVICE);
         NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);n.createNotificationChannel(new NotificationChannel("split","THT Split",NotificationManager.IMPORTANCE_LOW));
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         startForeground(1,new Notification.Builder(this,"split").setSmallIcon(R.drawable.icon_foreground).setContentTitle("THT Split").setContentText("Chạm để mở ứng dụng / khôi phục cặp").setContentIntent(open).setOngoing(true).build());
+        main.postDelayed(policyPoll,60000);
     }
     public static void command(Context c,String cmd){c.startForegroundService(new Intent(c,SplitService.class).putExtra("command",cmd));}
     private void send(String cmd){command(this,cmd);}
@@ -38,10 +40,11 @@ public final class SplitService extends Service {
         if(!busy.compareAndSet(false,true)){VoiceReplies.send(this,i,"error","BUSY","Split đang xử lý lệnh khác; thử lại sau",null);toast("Đang xử lý, vui lòng đợi");return START_NOT_STICKY;}
         store.set("session_busy",true);final String action=cmd;main.removeCallbacks(autoHide);
         final boolean opening=java.util.Arrays.asList("start","restore","preset","swap","replace").contains(action);
-        if(opening)try{showLoading();dismissConfiguration();}catch(RuntimeException e){busy.set(false);store.set("session_busy",false);VoiceReplies.send(this,i,"error","OVERLAY_FAILED","Không chuẩn bị được giao diện khi mở cặp",null);clear();if(!active)stopSelf();else{try{render();scheduleHide();}catch(RuntimeException ignored){stopSelf();}}return START_NOT_STICKY;}
         worker.execute(()->{
             String oldL=session.s("left",""),oldR=session.s("right","");int oldRatio=session.i("ratio",50),oldTop=session.i("top_px",72),oldBottom=session.i("bottom_px",112);String oldMode=session.s("mode","native"),oldTransport=session.s("transport","adb");
             try {
+                new com.tht.split.remote.RemoteControl(this).require(action);
+                if(opening){FutureTask<Void> prepare=new FutureTask<>(()->{if(destroyed)throw new IllegalStateException("Phiên đã dừng");showLoading();dismissConfiguration();return null;});main.post(prepare);prepare.get(5,TimeUnit.SECONDS);}
                 boolean nextVisible=visible,nextFull=full,nextActive=active,stop=false;
                 if(action.equals("status")){engine.status();VoiceReplies.send(this,i,"success","READY","Phương thức điều khiển sẵn sàng",engine.lastResult);main.post(()->{busy.set(false);store.set("session_busy",false);if(!active)stopSelf();else scheduleHide();});return;}
                 if(action.equals("preset")){String pid=i.getStringExtra("presetId");JSONObject pair=null;JSONArray pairs=store.pairs();for(int k=0;k<pairs.length();k++){JSONObject p=pairs.optJSONObject(k);if(p!=null&&p.optString("id").equals(pid)){pair=p;break;}}
@@ -67,8 +70,8 @@ public final class SplitService extends Service {
                 if(opening)Thread.sleep(Math.max(0,Math.min(3000,store.i("launch_wait_ms",0))));
                 final boolean v=nextVisible,f=nextFull,a=nextActive,end=stop;
                 main.post(()->{if(destroyed)return;visible=v;full=f;active=a;if(java.util.Arrays.asList("start","restore","preset","ratio","swap","replace").contains(action)){store.set("left",session.s("left",""));store.set("right",session.s("right",""));store.set("ratio",session.i("ratio",50));}busy.set(false);store.set("session_busy",false);store.set("session_active",active);store.set("session_full",full);try{if(end)stopSelf();else{render();scheduleHide();}if(end&&!engine.supportsTaskResize())toast("Đã dừng điều khiển Off. Cửa sổ app vẫn do Android quản lý.");boolean verified=engine.lastResult.optBoolean("verified",false);if((engine.lastResult.has("actualLeftBounds")||engine.lastResult.has("actualFullscreenBounds"))&&!verified){String note=engine.lastResult.optString("note","Android chưa giữ đúng vùng chia yêu cầu");toast(note);store.set("last_error",note);}if(action.equals("hide")||action.equals("show")){verified=true;try{engine.lastResult.put("verified",true);}catch(JSONException ignored){}}VoiceReplies.send(this,i,verified?"success":"requested",verified?"OK":"LAYOUT_UNVERIFIED",verified?"Đã thực hiện lệnh":engine.lastResult.optString("note","Đã gửi yêu cầu cửa sổ, chưa xác minh bố cục"),engine.lastResult);}catch(RuntimeException overlayError){clear();store.set("last_error","Không hiện được thanh điều khiển");VoiceReplies.send(this,i,"error","OVERLAY_FAILED","Không hiện được thanh điều khiển",null);stopSelf();}});
-            }catch(Exception e){session.set("left",oldL);session.set("right",oldR);session.set("ratio",oldRatio);session.set("top_px",oldTop);session.set("bottom_px",oldBottom);session.set("mode",oldMode);session.set("transport",oldTransport);VoiceReplies.send(this,i,"error","OPERATION_FAILED",e.getMessage()==null?"Không thực hiện được lệnh":e.getMessage(),null);android.util.Log.e("THTSplit",action+" failed",e);
-                main.post(()->{if(destroyed)return;busy.set(false);store.set("session_busy",false);toast("Không thực hiện được: "+e.getMessage());store.set("last_error",e.getClass().getSimpleName()+": "+e.getMessage());if(!active)stopSelf();else{render();scheduleHide();}});
+            }catch(Exception e){session.set("left",oldL);session.set("right",oldR);session.set("ratio",oldRatio);session.set("top_px",oldTop);session.set("bottom_px",oldBottom);session.set("mode",oldMode);session.set("transport",oldTransport);VoiceReplies.send(this,i,"error",e instanceof com.tht.split.remote.RemoteControl.AccessDenied?"ACCESS_BLOCKED":"OPERATION_FAILED",e.getMessage()==null?"Không thực hiện được lệnh":e.getMessage(),null);android.util.Log.e("THTSplit",action+" failed",e);
+                main.post(()->{if(destroyed)return;busy.set(false);store.set("session_busy",false);toast("Không thực hiện được: "+e.getMessage());store.set("last_error",e.getClass().getSimpleName()+": "+e.getMessage());if(!active||e instanceof com.tht.split.remote.RemoteControl.AccessDenied)stopSelf();else{render();scheduleHide();}});
             }
         });return START_NOT_STICKY;
     }

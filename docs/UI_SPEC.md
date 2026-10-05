@@ -44,3 +44,7 @@ Từ0.2.2 bấm chia/mở preset đưa MainActivity xuống nền như bản cũ
 
 0.2.4: dialog overlay và trong app dùng chung theme navy/chữ trắng. Dropdown cài đặt,
 tỷ lệ preset và ô nhập dùng màu tường minh để không bị chữ tối trên nền tối.
+
+0.2.6: toolbar Off mờ/khóa ratio, đổi app, swap, fullscreen; không grip và không
+highlight tỷ lệ như đã xác minh. X Off dừng điều khiển, giữ cửa sổ Android.
+ADB/system giữ đầy đủ các nút và grip. Trang cấu hình THT đóng khi mở cặp.

@@ -1,6 +1,6 @@
 # THT Split
 
-App chia màn hình độc lập cho Geely EX2, package `com.tht.split`, bản `0.2.5-test`.
+App chia màn hình độc lập cho Geely EX2, package `com.tht.split`, bản `0.2.6-test`.
 Chọn hai app, lưu/sửa/xóa cặp, chọn tỷ lệ, đổi app/đổi bên, fullscreen/restore,
 Home/X và thanh điều khiển ẩn/hiện. Popup thuộc THT Voice.
 
@@ -8,7 +8,7 @@ Home/X và thanh điều khiển ẩn/hiện. Popup thuộc THT Voice.
 | Phương thức | Cơ chế và giới hạn |
 |---|---|
 | ADB nội bộ (mặc định) | Tự kết nối ADB RSA TCP trên chính màn, tự mở bridge khi cần; tùy chọn chuẩn bị lúc boot |
-| Off | Mở cửa sổ trực tiếp; cần freeform bật sẵn, đổi tỷ lệ bằng yêu cầu mở lại với bounds mới, không xác minh bố cục |
+| Off | Mở cửa sổ trực tiếp; cần freeform bật sẵn. Khóa các nút điều khiển task; X dừng overlay, giữ cửa sổ Android |
 | Quyền hệ thống | Chỉ chạy nếu Android đã cấp MANAGE_ACTIVITY_STACKS; APK ký thường không tự có quyền |
 
 Không cần cài app hỗ trợ bên ngoài. Không Telnet/Shizuku. Không tự bật adbd/root/flash OTA.

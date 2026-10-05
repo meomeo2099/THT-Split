@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.2.5-test, 05/10/2026
+# Bàn giao THT Split — 0.2.6-test, 05/10/2026
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
@@ -16,7 +16,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 |---|---|
 | UI/preset/overlay | Giữ chọn hai app, CRUD, ẩn/hiện, tỷ lệ, đổi bên, fullscreen, Home/X |
 | ADB nội bộ | Client RSA TCP original; khóa private lưu noBackupFiles; localhost mặc định, cổng chỉnh được; chỉ địa chỉ chính thiết bị |
-| Bridge v3 | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
+| Bridge v4 | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
 | Boot/cập nhật | Foreground ConnectionService chuẩn bị bridge nếu tùy chọn bật; khi lệnh tới tiếp tục thử kết nối |
 | Off | ActivityOptions freeform với bounds và scoped hidden API access; status=requested; không giả lập resize task |
 | Hệ thống | Kiểm MANAGE_ACTIVITY_STACKS trước chọn/chạy; gọi backend trực tiếp, không shared UID trong APK thường |
@@ -31,7 +31,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 - Boot có thể đến trước adbd/Wi-Fi; sẽ thử lại khi chia. Force-stop app có thể chặn boot receiver.
 - Bridge 0.1 cũ đang chạy cần reboot màn để nạp bridge v2; không tự kill theo tên chung.
 - Off chỉ yêu cầu hệ thống mở cửa sổ, không xác minh được task của app khác;
-  từ 0.2.1 ratio/drag gửi lại launch bounds khi thả tay, có thể bị firmware bỏ qua.
+  từ 0.2.6 khóa ratio/drag/swap/replace/fullscreen/restore cả UI lẫn lệnh Voice.
   Không force-stop/xóa dữ liệu/tạo MULTIPLE_TASK. Hide/show chỉ đổi overlay.
 - Hệ thống vẫn cần chữ ký/quyền phù hợp; không có khóa platform được tạo hoặc đưa vào git.
 - Backend quyền hệ thống là nhánh có điều kiện, không phải APK debug tự có quyền.
@@ -43,7 +43,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 
 ## Kiểm tra cần tiếp trên xe
 1. Cài APK cùng signer bản test trước; cấp overlay, chọn ADB nội bộ/cổng thực tế, Kiểm tra.
-2. Xác nhận khóa nếu có → bridge UID2000/version3 → thử native/freeform.
+2. Xác nhận khóa nếu có → bridge UID2000/version4 → thử native/freeform.
 3. Reboot thật, đổi mạng Wi-Fi → gọi chia; ghi log/cổng/ảnh/insets/mode thật.
 4. Bật freeform bằng ADB lần đầu → chọn Off → quan sát cả hai app, thử swap/stop/fullscreen.
 5. Kiểm certificate/quyền platform trước thử system; không suy ra quyền từ cài được APK.
@@ -106,3 +106,22 @@ báo thiếu task; khôi phục fullscreen gây chồng app/ô trống.
   rồi kết nối lại; nếu ADB nội bộ vẫn lỗi phải chạy lệnh bridge thủ công sau reboot.
 - Off vẫn có giới hạn launch bounds; sửa này không chứng minh Off resize task được.
 - Chưa kiểm bản0.2.5 trên LDPlayer/xe. CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37269596828.
+
+## Sửa cửa sổ dùng chung stack và giới hạn Off0.2.6
+Ảnh người dùng0.2.5: ADB/native có Maps bên trái, cửa sổ YouTube/freeform và trang
+cấu hình THT còn ở bên phải. Video7,8s: Off mở lại thành YouTube fullscreen.
+- Android9 setTaskWindowingMode thay mode của cả stack. Bản0.2.5 chỉ kiểm mode
+  từng task nên chưa bắt được lỗi chung stack. Fake tests cũ cũng chưa mô hình hóa điều này.
+- PairController tách từng task vào stack riêng trước setMode; bridge dùng
+  createStackOnDisplay + moveTaskToStack khi stack có nhiều task, kiểm hai stack khác nhau.
+  Reuse stack riêng nếu đã có, không removeTask/force-stop app bên thứ ba.
+- SplitService đóng/remove riêng các AppTask thuộc THT Split khi mở cặp (cả UI/Voice),
+  service và cấu hình vẫn giữ. Không để trang cấu hình bị kéo vào stack của app khác.
+- Off bỏ LAUNCH_ADJACENT để không dùng stack đang focus thay ActivityOptions.
+- Off X chỉ dừng overlay, không gửi fullscreen hai app như trước; giữ cửa sổ cho lần mở tiếp.
+  Cửa sổ đã sai từ bản cũ cần đóng bằng Android một lần; Off không sửa được task cũ.
+- Off khóa ratio/swap/replace/fullscreen/restore; bỏ grip, không tô tỷ lệ như đã xác minh.
+  Giữ mở cặp, hide/show, Home/X. Voice trả UNSUPPORTED_OPERATION cho lệnh bị khóa.
+- Bridge v4 cần reboot/kết nối lại để nạp code; không kill listener cũ.
+- Thêm test stack-wide mode, task reuse bỏ qua launch mode, shared freeform và policy.
+- Chưa thử bản sửa trên LDPlayer/xe; build/unit/lint xác minh bằng CI.

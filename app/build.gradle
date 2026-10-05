@@ -5,7 +5,7 @@ android {
     buildFeatures { buildConfig true }
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
-    defaultConfig { applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 7; versionName '0.2.5-test' }
+    defaultConfig { applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 8; versionName '0.2.6-test' }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
     buildTypes { release { minifyEnabled false } }
 }

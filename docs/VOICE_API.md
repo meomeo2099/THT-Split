@@ -30,12 +30,12 @@ Không truyền token trong callback. V1 token không callback vẫn được gi
 | start | left, right; ratio tùy chọn | Mở cặp; thiếu app dùng cấu hình đã nhớ |
 | preset | presetId | Mở cặp theo ID đã lưu |
 | replace | side=left/right, package | Đổi một bên |
-| ratio | ratio int | Tỷ lệ trái clamp 30–70; Off0.2.1 gửi lại launch bounds, trả requested |
+| ratio | ratio int | Tỷ lệ trái clamp 30–70; Off0.2.6 trả UNSUPPORTED_OPERATION |
 | swap | Không | Đổi bên, giữ tỷ lệ |
 | fullscreen | side=left/right | App được chọn toàn màn |
 | restore | Không | Khôi phục cặp và tỷ lệ |
 | hide / show | Không | Ẩn/hiện thanh, vẫn giữ cặp |
-| stop | Không | Tắt chia, ưu tiên app trái |
+| stop | Không | ADB/system: tắt chia, ưu tiên app trái. Off: dừng overlay, giữ cửa sổ Android |
 | home | Không | Về launcher xe, bỏ overlay |
 | status | Không | Kiểm tra phương thức; ADB tự mở bridge nếu cần; không cần quyền nổi |
 
@@ -50,7 +50,7 @@ Khi có kết quả backend còn có `verified`, `transport`, `sdk`.
 | error | Hiện/đọc lỗi; không tự đổi sang phương thức khác hoặc mở thêm app |
 
 Mã lỗi: API_DISABLED, INVALID_COMMAND, INVALID_ARGUMENT, OVERLAY_REQUIRED, BUSY,
-SERVICE_DENIED, OPERATION_FAILED, OVERLAY_FAILED. LAYOUT_UNVERIFIED đi cùng requested.
+SERVICE_DENIED, OPERATION_FAILED, OVERLAY_FAILED, UNSUPPORTED_OPERATION. LAYOUT_UNVERIFIED đi cùng requested.
 READY đi cùng success của status; Off READY chỉ nghĩa backend mở trực tiếp sẵn sàng,
 không chứng minh có quyền shell hoặc đã chia màn.
 Token sai, permission signature không hợp lệ, requestId/callback không hợp lệ sẽ bị từ chối;
@@ -63,7 +63,9 @@ Voice không lựa chọn backend qua intent. Split dùng Cài đặt → Phươ
   Tự xác thực RSA TCP, mở bridge nếu chưa có listener và kiểm UID shell.
   Tùy chọn chuẩn bị lúc boot/cập nhật; nếu boot chưa sẵn sàng sẽ thử khi nhận lệnh.
 - Off: yêu cầu mở freeform trực tiếp, không bridge. Freeform cần bật sẵn;
-  ratio từ0.2.1 gửi lại launch bounds, không resizeTask, firmware có thể bỏ qua.
+  từ0.2.6 chặn ratio/swap/replace/fullscreen/restore cả Voice và toolbar.
+  X/stop chỉ dừng overlay, không đổi task sang fullscreen. Cửa sổ sai từ phiên cũ
+  cần đóng bằng Android hoặc dùng ADB để phục hồi, không tự fallback.
   Màn chờ khi mở cặp kết thúc sau khoảng ổn định cấu hình; không chứng minh nội dung tải xong.
 - Quyền hệ thống: chỉ chọn được khi MANAGE_ACTIVITY_STACKS đã được cấp.
   Không tự cấp quyền, không có sharedUserId trong APK thường.

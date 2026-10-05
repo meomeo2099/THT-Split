@@ -11,6 +11,6 @@ Commit backup sau mỗi mốc hoàn chỉnh; cập nhật HANDOFF trong cùng co
 Không ghi token bridge/Voice, khóa ký hoặc tài khoản vào git.
 Không gọi bản chạy trên xe thành công nếu chỉ build hoặc chạy unit test.
 Không xóa dữ liệu/force-stop app bên thứ ba để chia màn hình.
-X là tắt chia; chevron là ẩn/hiện thanh. Popup thuộc THT Voice, không dành chỗ cố định.
+X là tắt chia; Off chỉ dừng điều khiển/overlay vì không có quyền sửa task. Chevron là ẩn/hiện thanh. Popup thuộc THT Voice, không dành chỗ cố định.
 Ưu tiên EX2 Android 9; firmware khác cần kiểm tra khả năng API trước.
 Ứng dụng chia màn hình độc lập, không cần APK chia màn bên ngoài; không sao chép nguồn không rõ giấy phép.

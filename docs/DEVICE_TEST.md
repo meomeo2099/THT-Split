@@ -1,11 +1,11 @@
-# Cài và kiểm thử 0.2.1-test trên EX2
+# Cài và kiểm thử 0.2.6-test trên EX2
 
 Chưa test xe thật. Android headunit phải có ADB mở sẵn; app không mở khóa ADB hoặc
 thay firmware/OTA. Quan sát bố cục khi xe đang đỗ.
 
 ## Cài lần đầu
 ```sh
-adb install -r THT-Split-0.2.1-test.apk
+adb install -r THT-Split-0.2.6-test.apk
 adb shell appops set com.tht.split SYSTEM_ALERT_WINDOW allow
 ```
 Nếu khác chữ ký, không gỡ app khi còn dữ liệu cặp cần giữ. Dùng khóa cũ hoặc ghi lại
@@ -37,10 +37,11 @@ adb shell settings put global force_resizable_activities 1
 Ghi giá trị cũ của hai lệnh get trước khi đổi bằng máy tính. Nếu dùng nút trong app,
 app lưu giá trị cũ và có nút khôi phục. Có thể cần reboot; không tự thay policy hidden API toàn hệ thống.
 
-Tắt phiên đang chia → Cài đặt → Off. Có nút tỷ lệ và vạch kéo của THT Split. Thả tay mới gửi yêu cầu
-mở lại hai app với bounds mới; không dùng bridge/resizeTask. Firmware có thể bỏ qua
-bounds của task đang chạy. Toolbar là overlay tạm, hide/show không resize app.
-Quan sát native launch: firmware/app có thể bỏ qua bounds hoặc tái tạo Activity.
+Tắt phiên đang chia → Cài đặt → Off. Từ0.2.6, khóa tỷ lệ/kéo/đổi bên/đổi app/
+fullscreen/restore; chỉ mở cặp và quản lý overlay/Home. X dừng overlay, giữ cửa sổ
+Android, không gửi fullscreen cho hai app. Đóng cửa sổ sai từ phiên cũ bằng nút X
+của Android rồi mở lại một lần; Off không sửa mode/bounds của task cũ.
+Chọn tỷ lệ trước lúc mở; firmware có thể bỏ qua bounds của task đang tồn tại.
 Off trả requested, verified=false; không coi đó là đã chia thành công.
 
 ## Quyền hệ thống
@@ -113,3 +114,15 @@ Cài APK, khởi động lại LDPlayer/màn để dừng bridge v2 rồi kết 
 5. Tỷ lệ/ẩn/hiện trên cặp khỏe không relaunch; kiểm nội dung app còn giữ.
 6. X về app trái fullscreen và giữ dữ liệu. Ghi SDK/mode/ảnh/log nếu lỗi.
 Off không có quyền sửa task, kiểm riêng và không suy kết quả ADB sang Off.
+
+## Kiểm tra0.2.6 / bridge v4
+1. ADB: cài, reboot LDPlayer/màn và kết nối lại để nạp bridge4.
+2. Native → fullscreen → restore, đóng một app → mở lại, swap5 lần:
+   không caption freeform/không trang cấu hình THT phía sau YouTube.
+3. ADB/freeform → tắt → native; hai app ở stack khác nhau. Log bridge có stack IDs.
+4. Off: đóng hai cửa sổ sai từ bản cũ bằng Android một lần, mở cùng cặp → X của THT
+   → mở lại5 lần; X THT giữ cửa sổ, X Android đóng app. Kiểm tra bounds thật.
+5. Off: ratio/apps/swap/full mờ và không bấm được; không grip. Voice ratio/swap/
+   replace/fullscreen/restore nhận UNSUPPORTED_OPERATION, không đổi session.
+6. Off hide/show/Home vẫn chạy. Khi task đã fullscreen từ ngoài app, Off không
+   đảm bảo dựng lại được; đóng cửa sổ đó hoặc chuyển ADB, không tạo task trùng.

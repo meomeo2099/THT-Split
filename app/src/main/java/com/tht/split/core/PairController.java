@@ -7,6 +7,8 @@ public final class PairController {
         int launch(boolean left, int mode) throws Exception;
         int find(boolean left) throws Exception;
         int mode(int task) throws Exception;
+        int stack(int task) throws Exception;
+        void isolate(int task) throws Exception;
         void setMode(int task, int mode) throws Exception;
         void resize(int left, int right) throws Exception;
     }
@@ -18,15 +20,18 @@ public final class PairController {
         tasks.clearPrimary();
         int left=tasks.launch(true,nativeMode?1:5);
         int right=tasks.launch(false,nativeMode?1:5);
+        // Android 9 setTaskWindowingMode changes the whole stack, not just this task.
+        tasks.isolate(left);
+        tasks.isolate(right);
         tasks.setMode(left,nativeMode?3:5);
         tasks.setMode(right,nativeMode?4:5);
         tasks.resize(left,right);
-        if(tasks.mode(left)!=(nativeMode?3:5)||tasks.mode(right)!=(nativeMode?4:5))
+        if(tasks.stack(left)==tasks.stack(right)||tasks.mode(left)!=(nativeMode?3:5)||tasks.mode(right)!=(nativeMode?4:5))
             throw new java.io.IOException("Firmware không giữ chế độ chia yêu cầu");
     }
     public void resize() throws Exception {
         int left=tasks.find(true),right=tasks.find(false);
-        if(left<0||right<0||tasks.mode(left)!=(nativeMode?3:5)||tasks.mode(right)!=(nativeMode?4:5)) {
+        if(left<0||right<0||tasks.stack(left)==tasks.stack(right)||tasks.mode(left)!=(nativeMode?3:5)||tasks.mode(right)!=(nativeMode?4:5)) {
             layout(); // Reopen a closed app or restore a pair collapsed by Android.
         } else tasks.resize(left,right);
     }

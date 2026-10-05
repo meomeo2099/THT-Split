@@ -63,3 +63,10 @@ Bridge v3 / system dùng PairController: dọn primary màn chính, dựng cặp
 kiểm mode trước resize. RESIZE cần launcher components để mở lại app đã đóng.
 Native resize gửi bounds cuối, không dùng temporary task/inset bounds. Off giữ
 ActivityOptions và trả requested; không có khả năng quan sát/sửa task tương đương.
+
+## Từ0.2.6 / bridge v4
+PairController kiểm hai stack khác nhau, isolate task nếu stack chứa nhiều task
+trước đổi mode (Android9 setTaskWindowingMode đổi cả stack). Service dọn AppTask
+cấu hình của chính THT trước mở cặp; không đóng task bên thứ ba. Off bỏ adjacent
+flag; chỉ mở + overlay. X không chuyển task sang fullscreen; policy chặn điều khiển
+task cả UI và Voice. Các mô tả Off ratio/drag0.2.1 ở trên là lịch sử, không còn áp dụng.

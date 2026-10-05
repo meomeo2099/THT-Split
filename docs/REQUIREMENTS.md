@@ -22,3 +22,8 @@ Không đưa HVAC, cửa/kính, camera, TTS/STT, server kích hoạt vào phạm
 - API v2 có requestId và kết quả, giữ token v1; thêm signature API khi hai app cùng signer.
 - Off không dùng shell; không hứa resize task hoặc bố cục đã thành công nếu chỉ gửi launch.
 - Giữ khóa ký/package, commit tiếng Việt, cập nhật hướng dẫn tích hợp trên GitHub.
+
+## Điều chỉnh Off theo phản hồi05/10/2026
+Khóa các thao tác task không chạy được trên toolbar Off: tỷ lệ/kéo/đổi bên/đổi app/
+toàn màn/khôi phục. API Voice cùng giới hạn. X chỉ dừng điều khiển Off, giữ cửa sổ
+Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đầy đủ chức năng.

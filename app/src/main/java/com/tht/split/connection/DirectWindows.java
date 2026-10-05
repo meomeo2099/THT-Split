@@ -19,18 +19,14 @@ public final class DirectWindows {
         if(op.equals("PING"))return new JSONObject().put("uid",android.os.Process.myUid()).put("sdk",Build.VERSION.SDK_INT).put("verified",false).put("note","Off: mở trực tiếp; không xác minh cửa sổ app khác");
         if(op.equals("HOME")){onMain(()->context.startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));return requested();}
         if(op.startsWith("FREEFORM_"))throw new IOException("Off không có quyền đổi thiết lập Android. Bật freeform bằng ADB một lần trước.");
-        if(op.equals("LAYOUT")||op.equals("RESIZE")){
+        if(op.equals("RESIZE")||op.equals("FULLSCREEN"))throw new IOException("Off không điều khiển được task đang chạy. Chọn ADB nội bộ để dùng chức năng này.");
+        if(op.equals("STOP"))return requested().put("note","Đã dừng điều khiển Off; cửa sổ app do Android quản lý, không gửi yêu cầu fullscreen");
+        if(op.equals("LAYOUT")){
             if(Settings.Global.getInt(context.getContentResolver(),"enable_freeform_support",0)!=1&&!context.getPackageManager().hasSystemFeature("android.software.freeform_window_management"))throw new IOException("Cần bật hỗ trợ freeform trước khi dùng Off");
             String left=q.getString("left"),right=q.getString("right");if(left.equals(right))throw new IOException("Chọn hai ứng dụng khác nhau");
             Rect l=rect(q.getJSONArray("leftBounds")),r=rect(q.getJSONArray("rightBounds"));
             onMain(()->launch(left,5,l));
             onMain(()->launch(right,5,r));return requested();
-        }
-        if(op.equals("FULLSCREEN")||op.equals("STOP")){
-            String side=q.optString("side","left");if(!side.equals("left")&&!side.equals("right"))throw new IOException("Bên trái/phải không hợp lệ");
-            String selected=q.getString(side.equals("right")?"right":"left");
-            if(op.equals("STOP")){String other=q.getString(side.equals("right")?"left":"right");onMain(()->{if(context.getPackageManager().getLaunchIntentForPackage(other)!=null)launch(other,1,null);launch(selected,1,null);});}
-            else onMain(()->launch(selected,1,null));return requested();
         }
         throw new IOException("Off không hỗ trợ thao tác này");
     }
@@ -38,7 +34,8 @@ public final class DirectWindows {
     private Rect rect(JSONArray a)throws Exception{if(a.length()!=4)throw new IOException("Vùng cửa sổ không hợp lệ");Rect r=new Rect(a.getInt(0),a.getInt(1),a.getInt(2),a.getInt(3));if(r.left<0||r.top<0||r.width()<=0||r.height()<=0||r.right>16384||r.bottom>16384)throw new IOException("Vùng cửa sổ không hợp lệ");return r;}
     private void launch(String pkg,int mode,Rect bounds)throws Exception{
         Intent intent=context.getPackageManager().getLaunchIntentForPackage(pkg);if(intent==null||pkg.equals(context.getPackageName()))throw new IOException("Ứng dụng chưa cài hoặc không mở được: "+pkg);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+        // Adjacent launch can select the currently focused stack and ignore freeform options.
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         // Reuse existing app task rather than create duplicates on each swap/restore.
         ActivityOptions options=ActivityOptions.makeBasic();
         HiddenAccess.allow("Landroid/app/ActivityOptions;");

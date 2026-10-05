@@ -7,23 +7,27 @@ import java.util.*;
 public final class PairControllerTest {
     private static final class Fake implements PairController.Tasks {
         final Map<Integer,Integer> modes=new HashMap<>();
+        final Map<Integer,Integer> stacks=new HashMap<>();
         final List<String> calls=new ArrayList<>();
         int left=1,right=2;
         boolean refuseMode;
         public void clearPrimary(){calls.add("clear");for(Map.Entry<Integer,Integer> e:modes.entrySet())if(e.getValue()==3||e.getValue()==4)e.setValue(1);}
-        public int launch(boolean isLeft,int mode){int id=isLeft?left:right;calls.add("launch:"+id+":"+mode);modes.put(id,mode);return id;}
+        public int launch(boolean isLeft,int mode){int id=isLeft?left:right;calls.add("launch:"+id+":"+mode);modes.putIfAbsent(id,mode);return id;}
         public int find(boolean isLeft){int id=isLeft?left:right;return modes.containsKey(id)?id:-1;}
         public int mode(int id){return modes.getOrDefault(id,-1);}
+        public int stack(int id){return stacks.getOrDefault(id,id+100);}
+        public void isolate(int id){calls.add("isolate:"+id);int count=0;for(int task:modes.keySet())if(stack(task)==stack(id))count++;if(count>1)stacks.put(id,1000+id);}
         public void setMode(int id,int mode){
-            if(mode==3&&modes.containsValue(3)&&mode(id)!=3)throw new IllegalStateException("duplicate primary");
-            calls.add("mode:"+id+":"+mode);if(!refuseMode)modes.put(id,mode);
+            for(int other:modes.keySet())if(mode==3&&mode(other)==3&&stack(other)!=stack(id))throw new IllegalStateException("duplicate primary");
+            calls.add("mode:"+id+":"+mode);
+            if(!refuseMode)for(Map.Entry<Integer,Integer> e:modes.entrySet())if(stack(e.getKey())==stack(id))e.setValue(mode);
         }
         public void resize(int l,int r){calls.add("resize:"+l+":"+r);}
     }
     @Test public void swapDismissesOldPrimaryBeforeAssigningNewPrimary()throws Exception{
         Fake f=new Fake();f.modes.put(1,3);f.modes.put(2,4);f.left=2;f.right=1;
         new PairController(f,true).layout();
-        assertEquals(Arrays.asList("clear","launch:2:1","launch:1:1","mode:2:3","mode:1:4","resize:2:1"),f.calls);
+        assertEquals(Arrays.asList("clear","launch:2:1","launch:1:1","isolate:2","isolate:1","mode:2:3","mode:1:4","resize:2:1"),f.calls);
         assertEquals(3,f.mode(2));assertEquals(4,f.mode(1));
     }
     @Test public void closedAppIsReopenedBeforeResize()throws Exception{
@@ -47,6 +51,20 @@ public final class PairControllerTest {
     @Test public void freeformRestoreReopensClosedWindow()throws Exception{
         Fake f=new Fake();f.modes.put(1,5);
         new PairController(f,false).resize();assertEquals(5,f.mode(1));assertEquals(5,f.mode(2));
+    }
+    @Test public void sharedStackDoesNotMoveUnrelatedAppIntoSplit()throws Exception{
+        Fake f=new Fake();for(int id:new int[]{1,2,9}){f.modes.put(id,1);f.stacks.put(id,77);}
+        new PairController(f,true).layout();
+        assertEquals(3,f.mode(1));assertEquals(4,f.mode(2));assertEquals(1,f.mode(9));
+        assertNotEquals(f.stack(1),f.stack(2));assertNotEquals(f.stack(1),f.stack(9));assertNotEquals(f.stack(2),f.stack(9));
+    }
+    @Test public void existingFreeformTaskDoesNotDependOnLaunchModeBeingHonored()throws Exception{
+        Fake f=new Fake();f.modes.put(1,3);f.modes.put(2,5);
+        new PairController(f,true).layout();assertEquals(3,f.mode(1));assertEquals(4,f.mode(2));
+    }
+    @Test public void freeformPairSharingOneStackIsRebuilt()throws Exception{
+        Fake f=new Fake();for(int id:new int[]{1,2}){f.modes.put(id,5);f.stacks.put(id,77);}
+        new PairController(f,false).resize();assertNotEquals(f.stack(1),f.stack(2));assertEquals(5,f.mode(1));assertEquals(5,f.mode(2));
     }
     @Test(expected=java.io.IOException.class) public void rejectedWindowModeDoesNotReportSuccess()throws Exception{
         Fake f=new Fake();f.refuseMode=true;new PairController(f,true).layout();

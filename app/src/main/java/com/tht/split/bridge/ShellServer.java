@@ -67,6 +67,21 @@ public final class ShellServer {
         return -1;
     }
     private static void setMode(int id,int mode)throws Exception{invoke("setTaskWindowingMode",new Class<?>[]{int.class,int.class,boolean.class},id,mode,true);}
+    private static Object stackInfo(int taskId)throws Exception {
+        List<?> infos=(List<?>)invoke("getAllStackInfos",new Class<?>[]{});
+        for(Object info:infos)for(int id:(int[])info.getClass().getField("taskIds").get(info))if(id==taskId)return info;
+        throw new IOException("Task đã đóng trong lúc chia: "+taskId);
+    }
+    private static int stackId(int taskId)throws Exception{Object info=stackInfo(taskId);return info.getClass().getField("stackId").getInt(info);}
+    private static void isolate(int taskId)throws Exception {
+        Object info=stackInfo(taskId);
+        if(((int[])info.getClass().getField("taskIds").get(info)).length==1)return;
+        int display=info.getClass().getField("displayId").getInt(info);
+        int target=(Integer)invoke("createStackOnDisplay",new Class<?>[]{int.class},display);
+        if(target<0)throw new IOException("Không tạo được stack riêng cho app");
+        invoke("moveTaskToStack",new Class<?>[]{int.class,int.class,boolean.class},taskId,target,true);
+        if(stackId(taskId)!=target)throw new IOException("Firmware không chuyển app sang stack riêng");
+    }
     private static void clearPrimary()throws Exception {
         List<?> infos=(List<?>)invoke("getAllStackInfos",new Class<?>[]{});
         // Snapshot IDs before changing stacks; changing the primary also collapses secondaries.
@@ -105,7 +120,7 @@ public final class ShellServer {
     }
     private static JSONObject handle(JSONObject q)throws Exception{
         String op=q.getString("op");JSONObject out=new JSONObject();
-        if(op.equals("PING"))return out.put("bridgeVersion",3).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
+        if(op.equals("PING"))return out.put("bridgeVersion",4).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
             String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];
@@ -124,12 +139,14 @@ public final class ShellServer {
                 public int launch(boolean left,int windowMode)throws Exception{ShellServer.launch(left?lc:rc,windowMode);return awaitTask(left?leftPkg:rightPkg);}
                 public int find(boolean left)throws Exception{return task(left?leftPkg:rightPkg);}
                 public int mode(int id)throws Exception{return windowMode(id);}
+                public int stack(int id)throws Exception{return stackId(id);}
+                public void isolate(int id)throws Exception{ShellServer.isolate(id);}
                 public void setMode(int id,int windowMode)throws Exception{ShellServer.setMode(id,windowMode);}
                 public void resize(int lt,int rt)throws Exception{ShellServer.resize(lt,rt,mode,l,r);}
             },mode.equals("native"));
             if(op.equals("LAYOUT"))controller.layout();else controller.resize();
             int lt=task(leftPkg),rt=task(rightPkg);
-            return out.put("leftTask",lt).put("rightTask",rt).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
+            return out.put("leftTask",lt).put("rightTask",rt).put("leftStack",stackId(lt)).put("rightStack",stackId(rt)).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
         }
         int lt=task(leftPkg),rt=task(rightPkg);
         if(op.equals("FULLSCREEN")||op.equals("STOP")){

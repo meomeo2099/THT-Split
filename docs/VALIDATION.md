@@ -117,3 +117,19 @@ Không thay khóa ADB đã lưu. Chỉ giữ được khóa/cấu hình khi cài
 app data; APK debug CI có thể khác signer bản trước, cần giữ cấu hình trước cài mới.
 Test tự mở bridge:127.0.0.1:5555, Kiểm tra khi chưa chạy dự phòng; thử reboot thật.
 Không coi cổng TCP đang nghe hoặc build đạt là xác thực ADB thành công trên xe.
+
+
+## 0.3.0-test — cập nhật/khóa từ xa/ủng hộ05/10/2026
+- Người dùng xác nhận0.2.9 kết nối ADB và test OK trên LDPlayer9. Chưa xác nhận
+  reboot tự nối lại, chưa xác nhận xe thật. Không đổi bridge v6/window backend.
+- CI code cuối a12dd9be583537cfb653dca5c85e200ed63b352a:
+  https://github.com/meomeo2099/THT-Split/actions/runs/37290015077
+  build/unit/lint +6 Node tests server + Wrangler4 dry-run đạt. Không deploy.
+- APK com.tht.split/versionCode12/versionName0.3.0-test/min26/target32.
+- SHA256: f30d0a909691bbdc035d2b1983d9c19d54816788c2c77c106e02d4b9d01652d9.
+- APK test không có HTTPS origin CONTROL_URL. Quản trị, cập nhật từ xa và QR/STK
+  chưa hoạt động thật; app ghi rõ chưa cấu hình, cho dùng split để test UI.
+- Chưa có ngân hàng/QR thật, URL Worker đã deploy hoặc keystore ổn định. Khóa CI
+  debug vẫn có thể khác APK0.2.9. Release workflow từ chối thiếu endpoint/secrets.
+- Kiểm tra tác vụ/khóa/lease/installer cùng signer theo REMOTE_CONTROL.md sau cấu
+  hình; unit test không xác minh hành vi mạng hoặc PackageInstaller trên xe.

@@ -12,7 +12,11 @@ Worker. `server/` có quản trị duyệt/khóa/cập nhật/ủng hộ và tra
 Chưa deploy Worker, chưa có URL/ngân hàng/QR thật/keystore ổn định. Test build khi
 thiếu CONTROL_URL hiện rõ chưa cấu hình và vẫn dùng bộ chia để kiểm thử.
 Release workflow bắt buộc endpoint/secrets ký; không coi test APK là bản đã khóa từ xa.
-Node server regression đạt6 tests local. Android CI đang chờ kiểm tra ở mốc này.
+Node server regression đạt6 tests local/CI. CI cuối build/unit/lint + Wrangler
+dry-run đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37290015077.
+Code commit a12dd9be583537cfb653dca5c85e200ed63b352a; APK0.3.0-test code12.
+APK test không chứa endpoint: UI mới dùng được, các chức năng quản trị/ủng hộ chưa
+hoạt động thật. Chưa thử APK mới trên LDPlayer/xe, chưa deploy Cloudflare.
 Tách khóa identity khỏi khóa mạng để UI không đợi HTTP khi hiện mã thiết bị;
 không dựng lại UI nếu policy không đổi, serialize APK download/install qua Activity recreate.
 

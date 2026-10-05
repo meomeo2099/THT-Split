@@ -7,8 +7,11 @@ Trang ủng hộ có card thông tin MB Bank/copy STK và card QR nền trắng 
 màn nhỏ xếp dọc, nội dung và danh mục có cuộn. Giữ nguyên profile/bytes QR0.3.1.
 AppUi mới chỉ MainActivity dùng. Không sửa Ui, SplitService, overlay/grip, backend,
 Bridge v6, API Voice, Store hay remote/server; không thay launcher icon.
-Đang chờ CI build/unit/lint, sau đó ghi bằng chứng VALIDATION. Chưa chạy UI trên
-LDPlayer/xe; cần kiểm tương phản/cắt chữ/danh mục/sao chép/QR/chọn app/cặp.
+CI build/unit/lint, Node tests, kiểm QR và Wrangler dry-run đều đạt tại code
+9c62c0400a0f181c0ccf62f769cdbae6b3ebc9e7:
+https://github.com/meomeo2099/THT-Split/actions/runs/37340679665.
+APK đã lấy từ artifact, kiểm package/version/signature và bytes QR; xem VALIDATION.
+Chưa chạy UI trên LDPlayer/xe; cần kiểm tương phản/cắt chữ/danh mục/sao chép/QR/chọn app/cặp.
 Chữ ký test vẫn phụ thuộc runner nếu chưa cấu hình keystore ổn định; không tự gỡ
 app đang dùng hoặc hứa cài đè giữ dữ liệu. Worker thật chưa có URL/deploy.
 Rà bố cục màn nhỏ: nút tỷ lệ giữ một dòng, padding2dp và vùng bấm48dp để tránh

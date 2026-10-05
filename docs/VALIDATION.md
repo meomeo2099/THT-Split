@@ -1,5 +1,26 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Mốc0.3.2 — giao diện bên trong và ủng hộ
+Code9c62c0400a0f181c0ccf62f769cdbae6b3ebc9e7; CI hoàn tất success:
+https://github.com/meomeo2099/THT-Split/actions/runs/37340679665.
+Build/unit/lint, Node regression tests, QR đúng profile/CRC và Wrangler dry-run
+đều đạt. Không deploy Worker. Máy phát triển không có zxingcpp ở mốc này;
+kiểm decode/CRC là bằng chứng CI, không ghi thành test local đã đạt.
+git diff --check đạt. Đối chiếu25 hàm xử lý trong MainActivity giữ nguyên sau
+chuẩn hóa alias style Ui→AppUi. Diff từ0.3.1 chỉ MainActivity/AppUi/build version
+và tài liệu; Ui/SplitService/Store/bridge/connection/core/remote/Voice/res/server
+giữ nguyên. Đặc biệt toolbar và grip khi chia không dùng AppUi.
+APK artifact11358341729: com.tht.split /code14 /0.3.2-test /min26 /target32;
+apksigner verify thành công. SHA256 APK:
+`73dbf90e5c431b4e5f09dc5dda20b6f7955e3f79181e2e55ebe862606730ffda`.
+Ảnh assets/donation-qr.jpg trong APK trùng bytes repo và giữ nguyên từ0.3.1.
+Cert SHA256 `a5e091df853a25e46aa22f79707c3d94ad5ecfef6b64b7b768b440aee3555155`
+khác0.3.1; không cài đè được APK0.3.1 đã gửi nếu dùng chữ ký đó. Không tự gỡ
+bản cũ hoặc nói sẽ giữ token/RSA/config khi phải gỡ cài lại.
+Chưa chạy UI bản0.3.2 trên LDPlayer/xe. Cần thử từng danh mục cài đặt, chữ/dropdown,
+chọn app/swap/ratio/lưu/sửa/xóa/mở cặp, copy STK và quét QR bằng app ngân hàng;
+kiểm cuộn và bố cục khi DPI/độ rộng khác. Build không chứng minh pixels/xe.
+
 ## Máy phát triển
 Đã chạy clean build rồi kiểm tra lại bản cuối:
 `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug` — BUILD SUCCESSFUL.

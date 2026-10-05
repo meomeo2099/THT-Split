@@ -43,7 +43,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 
 ## Kiểm tra cần tiếp trên xe
 1. Cài APK cùng signer bản test trước; cấp overlay, chọn ADB nội bộ/cổng thực tế, Kiểm tra.
-2. Xác nhận khóa nếu có → bridge UID2000/version2 → thử native/freeform.
+2. Xác nhận khóa nếu có → bridge UID2000/version3 → thử native/freeform.
 3. Reboot thật, đổi mạng Wi-Fi → gọi chia; ghi log/cổng/ảnh/insets/mode thật.
 4. Bật freeform bằng ADB lần đầu → chọn Off → quan sát cả hai app, thử swap/stop/fullscreen.
 5. Kiểm certificate/quyền platform trước thử system; không suy ra quyền từ cài được APK.
@@ -105,4 +105,4 @@ báo thiếu task; khôi phục fullscreen gây chồng app/ô trống.
 - Bridge nâng v3: cài APK không thay mã bridge đang chạy. Reboot màn/LDPlayer một lần
   rồi kết nối lại; nếu ADB nội bộ vẫn lỗi phải chạy lệnh bridge thủ công sau reboot.
 - Off vẫn có giới hạn launch bounds; sửa này không chứng minh Off resize task được.
-- Chưa kiểm bản0.2.5 trên LDPlayer/xe. Build/unit/lint sẽ xác minh qua CI.
+- Chưa kiểm bản0.2.5 trên LDPlayer/xe. CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37269596828.

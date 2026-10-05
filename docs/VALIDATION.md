@@ -56,3 +56,14 @@ https://github.com/meomeo2099/THT-Split/actions/runs/37262534677
 APK artifact: com.tht.split / versionCode4 /0.2.2-test/min26/target32.
 SHA256: 3eb9758bc98f7e119cfa09b88bcb7c1c1935f05a54fe2df00cc8110c99ff6a24.
 Cert v2 APK CI0.2.2 khác bản0.2.1 đã gửi; không cài đè được bản đó.
+
+## Mốc0.2.5 — phục hồi cửa sổ
+Commit38712989f64cddf324cd82640c64a8b219a4b4c2; GitHub Actions build/unit/lint đạt:
+https://github.com/meomeo2099/THT-Split/actions/runs/37269596828
+Thêm7 regression tests PairController cho thứ tự swap/rebuild và task/mode thiếu.
+Test dùng fake task manager, không chứng minh Binder/LDPlayer/xe thực tế.
+APK artifact: com.tht.split / versionCode7 /0.2.5-test/min26/target32.
+SHA256: 7ae9e2577c6081658b3f06103cd685c16c66970faa666a6b269bcfa3beb9bf8d.
+Bridge v3 cần reboot/kết nối lại để không dùng code v2 còn sống; không tự kill listener.
+APK CI dùng debug signer runner, không đảm bảo cập nhật đè bản test trước.
+Chưa kiểm bản mới trên LDPlayer/xe; Off không có quyền quản lý task.

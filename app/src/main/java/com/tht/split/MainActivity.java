@@ -20,7 +20,7 @@ import java.util.concurrent.*;
 public final class MainActivity extends Activity {
     private Store store;private LinearLayout root,body;private String page="home",section="layout";
     private final Handler refreshHandler=new Handler(Looper.getMainLooper());
-    private boolean refreshing; private final Runnable refreshTick=new Runnable(){public void run(){refreshRemote(false,false);refreshHandler.postDelayed(this,60000);}};
+    private boolean refreshing,downloading; private final Runnable refreshTick=new Runnable(){public void run(){refreshRemote(false,false);refreshHandler.postDelayed(this,60000);}};
     private final ExecutorService io=Executors.newSingleThreadExecutor();private String exportedLog;
     @Override public void onCreate(Bundle saved){super.onCreate(saved);store=new Store(this);if(saved!=null){page=saved.getString("page","home");section=saved.getString("section","layout");}render();}
     @Override protected void onSaveInstanceState(Bundle b){super.onSaveInstanceState(b);b.putString("page",page);b.putString("section",section);}
@@ -128,17 +128,17 @@ public final class MainActivity extends Activity {
         button(body,"Xuất log hỗ trợ",false,this::exportLog);String error=store.s("last_error","");if(!error.isEmpty())note("Lỗi gần nhất: "+error);
     }
     private void refreshRemote(boolean force,boolean show){
-        RemoteControl remote=new RemoteControl(this);if(!remote.configured()){if(show)toast(remote.status());return;}if(refreshing)return;refreshing=true;
+        RemoteControl remote=new RemoteControl(this);if(!remote.configured()){if(show)toast(remote.status());return;}if(refreshing)return;refreshing=true;final String before=remote.policy().toString()+remote.status()+remote.lastError();
         io.execute(()->{String result;try{remote.refresh(force);result=remote.status();}catch(Exception e){result=remote.lastError()+"\n"+remote.status();}final String message=result;
-            runOnUiThread(()->{refreshing=false;if(isFinishing()||isDestroyed())return;render();if(show)Ui.dialog(this).setTitle("Cập nhật & quyền sử dụng").setMessage(message).setPositiveButton("Đóng",null).show();});});
+            runOnUiThread(()->{refreshing=false;if(isFinishing()||isDestroyed())return;if(show||!before.equals(remote.policy().toString()+remote.status()+remote.lastError()))render();if(show)Ui.dialog(this).setTitle("Cập nhật & quyền sử dụng").setMessage(message).setPositiveButton("Đóng",null).show();});});
     }
-    private void downloadUpdate(){toast("Đang tải APK…");io.execute(()->{try{
+    private void downloadUpdate(){if(downloading){toast("Đang tải, vui lòng đợi");return;}downloading=true;toast("Đang tải APK…");io.execute(()->{try{
         RemoteControl r=new RemoteControl(this);r.refresh(true);JSONObject latest=r.policy().getJSONObject("latest");ApkUpdates.download(this,latest);
         runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()){render();Ui.dialog(this).setTitle("Đã kiểm tra APK").setMessage("Cài bản cập nhật "+latest.optString("versionName")+"?").setPositiveButton("Cài đặt",(d,n)->installDownloaded()).setNegativeButton("Để sau",null).show();}});
-        }catch(Exception e){String msg=com.tht.split.core.FailureText.describe(e);runOnUiThread(()->{if(!isDestroyed())Ui.dialog(this).setTitle("Không tải được cập nhật").setMessage(msg).setPositiveButton("Đóng",null).show();});}});
+        }catch(Exception e){String msg=com.tht.split.core.FailureText.describe(e);runOnUiThread(()->{if(!isDestroyed())Ui.dialog(this).setTitle("Không tải được cập nhật").setMessage(msg).setPositiveButton("Đóng",null).show();});}finally{runOnUiThread(()->downloading=false);}});
     }
     private void installDownloaded(){
-        if(!getPackageManager().canRequestPackageInstalls()){startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName())));toast("Cho phép cài từ THT Split, quay lại rồi bấm Tiếp tục cài APK đã tải");return;}
+        if(!getPackageManager().canRequestPackageInstalls()){try{startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName())));toast("Cho phép cài từ THT Split, quay lại rồi bấm Tiếp tục cài APK đã tải");}catch(ActivityNotFoundException e){toast("Firmware chưa có trang cấp quyền cài APK");}return;}
         io.execute(()->{try{ApkUpdates.install(this);}catch(Exception e){runOnUiThread(()->toast(com.tht.split.core.FailureText.describe(e)));}});
     }
     private void donation(){

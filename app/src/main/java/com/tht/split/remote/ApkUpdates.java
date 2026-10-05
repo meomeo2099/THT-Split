@@ -16,7 +16,7 @@ import org.json.JSONObject;
 public final class ApkUpdates {
     private ApkUpdates() {}
     /** Download never receives the device/admin credential, including after redirects. */
-    public static File download(Context c,JSONObject latest)throws Exception{
+    public static synchronized File download(Context c,JSONObject latest)throws Exception{
         File file=new File(c.getCacheDir(),"verified-update.apk"),part=new File(c.getCacheDir(),"update.part");
         int expected=latest.getInt("versionCode");if(expected<=BuildConfig.VERSION_CODE)throw new IOException("Đã dùng bản mới nhất");
         String url=latest.getString("apkUrl"),hash=latest.getString("sha256");if(!hash.matches("[a-fA-F0-9]{64}"))throw new IOException("Thiếu checksum");
@@ -44,9 +44,10 @@ public final class ApkUpdates {
         PackageManager pm=c.getPackageManager();PackageInfo next=pm.getPackageArchiveInfo(f.getAbsolutePath(),PackageManager.GET_SIGNATURES);
         PackageInfo current=pm.getPackageInfo(c.getPackageName(),PackageManager.GET_SIGNATURES);
         if(next==null||!c.getPackageName().equals(next.packageName)||next.versionCode!=expected||expected<=current.versionCode)throw new IOException("Sai package hoặc phiên bản APK");
-        if(next.signatures==null||current.signatures==null||!new HashSet<>(Arrays.asList(next.signatures)).equals(new HashSet<>(Arrays.asList(current.signatures))))throw new IOException("APK khác chữ ký. Cần bản phát hành cùng khóa ký; không gỡ app tự động");
+        if(next.applicationInfo==null||next.applicationInfo.minSdkVersion>Build.VERSION.SDK_INT)throw new IOException("APK không hỗ trợ phiên bản Android trên máy này");
+        if(next.signatures==null||current.signatures==null||next.signatures.length==0||current.signatures.length==0||!new HashSet<>(Arrays.asList(next.signatures)).equals(new HashSet<>(Arrays.asList(current.signatures))))throw new IOException("APK khác chữ ký. Cần bản phát hành cùng khóa ký; không gỡ app tự động");
     }
-    public static boolean install(Activity a)throws Exception{
+    public static synchronized boolean install(Activity a)throws Exception{
         if(!a.getPackageManager().canRequestPackageInstalls()){a.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+a.getPackageName())));return false;}
         File f=new File(a.getCacheDir(),"verified-update.apk");int version=new Store(a,"tht_remote").i("download_version",0);verify(a,f,version);
         PackageInstaller installer=a.getPackageManager().getPackageInstaller();PackageInstaller.SessionParams params=new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);params.setAppPackageName(a.getPackageName());params.setSize(f.length());

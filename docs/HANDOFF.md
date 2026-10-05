@@ -13,6 +13,8 @@ Chưa deploy Worker, chưa có URL/ngân hàng/QR thật/keystore ổn định. 
 thiếu CONTROL_URL hiện rõ chưa cấu hình và vẫn dùng bộ chia để kiểm thử.
 Release workflow bắt buộc endpoint/secrets ký; không coi test APK là bản đã khóa từ xa.
 Node server regression đạt6 tests local. Android CI đang chờ kiểm tra ở mốc này.
+Tách khóa identity khỏi khóa mạng để UI không đợi HTTP khi hiện mã thiết bị;
+không dựng lại UI nếu policy không đổi, serialize APK download/install qua Activity recreate.
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.

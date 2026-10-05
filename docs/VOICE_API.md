@@ -76,9 +76,9 @@ Popup, STT/TTS, HVAC và tìm đường Vietmap thuộc Voice. Không dành vùn
 Từ0.2.8 fullscreen/stop ADB/system cũng đọc lại mode/bounds task được chọn.
 Nếu không khớp display thực, trả requested/LAYOUT_UNVERIFIED; client đọc message.
 Verified=true vẫn không chứng minh nội dung Maps/OpenGL đã vẽ đầy cửa sổ.
-# Quản lý sử dụng từ0.3.0
+## Quản lý sử dụng từ0.3.0
 Mọi lệnh vẫn đi qua SplitService. Máy pending/locked/hết lease/bản cũ bắt buộc
 cập nhật trả `error/ACCESS_BLOCKED`; client hiện message và hướng người dùng vào
 Cài đặt → Cập nhật của Split. Không đổi token Voice/bridge để giải quyết lỗi này.
 Stop/Home/Hide vẫn được xử lý để thoát. Cơ chế này chỉ hoạt động khi APK đã cấu
-hình Worker thật; xem REMOTE_CONTROL.md. Tài liệu API cũ tiếp tục bên dưới.
+hình Worker thật; xem REMOTE_CONTROL.md.

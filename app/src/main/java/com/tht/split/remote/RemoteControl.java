@@ -14,12 +14,12 @@ import org.json.*;
 
 /** No publisher credential in the APK. Each installation owns a private random credential. */
 public final class RemoteControl {
-    private static final Object LOCK = new Object();
+    private static final Object LOCK = new Object(), ID_LOCK = new Object();
     private final Store store;
     private final Context context;
     public RemoteControl(Context c) { context=c.getApplicationContext();store = new Store(c, "tht_remote"); }
     public boolean configured() { return !BuildConfig.CONTROL_URL.isEmpty(); }
-    public String deviceId() { synchronized (LOCK) { String id=store.s("device_id","");
+    public String deviceId() { synchronized (ID_LOCK) { String id=store.s("device_id","");
         if(id.isEmpty()){
             String scoped=Settings.Secure.getString(context.getContentResolver(),Settings.Secure.ANDROID_ID);
             if(scoped==null||scoped.isEmpty())id=UUID.randomUUID().toString();
@@ -48,12 +48,12 @@ public final class RemoteControl {
             con.setConnectTimeout(8000);con.setReadTimeout(8000);con.setInstanceFollowRedirects(false);con.setRequestMethod("POST");con.setDoOutput(true);
             con.setRequestProperty("Content-Type","application/json");con.setRequestProperty("Accept","application/json");
             try {try(OutputStream out=con.getOutputStream()){out.write(body.toString().getBytes(StandardCharsets.UTF_8));}
-                if(con.getResponseCode()!=200)throw new IOException("Dịch vụ trả HTTP "+con.getResponseCode());
+                int code=con.getResponseCode();if(code==403)throw new IOException("Thông tin thiết bị thay đổi; nhờ nhà phát hành khôi phục đăng ký");if(code!=200)throw new IOException("Dịch vụ trả HTTP "+code);
                 JSONObject p=new JSONObject(read(con.getInputStream(),65536));validate(p);
                 if(!deviceId().equals(p.getString("deviceId")))throw new IOException("Phản hồi sai thiết bị");
                 if(!store.prefs.edit().putString("policy",p.toString()).putLong("checked_at",System.currentTimeMillis()).putString("error","").commit())throw new IOException("Không lưu được chính sách");
             }finally{con.disconnect();}
-        }catch(Exception e){store.set("error","Không liên hệ được dịch vụ. Giữ chính sách đã lưu.");throw e;}
+        }catch(Exception e){store.set("error",com.tht.split.core.FailureText.describe(e)+". Giữ chính sách đã lưu.");throw e;}
     } }
     public void require(String command) throws Exception {if(AccessRules.exitCommand(command))return;
         try{refresh(false);}catch(Exception ignored){}String d=denial();if(!d.isEmpty())throw new AccessDenied(d); }

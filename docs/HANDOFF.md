@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.3.4-test
+# Bàn giao THT Split — 0.3.4-test, 06/10/2026
 
 ## Mốc sửa nền hộp thoại và chữ cài đặt
 Ảnh phản hồi cuối05/10: hộp Bật freeform có chữ lẫn trang phía sau, thiếu nền
@@ -15,7 +15,11 @@ chung cột có weight để không tràn ngang. Filter/chọn package giữ ngu
 Spinner chọn/dropdown sáng trên navy, tối đa2 dòng; bỏ ép control48dp để nhãn
 được đo đủ chiều cao. Nút cài đặt nhiều chữ cao theo nội dung, tối thiểu52dp;
 dòng setting/opacity co giãn, màn<600dp tách nhãn và ô chọn thành2 hàng.
-0.3.4-test/code16 chờ CI. Chưa chạy UI bản sửa trên LDPlayer/xe. Service/engine/
+0.3.4-test/code16: CI build/unit/lint, Node tests, QR/profile/CRC và Wrangler dry-run
+đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37345958636.
+Code27bbd74229c75ee42393c519a493c1fcf1fab77d. APK kiểm package/code/signature,
+QR bytes nguyên trạng; signer khác0.3.3 nên không cài đè bản đó. Xem VALIDATION.
+Chưa chạy UI bản sửa trên LDPlayer/xe. Service/engine/
 backend/Bridge v6/Voice/Store/remote/server/QR và căn toolbar trái/phải giữ nguyên;
 dialog toolbar hưởng style chung, nội dung thanh/grip không đổi.
 

@@ -1,5 +1,25 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Mốc0.3.4 — nền hộp thoại và chữ cài đặt,06/10/2026
+Code27bbd74229c75ee42393c519a493c1fcf1fab77d; CI hoàn tất success:
+https://github.com/meomeo2099/THT-Split/actions/runs/37345958636.
+Build/unit/lint, Node tests, QR đúng profile/CRC, Wrangler dry-run đều đạt.
+git diff --check đạt; Ui.Icon đối chiếu nguyên trạng. Service/engine/Store,
+backend/bridge/core/remote/Voice/server/assets giữ nguyên. Tất cả dialog
+callsites trong MainActivity/AppPicker/SplitService đi qua Ui.dialog/AppUi.dialog;
+factory sửa opaque background/dim/width tại create không thay OnShowListener.
+APK artifact11361025097: com.tht.split /code16 /0.3.4-test /min26 /target32;
+apksigner verify thành công; QR asset trong APK trùng bytes repo. SHA256 APK:
+`53069499ba8318652d1e42a787b675d7dec5b8b2f2d5792eafd5d08d48e0ee28`.
+Cert SHA256 `48eac7f7f5b29b961fc18e6be36ae6ec6d4302b7c23f116a2bcbe8ea16ed968d`
+khác0.3.3 đã gửi, không cài đè APK đó. Không tự gỡ app/xóa cấu hình để vượt signer.
+Chưa có ảnh UI/emulator/xe của0.3.4; CI không chứng minh đã hết lỗi trên firmware.
+Cần kiểm freeform dialog trong ảnh phản hồi và các dialog overlay/token/đổi token/
+transport/ADB/px/edit/delete/kết quả/update/lỗi/picker/toolbar: nền đặc/viền/dim,
+nút không lẫn phía sau; title/list/form đọc rõ, cuộn tới cuối, keyboard không giấu
+Lưu/Hủy, nhập sai vẫn báo lỗi và không lưu; Hủy không đổi cấu hình. Kiểm dropdown
+và nhãn dài ở từng tab/độ rộng/fontScale, toolbar trái/phải/grip giữ chức năng cũ.
+
 ## Mốc0.3.3 — nhóm nút trái/phải và Sửa/Xóa rõ hơn
 Code e1dd80bad24ef73b447507c7bb49faf52fd97cc1; CI success:
 https://github.com/meomeo2099/THT-Split/actions/runs/37343461485.

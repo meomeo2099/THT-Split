@@ -45,8 +45,8 @@ Khi có kết quả backend còn có `verified`, `transport`, `sdk`.
 
 | status | Ý nghĩa và câu phản hồi Voice |
 |---|---|
-| success | Backend thực hiện xong; native/freeform kiểm mode lúc mở cặp. Không chứng minh nội dung app đã vẽ đúng/insets đúng. |
-| requested | Off gửi yêu cầu ActivityOptions; không xác minh bố cục. Nói “Đã gửi yêu cầu chia màn”, không nói đã chia thành công. |
+| success | Backend thực hiện xong; từ0.2.7 native/freeform kiểm mode, stack riêng và bounds cả hai. Không chứng minh nội dung app đã vẽ đúng. |
+| requested | Off gửi yêu cầu ActivityOptions hoặc ADB/system có bounds read-back chưa khớp. Đọc message; không nói đã chia thành công. |
 | error | Hiện/đọc lỗi; không tự đổi sang phương thức khác hoặc mở thêm app |
 
 Mã lỗi: API_DISABLED, INVALID_COMMAND, INVALID_ARGUMENT, OVERLAY_REQUIRED, BUSY,

@@ -1,11 +1,11 @@
-# Cài và kiểm thử 0.2.6-test trên EX2
+# Cài và kiểm thử 0.2.7-test trên EX2
 
 Chưa test xe thật. Android headunit phải có ADB mở sẵn; app không mở khóa ADB hoặc
 thay firmware/OTA. Quan sát bố cục khi xe đang đỗ.
 
 ## Cài lần đầu
 ```sh
-adb install -r THT-Split-0.2.6-test.apk
+adb install -r THT-Split-0.2.7-test.apk
 adb shell appops set com.tht.split SYSTEM_ALERT_WINDOW allow
 ```
 Nếu khác chữ ký, không gỡ app khi còn dữ liệu cặp cần giữ. Dùng khóa cũ hoặc ghi lại
@@ -126,3 +126,11 @@ Off không có quyền sửa task, kiểm riêng và không suy kết quả ADB 
    replace/fullscreen/restore nhận UNSUPPORTED_OPERATION, không đổi session.
 6. Off hide/show/Home vẫn chạy. Khi task đã fullscreen từ ngoài app, Off không
    đảm bảo dựng lại được; đóng cửa sổ đó hoặc chuyển ADB, không tạo task trùng.
+
+## Kiểm tra0.2.7 / bridge v5
+Cài, reboot/kết nối bridge lại. ADB/native: thử30/40/50/60/70 khi thanh hiện, ẩn,
+và sau fullscreen/restore. Hai app phải cùng top/bottom, không nằm sau toolbar
+và không vào vùng điều hòa. Đổi khoảng chừa rồi khôi phục cặp để áp dụng.
+Nếu toast Android chưa giữ bounds: xuất log hỗ trợ (last_layout có expected/actual
+cả hai bên). Có thể chọn cửa sổ tự do thủ công; không fallback tự động.
+Verified chỉ xác nhận mode/stack/bounds read-back, không xác nhận nội dung đã vẽ.

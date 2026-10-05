@@ -70,3 +70,9 @@ trước đổi mode (Android9 setTaskWindowingMode đổi cả stack). Service 
 cấu hình của chính THT trước mở cặp; không đóng task bên thứ ba. Off bỏ adjacent
 flag; chỉ mở + overlay. X không chuyển task sang fullscreen; policy chặn điều khiển
 task cả UI và Voice. Các mô tả Off ratio/drag0.2.1 ở trên là lịch sử, không còn áp dụng.
+
+## Bounds từ0.2.7
+Native: resizeDockedStack trái rồi resizeStack phải với allowResizeInDockedMode.
+Read-back getTaskBounds cho cả hai, đối chiếu vùng chia sai số2px. Backend giữ
+verified=false của bridge nếu bounds chưa đúng. Log hỗ trợ có expected/actual
+bounds; không coi mode3/4 là chứng minh khoảng chừa đã được áp dụng.

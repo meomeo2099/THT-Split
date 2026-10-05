@@ -18,10 +18,10 @@ public final class Backend {
         if(method.equals("system")){
             if(!systemGranted(context))throw new IOException("APK chưa được cấp MANAGE_ACTIVITY_STACKS. Cài được không có nghĩa đã có quyền hệ thống.");
             HiddenAccess.allow("Landroid/app/ActivityOptions;","Landroid/app/ActivityManager","Landroid/app/ActivityTaskManager;","Landroid/app/IActivityManager","Landroid/app/IActivityTaskManager","Landroid/content/res/Configuration;","Landroid/app/WindowConfiguration;");
-            return ShellServer.systemCall(context,q).put("verified",true).put("transport",method);
+            JSONObject result=ShellServer.systemCall(context,q);return result.put("verified",result.optBoolean("verified",true)).put("transport",method);
         }
         if(!method.equals("adb"))throw new IOException("Phương thức điều khiển không hợp lệ");
-        ConnectionManager.ensure(context);return new ShellClient(settings).call(q).put("verified",true).put("transport",method);
+        ConnectionManager.ensure(context);JSONObject result=new ShellClient(settings).call(q);return result.put("verified",result.optBoolean("verified",true)).put("transport",method);
     }
     public JSONObject ping()throws Exception{return call(new JSONObject().put("op","PING"));}
     public boolean resizeSupported(){return !method.equals("off");}

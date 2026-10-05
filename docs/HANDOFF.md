@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.2.6-test, 05/10/2026
+# Bàn giao THT Split — 0.2.7-test, 05/10/2026
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
@@ -16,7 +16,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 |---|---|
 | UI/preset/overlay | Giữ chọn hai app, CRUD, ẩn/hiện, tỷ lệ, đổi bên, fullscreen, Home/X |
 | ADB nội bộ | Client RSA TCP original; khóa private lưu noBackupFiles; localhost mặc định, cổng chỉnh được; chỉ địa chỉ chính thiết bị |
-| Bridge v4 | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
+| Bridge v5 | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
 | Boot/cập nhật | Foreground ConnectionService chuẩn bị bridge nếu tùy chọn bật; khi lệnh tới tiếp tục thử kết nối |
 | Off | ActivityOptions freeform với bounds và scoped hidden API access; status=requested; không giả lập resize task |
 | Hệ thống | Kiểm MANAGE_ACTIVITY_STACKS trước chọn/chạy; gọi backend trực tiếp, không shared UID trong APK thường |
@@ -43,7 +43,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 
 ## Kiểm tra cần tiếp trên xe
 1. Cài APK cùng signer bản test trước; cấp overlay, chọn ADB nội bộ/cổng thực tế, Kiểm tra.
-2. Xác nhận khóa nếu có → bridge UID2000/version4 → thử native/freeform.
+2. Xác nhận khóa nếu có → bridge UID2000/version5 → thử native/freeform.
 3. Reboot thật, đổi mạng Wi-Fi → gọi chia; ghi log/cổng/ảnh/insets/mode thật.
 4. Bật freeform bằng ADB lần đầu → chọn Off → quan sát cả hai app, thử swap/stop/fullscreen.
 5. Kiểm certificate/quyền platform trước thử system; không suy ra quyền từ cài được APK.
@@ -128,3 +128,18 @@ cấu hình THT còn ở bên phải. Video7,8s: Off mở lại thành YouTube f
 - Thêm test stack-wide mode, task reuse bỏ qua launch mode, shared freeform và policy.
 - Chưa thử bản sửa trên LDPlayer/xe; CI build/unit/lint đạt:
   https://github.com/meomeo2099/THT-Split/actions/runs/37271611577.
+
+## Sửa khoảng chừa native0.2.7
+Ảnh LDPlayer0.2.6: Maps trái có vùng đen trên/dưới; YouTube phải full chiều cao
+và bị toolbar đè. Code native chỉ resizeDockedStack với bounds trái; Android tự
+tính secondary theo display, chưa áp bounds phải.
+- Sau dock resize, resizeStack của app phải với bounds phải/allowResizeInDockedMode
+  true/preserveWindows false/animate false. Không gọi resizeTask cho native vì
+  API Android9 có thể chuyển task sang freeform hoặc từ chối.
+- Đọc getTaskBounds cả hai sau layout/resize, đợi tối đa400ms nếu đang thay đổi.
+  So sánh bốn cạnh với sai số2px; mode đúng chưa đủ để verified=true.
+- Backend giữ verified từ bridge, không ghi đè true. Nếu firmware không giữ bounds,
+  callback requested + note; UI báo và log last_layout lưu requested/actual/stack/mode.
+- Tests bắt secondary tràn display, tỷ lệ bị snap khác yêu cầu, sai số pixel.
+- Bridge v5 cần reboot/kết nối lại. Không thay Off đã khóa task controls.
+- Chưa thử bản sửa trên LDPlayer/xe; CI sẽ kiểm build/unit/lint.

@@ -4,6 +4,8 @@ import android.graphics.Rect;
 import android.os.Process;
 import com.tht.split.core.TaskParser;
 import com.tht.split.core.PairController;
+import com.tht.split.core.BoundsCheck;
+import com.tht.split.core.LayoutMath;
 import org.json.*;
 import java.io.*;
 import java.net.*;
@@ -113,10 +115,27 @@ public final class ShellServer {
         if(mode.equals("native")){
             // Final bounds: no temporary task/inset rectangles from divider animation.
             invoke("resizeDockedStack",new Class<?>[]{Rect.class,Rect.class,Rect.class,Rect.class,Rect.class},left,null,null,null,null);
+            // Android derives the secondary from the whole display, losing custom top/bottom
+            // reservations. Apply its final stack bounds explicitly after the dock resize.
+            invoke("resizeStack",new Class<?>[]{int.class,Rect.class,boolean.class,boolean.class,boolean.class,int.class},stackId(rightTask),right,true,false,false,-1);
         }else{
             invoke("resizeTask",new Class<?>[]{int.class,Rect.class,int.class},leftTask,left,0);
             invoke("resizeTask",new Class<?>[]{int.class,Rect.class,int.class},rightTask,right,0);
         }
+    }
+    private static LayoutMath.Box box(Rect r){return new LayoutMath.Box(r.left,r.top,r.right,r.bottom);}
+    private static JSONArray bounds(Rect r){return new JSONArray(new int[]{r.left,r.top,r.right,r.bottom});}
+    private static JSONObject observedBounds(int lt,int rt,Rect left,Rect right)throws Exception {
+        Rect actualLeft=null,actualRight=null;boolean match=false;
+        for(int i=0;i<5;i++){
+            actualLeft=(Rect)invoke("getTaskBounds",new Class<?>[]{int.class},lt);
+            actualRight=(Rect)invoke("getTaskBounds",new Class<?>[]{int.class},rt);
+            match=BoundsCheck.matches(box(left),box(actualLeft),2)&&BoundsCheck.matches(box(right),box(actualRight),2);
+            if(match)break;
+            if(i<4)Thread.sleep(100);
+        }
+        return new JSONObject().put("verified",match).put("expectedLeftBounds",bounds(left)).put("expectedRightBounds",bounds(right)).put("actualLeftBounds",bounds(actualLeft)).put("actualRightBounds",bounds(actualRight))
+            .put("note",match?"Android giữ đúng bounds yêu cầu":"Android chưa giữ đúng tỷ lệ/khoảng chừa yêu cầu; kiểm log hoặc chọn cửa sổ tự do trong cài đặt");
     }
     private static String mode(JSONObject q){String m=q.optString("mode","native");if(!m.equals("native")&&!m.equals("freeform"))throw new IllegalArgumentException("Mode");return m;}
     private static void writeSetting(String key,String value)throws Exception {
@@ -125,7 +144,7 @@ public final class ShellServer {
     }
     private static JSONObject handle(JSONObject q)throws Exception{
         String op=q.getString("op");JSONObject out=new JSONObject();
-        if(op.equals("PING"))return out.put("bridgeVersion",4).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
+        if(op.equals("PING"))return out.put("bridgeVersion",5).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
             String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];
@@ -152,7 +171,7 @@ public final class ShellServer {
             },mode.equals("native"));
             if(op.equals("LAYOUT"))controller.layout();else controller.resize();
             int lt=task(leftPkg),rt=task(rightPkg);
-            return out.put("leftTask",lt).put("rightTask",rt).put("leftStack",stackId(lt)).put("rightStack",stackId(rt)).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
+            return observedBounds(lt,rt,l,r).put("leftTask",lt).put("rightTask",rt).put("leftStack",stackId(lt)).put("rightStack",stackId(rt)).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
         }
         int lt=task(leftPkg),rt=task(rightPkg);
         if(op.equals("FULLSCREEN")||op.equals("STOP")){

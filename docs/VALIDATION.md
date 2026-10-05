@@ -39,3 +39,10 @@ khoảng ổn định cấu hình. Chưa chạy bản sửa trên LDPlayer/xe; k
 `git diff --check` đạt. Build local bị chặn do cache AGP8.7.3 không còn và không
 truy cập kho phụ thuộc; cần xem workflow tương ứng commit0.2.1, không dùng17tests
 bản0.2.0 làm kết quả build bản sửa. Package giữ nguyên, versionCode3.
+
+CI bản0.2.1 đã đạt build/unit/lint tại commit d871475a25f725cfa381935d25dca40b2abbbfa8:
+https://github.com/meomeo2099/THT-Split/actions/runs/37261177497
+APK tải từ artifact: package com.tht.split, versionCode3,0.2.1-test,min26,target32.
+SHA256: e34bc1e70d87650b0c400188f5c1c65c9e8826d0ed3795bd24ffee1fe55cd968.
+APK CI dùng khóa debug runner; khóa ký máy phát triển cũ không còn trong workspace,
+không đảm bảo cập nhật đè APK0.2.0. Không gỡ bản cũ để vượt lỗi chữ ký khi chưa giữ cấu hình.

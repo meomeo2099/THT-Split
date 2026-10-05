@@ -54,7 +54,7 @@ JDK17/SDK35/Gradle8.9/AGP8.7.3. `./gradlew :app:testDebugUnitTest :app:lintDebug
 Chi tiết kết quả thật ở VALIDATION.md. Khóa ký release/token/khóa ADB không ở git.
 APK CI dùng debug key của runner; không đảm bảo cập nhật đè bản test ký máy khác.
 
-## Kết quả máy phát triển ở mốc này
+## Bằng chứng máy phát triển ở mốc0.2.0
 Build APK0.2, 17 unit tests và lint đạt (0 lỗi). Apksigner v2 hợp lệ;
 compile-only Unsafe stub không có trong APK. Xem VALIDATION.md cho giới hạn và checksum.
 
@@ -64,4 +64,5 @@ compile-only Unsafe stub không có trong APK. Xem VALIDATION.md cho giới hạ
   thanh điều khiển chỉ trở lại sau backend và khoảng ổn định tùy chọn.
 - Bỏ moveTaskToBack ngay khi bấm; không lộ launcher khi backend chưa mở app.
 - Chưa chứng minh bounds task cũ đổi được trong Off. Test theo DEVICE_TEST.
-- Cache phụ thuộc Gradle máy phát triển không còn đủ; xem CI của commit0.2.1 để xác minh build.
+- Cache phụ thuộc Gradle máy phát triển không còn đủ; CI0.2.1 build/unit/lint đạt:
+  https://github.com/meomeo2099/THT-Split/actions/runs/37261177497. APK CI khác signer có thể không cài đè bản cũ.

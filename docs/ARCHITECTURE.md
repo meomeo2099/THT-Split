@@ -28,7 +28,9 @@ flowchart TD
 - Socket ADB đóng sau bootstrap. Chuyển Off không mở/gửi lệnh shell; daemon bridge
   đã mở trước đó có thể còn sống nhưng không được Off sử dụng. Không tự kill tiến trình.
 - Off luôn freeform, geometry không trừ toolbar vì không resize được khi ẩn/hiện;
-  toolbar là overlay tạm. Không vạch kéo/tỷ lệ live. Launch trả requested, verified=false.
+  toolbar là overlay tạm. Ratio/drag gửi lại launch với bounds mới; không resizeTask, không xác minh được bounds.
+  Launch/ratio trả requested, verified=false. Màn chờ overlay chỉ che vùng app,
+  worker chờ thêm tối đa3s; không chặn main thread hoặc khẳng định app đã tải xong.
 - System dùng MANAGE_ACTIVITY_STACKS được Android cấp; không giả mạo UID/certificates.
   Bản thường không dùng sharedUserId, chỉ cho chọn system nếu quyền thực đã có.
 - Scoped hidden API exemptions chỉ trong process ứng dụng; không sửa hidden_api_policy

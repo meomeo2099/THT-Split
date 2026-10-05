@@ -89,7 +89,7 @@ cặp đã gửi thành công; nếu trạng thái không rõ thì hỏi bên tr
 - Test parser câu gần giống lệnh HVAC/media, packages thiếu và biến thể YouTube.
 - Test callback thành công/lỗi/requested/BUSY/timeout, token sai và chữ ký khác.
 - Test khi chưa cấp overlay, chưa bật API, lần đầu xác nhận khóa ADB, reboot, đổi Wi-Fi.
-- Test Off không báo thành công giả; ratio đang chạy phải báo hạn chế.
+- Test Off không báo thành công giả; ratio từ0.2.1 phải trả requested, không nói đã đổi bố cục thành công.
 - Build/lint kiểm tra repo Voice; giữ package và khóa ký đang phát hành.
 - Commit bằng tiếng Việt; cập nhật HANDOFF Voice và đẩy GitHub.
 - Ghi rõ chưa test xe nếu chỉ chạy máy phát triển. Không thay đổi firmware/OTA.

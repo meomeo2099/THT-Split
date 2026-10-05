@@ -19,12 +19,12 @@ public final class DirectWindows {
         if(op.equals("PING"))return new JSONObject().put("uid",android.os.Process.myUid()).put("sdk",Build.VERSION.SDK_INT).put("verified",false).put("note","Off: mở trực tiếp; không xác minh cửa sổ app khác");
         if(op.equals("HOME")){onMain(()->context.startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));return requested();}
         if(op.startsWith("FREEFORM_"))throw new IOException("Off không có quyền đổi thiết lập Android. Bật freeform bằng ADB một lần trước.");
-        if(op.equals("RESIZE"))throw new IOException("Off không hỗ trợ đổi kích thước cửa sổ đang chạy. Chọn tỷ lệ trước khi mở hoặc dùng ADB nội bộ.");
-        if(op.equals("LAYOUT")){
+        if(op.equals("LAYOUT")||op.equals("RESIZE")){
             if(Settings.Global.getInt(context.getContentResolver(),"enable_freeform_support",0)!=1&&!context.getPackageManager().hasSystemFeature("android.software.freeform_window_management"))throw new IOException("Cần bật hỗ trợ freeform trước khi dùng Off");
             String left=q.getString("left"),right=q.getString("right");if(left.equals(right))throw new IOException("Chọn hai ứng dụng khác nhau");
             Rect l=rect(q.getJSONArray("leftBounds")),r=rect(q.getJSONArray("rightBounds"));
-            onMain(()->{launch(left,5,l);launch(right,5,r);});return requested();
+            onMain(()->launch(left,5,l));
+            onMain(()->launch(right,5,r));return requested();
         }
         if(op.equals("FULLSCREEN")||op.equals("STOP")){
             String side=q.optString("side","left");if(!side.equals("left")&&!side.equals("right"))throw new IOException("Bên trái/phải không hợp lệ");

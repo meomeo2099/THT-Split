@@ -30,7 +30,7 @@ Không truyền token trong callback. V1 token không callback vẫn được gi
 | start | left, right; ratio tùy chọn | Mở cặp; thiếu app dùng cấu hình đã nhớ |
 | preset | presetId | Mở cặp theo ID đã lưu |
 | replace | side=left/right, package | Đổi một bên |
-| ratio | ratio int | Tỷ lệ trái clamp 30–70; Off từ chối resize khi đang chạy |
+| ratio | ratio int | Tỷ lệ trái clamp 30–70; Off0.2.1 gửi lại launch bounds, trả requested |
 | swap | Không | Đổi bên, giữ tỷ lệ |
 | fullscreen | side=left/right | App được chọn toàn màn |
 | restore | Không | Khôi phục cặp và tỷ lệ |
@@ -63,7 +63,8 @@ Voice không lựa chọn backend qua intent. Split dùng Cài đặt → Phươ
   Tự xác thực RSA TCP, mở bridge nếu chưa có listener và kiểm UID shell.
   Tùy chọn chuẩn bị lúc boot/cập nhật; nếu boot chưa sẵn sàng sẽ thử khi nhận lệnh.
 - Off: yêu cầu mở freeform trực tiếp, không bridge. Freeform cần bật sẵn;
-  chọn tỷ lệ trước khi mở, không kéo/resize task đang chạy.
+  ratio từ0.2.1 gửi lại launch bounds, không resizeTask, firmware có thể bỏ qua.
+  Màn chờ khi mở cặp kết thúc sau khoảng ổn định cấu hình; không chứng minh nội dung tải xong.
 - Quyền hệ thống: chỉ chọn được khi MANAGE_ACTIVITY_STACKS đã được cấp.
   Không tự cấp quyền, không có sharedUserId trong APK thường.
 

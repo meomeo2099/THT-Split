@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.2.0-test, 05/10/2026
+# Bàn giao THT Split — 0.2.1-test, 05/10/2026
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
@@ -24,14 +24,15 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 | Hướng dẫn Voice | THTVOICE_INTEGRATION.md có manifest/client Java/mapping/callback và các phần cần sửa ở Voice |
 
 ## Giới hạn thật
-- Chưa chạy EX2/điện thoại/emulator; không coi build/unit test là kiểm thử xe.
+- Người dùng đã thử 0.2.0 trên LDPlayer bằng Off: chia được, tỷ lệ bị khóa. Bản sửa chưa được thử LDPlayer/xe.
 - ADB nội bộ hỗ trợ ADB TCP RSA cổ điển, không ADB TLS/pairing Android 11+.
 - Phải xác nhận khóa ADB lần đầu nếu firmware bật xác thực. Không tự vượt hộp thoại.
 - ADB phải được firmware bật sau reboot; app không tự mở khóa/bật adbd.
 - Boot có thể đến trước adbd/Wi-Fi; sẽ thử lại khi chia. Force-stop app có thể chặn boot receiver.
 - Bridge 0.1 cũ đang chạy cần reboot màn để nạp bridge v2; không tự kill theo tên chung.
 - Off chỉ yêu cầu hệ thống mở cửa sổ, không xác minh được task của app khác;
-  tỷ lệ chọn trước khi mở, ratio/drag đang chạy bị khóa. Hide/show chỉ đổi overlay.
+  từ 0.2.1 ratio/drag gửi lại launch bounds khi thả tay, có thể bị firmware bỏ qua.
+  Không force-stop/xóa dữ liệu/tạo MULTIPLE_TASK. Hide/show chỉ đổi overlay.
 - Hệ thống vẫn cần chữ ký/quyền phù hợp; không có khóa platform được tạo hoặc đưa vào git.
 - Backend quyền hệ thống là nhánh có điều kiện, không phải APK debug tự có quyền.
 - Native Android 9 ưu tiên; reflection Android mới/OEM có thể khác và báo lỗi.
@@ -56,3 +57,11 @@ APK CI dùng debug key của runner; không đảm bảo cập nhật đè bản
 ## Kết quả máy phát triển ở mốc này
 Build APK0.2, 17 unit tests và lint đạt (0 lỗi). Apksigner v2 hợp lệ;
 compile-only Unsafe stub không có trong APK. Xem VALIDATION.md cho giới hạn và checksum.
+
+## Mốc sửa sau phản hồi LDPlayer
+- 0.2.1: bỏ khóa tỷ lệ Off; vạch kéo48×80dp, gửi yêu cầu khi thả, không resize liên tục.
+- Màn chờ hiển thị trước khi worker mở app, dọn khi thành công/lỗi/hủy service;
+  thanh điều khiển chỉ trở lại sau backend và khoảng ổn định tùy chọn.
+- Bỏ moveTaskToBack ngay khi bấm; không lộ launcher khi backend chưa mở app.
+- Chưa chứng minh bounds task cũ đổi được trong Off. Test theo DEVICE_TEST.
+- Cache phụ thuộc Gradle máy phát triển không còn đủ; xem CI của commit0.2.1 để xác minh build.

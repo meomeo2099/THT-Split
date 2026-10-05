@@ -1,11 +1,11 @@
-# Cài và kiểm thử 0.2.0-test trên EX2
+# Cài và kiểm thử 0.2.1-test trên EX2
 
 Chưa test xe thật. Android headunit phải có ADB mở sẵn; app không mở khóa ADB hoặc
 thay firmware/OTA. Quan sát bố cục khi xe đang đỗ.
 
 ## Cài lần đầu
 ```sh
-adb install -r THT-Split-0.2.0-test.apk
+adb install -r THT-Split-0.2.1-test.apk
 adb shell appops set com.tht.split SYSTEM_ALERT_WINDOW allow
 ```
 Nếu khác chữ ký, không gỡ app khi còn dữ liệu cặp cần giữ. Dùng khóa cũ hoặc ghi lại
@@ -37,8 +37,9 @@ adb shell settings put global force_resizable_activities 1
 Ghi giá trị cũ của hai lệnh get trước khi đổi bằng máy tính. Nếu dùng nút trong app,
 app lưu giá trị cũ và có nút khôi phục. Có thể cần reboot; không tự thay policy hidden API toàn hệ thống.
 
-Tắt phiên đang chia → Cài đặt → Off. Chọn tỷ lệ trước khi mở cặp. Không có bridge,
-không vạch kéo/nút tỷ lệ live; toolbar là overlay tạm, hide/show không resize app.
+Tắt phiên đang chia → Cài đặt → Off. Có nút tỷ lệ và vạch kéo của THT Split. Thả tay mới gửi yêu cầu
+mở lại hai app với bounds mới; không dùng bridge/resizeTask. Firmware có thể bỏ qua
+bounds của task đang chạy. Toolbar là overlay tạm, hide/show không resize app.
 Quan sát native launch: firmware/app có thể bỏ qua bounds hoặc tái tạo Activity.
 Off trả requested, verified=false; không coi đó là đã chia thành công.
 
@@ -66,7 +67,7 @@ Nếu port bị chiếm/token không khớp: đọc log, xác minh đúng PID tr
 | Native/freeform | Hai app, mode/bounds/insets thật đúng | Chờ xe |
 | Resize/drag ADB | Năm tỷ lệ, kéo/thả; không mất trạng thái app | Chờ xe |
 | Off | Hai app được mở đúng bounds hoặc ghi rõ firmware không hỗ trợ | Chờ xe |
-| Off ratio live | UI khóa; API báo hạn chế | Chờ xe |
+| Off ratio/drag | Thử 30/50/70 và kéo/thả; quan sát bounds thật, callback requested | Chờ LDPlayer/xe |
 | Hide/show/Home/X | Đúng hành vi, không nhét launcher xe vào ô phụ | Chờ xe |
 | Presets | Lưu/sửa/xóa/restart không mất cấu hình | Chờ xe |
 | Voice v2 | Token/signature/callback/requested/error/busy/timeout | Chờ tích hợp Voice |
@@ -87,3 +88,10 @@ adb shell wm density
 Log xuất từ app không gồm token/private key. Dumpsys có tên app, xem trước khi chia sẻ.
 Ghi firmware/API/cổng/mode/ảnh/thao tác. Khi lỗi dùng Home/thanh xe, thử lại X sau
 khi kết nối. Freeform có nút khôi phục trong app với ADB/system; Off không có quyền đổi settings.
+
+## Kiểm tra bản sửa LDPlayer0.2.1
+1. Giữ Off, mở hai app, thử30:70 →50:50 →70:30. Ghi app/API nếu cửa sổ không đổi.
+2. Kéo vạch riêng THT Split rồi thả, phân biệt vạch hệ thống của LDPlayer.
+3. Cài đặt → Thanh điều khiển → Chờ ổn định: thử1,5s và3s với app khởi động nguội.
+4. Thử app thiếu/quyền nổi bị thu hồi: màn chờ phải dọn, không kẹt overlay.
+5. Tắt/khôi phục/swap/replace rồi ẩn/hiện: không tạo task trùng hoặc mất cặp.

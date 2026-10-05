@@ -36,3 +36,10 @@ https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-9.
   https://android.googlesource.com/platform/packages/modules/adb/+/refs/heads/main/crypto/rsa_2048_key.cpp
 - Scoped hidden API library LSPosed v6.1 được tích hợp dưới Apache-2.0;
   xem THIRD_PARTY.md. Thư viện không cấp permission quản lý task hoặc chữ ký platform.
+
+## Yêu cầu bounds Off0.2.1
+AOSP Android9 ActivityStarter.updateBounds áp dụng bounds qua stack/configuration khi
+launch cho phép; không suy ra mọi lần reuse task trên firmware đều đổi được.
+Nguồn: https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-9.0.0_r54/services/core/java/com/android/server/am/ActivityStarter.java
+ActivityOptions.setLaunchBounds có thể bị bỏ qua khi hệ thống không hỗ trợ cửa sổ tự do.
+Nguồn: https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/java/android/app/ActivityOptions.java

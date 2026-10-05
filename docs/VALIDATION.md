@@ -31,3 +31,11 @@ Không gọi kết quả build hoặc success từ request launch là đã test 
 Workflow main tiếp tục build/unit/lint và lưu THT-Split-test-apk 7 ngày.
 Xem run tương ứng commit mới; run phiên bản0.1 không chứng minh phiên bản0.2.
 APK CI debug có thể khác signer/checksum máy phát triển.
+
+## Bản sửa0.2.1 sau phản hồi LDPlayer
+Người dùng báo0.2.0 Off chia được trên LDPlayer; bản đó khóa tỷ lệ/không vạch kéo.
+0.2.1 thêm yêu cầu launch bounds cho ratio/drag, vùng chạm48×80dp, màn chờ có
+khoảng ổn định cấu hình. Chưa chạy bản sửa trên LDPlayer/xe; không xác nhận hết lag.
+`git diff --check` đạt. Build local bị chặn do cache AGP8.7.3 không còn và không
+truy cập kho phụ thuộc; cần xem workflow tương ứng commit0.2.1, không dùng17tests
+bản0.2.0 làm kết quả build bản sửa. Package giữ nguyên, versionCode3.

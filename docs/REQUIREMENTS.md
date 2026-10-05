@@ -43,3 +43,9 @@ Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đ�
 - Không cần duyệt: thiết bị tự đăng ký và được dùng ngay; quản trị chỉ khóa/mở.
 - Khóa đang lưu phải giữ khi migrate pending cũ hoặc khôi phục credential.
 - Giữ phần cập nhật bắt buộc của yêu cầu trước; ủng hộ không phụ thuộc license.
+
+## Chốt giao diện bên trong05/10/2026 23:12
+- Sửa trang chọn app, cặp đã lưu, cài đặt và làm trang ủng hộ đẹp hơn theo mẫu navy/cyan.
+- Giữ nguyên giao diện và hành vi khi đang chia: toolbar, grip, tỷ lệ, swap, fullscreen, ẩn/X.
+- Không thay backend ADB/Bridge/Off/system, API Voice, profile/bytes QR hoặc cơ chế quản lý từ xa.
+- Phạm vi này không thay launcher icon; icon và component mới chỉ dùng trong MainActivity.

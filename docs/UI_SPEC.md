@@ -10,7 +10,7 @@ Xóa cần xác nhận; hủy thì giữ nguyên cặp, xóa cặp không gỡ �
 2. Thanh điều khiển: tự ẩn sau 3/5/8/10 giây, nút nhỏ/lớn, độ hiển thị 40–100%, nút mở lại trái/giữa/phải.
 3. THT Voice: bật nhận API, xem/sao chép/đổi token; không đặt popup nghe thường trực trong Split.
 4. Kết nối & quyền: quyền nổi, kiểm tra bridge, lệnh khởi động, bật/khôi phục hỗ trợ freeform.
-5. Cập nhật: phiên bản, kiểm tra Releases, mở trang tải và xuất log.
+5. Cập nhật: phiên bản, kiểm tra quyền/cập nhật Worker, tải và cài APK đã kiểm tra, xuất log. Không có nút mở trang phát hành/hướng dẫn kiểm thử/tài liệu Voice.
 
 ## Hình thức
 Palette navy #07121F, card #112233, line #2F4A60, cyan #10CBE5, text #EEF5FA,
@@ -48,3 +48,19 @@ tỷ lệ preset và ô nhập dùng màu tường minh để không bị chữ 
 0.2.6: toolbar Off mờ/khóa ratio, đổi app, swap, fullscreen; không grip và không
 highlight tỷ lệ như đã xác minh. X Off dừng điều khiển, giữ cửa sổ Android.
 ADB/system giữ đầy đủ các nút và grip. Trang cấu hình THT đóng khi mở cặp.
+
+## Giao diện bên trong0.3.2
+Mẫu đối chiếu: ảnh “THT Split: Chia màn hình, cài đặt.png” ngày04/10/2026.
+AppUi là bộ style/icon riêng cho MainActivity; Ui và tất cả thành phần overlay đang
+chia giữ nguyên. Header THT nghiêng, vạch cyan riêng, tiêu đề giữa; menu có icon
+cùng nét, card gradient navy nhẹ và nút cyan. Trang chính hai thẻ app, swap ở giữa,
+ratio và nhóm Lưu/Bắt đầu; quick pairs cuộn ngang trên màn rộng. Cặp đã lưu có
+icon hai app, tỷ lệ, Mở cặp, menu sửa/xóa với xác nhận cũ.
+Màn rộng>=900dp dùng menu chính và danh mục cài đặt bên trái. Màn nhỏ dùng menu
+chính trên và danh mục cài đặt cuộn ngang, các card xếp dọc và nội dung cuộn để
+không giấu thao tác. Các dòng cài đặt cho nhãn xuống dòng, giữ nguyên keys/giá trị.
+Trang ủng hộ: card MB Bank/STK/chủ tài khoản/nút copy bên trái và card QR bên phải;
+màn nhỏ xếp dọc. QR có nền trắng/padding bên ngoài, ảnh bundle và thông tin ngân
+hàng nguyên trạng, dùng offline. Không dựng/sửa payload QR.
+Không thay launcher icon, toolbar, grip hoặc hành vi task/Voice/Bridge trong mốc này.
+Chưa xác minh pixels thực trên LDPlayer/xe; build/lint không thay kiểm tra trực quan.

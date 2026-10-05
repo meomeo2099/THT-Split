@@ -1,4 +1,16 @@
-# Bàn giao THT Split — 0.3.1-test, 05/10/2026
+# Bàn giao THT Split — 0.3.2-test, 05/10/2026
+
+## Mốc giao diện bên trong — theo chốt23:12
+0.3.2-test/versionCode14 làm lại MainActivity theo ảnh mẫu đã tìm lại: header giữa,
+menu có icon, card chọn app, cặp lưu, danh mục cài đặt bên trái trên màn rộng.
+Trang ủng hộ có card thông tin MB Bank/copy STK và card QR nền trắng bên cạnh;
+màn nhỏ xếp dọc, nội dung và danh mục có cuộn. Giữ nguyên profile/bytes QR0.3.1.
+AppUi mới chỉ MainActivity dùng. Không sửa Ui, SplitService, overlay/grip, backend,
+Bridge v6, API Voice, Store hay remote/server; không thay launcher icon.
+Đang chờ CI build/unit/lint, sau đó ghi bằng chứng VALIDATION. Chưa chạy UI trên
+LDPlayer/xe; cần kiểm tương phản/cắt chữ/danh mục/sao chép/QR/chọn app/cặp.
+Chữ ký test vẫn phụ thuộc runner nếu chưa cấu hình keystore ổn định; không tự gỡ
+app đang dùng hoặc hứa cài đè giữ dữ liệu. Worker thật chưa có URL/deploy.
 
 ## Mốc mới nhất — ủng hộ dùng ngay, bỏ duyệt thiết bị
 Chủ dự án đã cung cấp STK/holder/link VietQR và yêu cầu nhúng vào app.0.3.1

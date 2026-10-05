@@ -18,7 +18,7 @@ import java.net.*;
 import java.util.concurrent.*;
 
 public final class MainActivity extends Activity {
-    private Store store;private LinearLayout root,body;private String page="home",section="layout";
+    private Store store;private LinearLayout root,body;private int screenWidth;private String page="home",section="layout";
     private final Handler refreshHandler=new Handler(Looper.getMainLooper());
     private boolean refreshing,downloading; private final Runnable refreshTick=new Runnable(){public void run(){refreshRemote(false,false);refreshHandler.postDelayed(this,60000);}};
     private final ExecutorService io=Executors.newSingleThreadExecutor();private String exportedLog;
@@ -28,60 +28,162 @@ public final class MainActivity extends Activity {
     @Override protected void onPause(){refreshHandler.removeCallbacks(refreshTick);super.onPause();}
     private void toast(String s){Toast.makeText(this,s,Toast.LENGTH_LONG).show();}
     private LinearLayout.LayoutParams lp(int width,int height){return new LinearLayout.LayoutParams(width,height);}
-    private void space(LinearLayout l,int n){View v=new View(this);l.addView(v,lp(1,Ui.dp(this,n)));}
-    private TextView title(String s){TextView t=Ui.text(this,s,22,Ui.TEXT);t.setTypeface(null,Typeface.BOLD);return t;}
-    private Button button(LinearLayout l,String s,boolean selected,Runnable click){Button b=Ui.button(this,s,selected);LinearLayout.LayoutParams p=lp(-1,Ui.dp(this,48));p.setMargins(0,Ui.dp(this,4),0,Ui.dp(this,4));l.addView(b,p);b.setOnClickListener(v->click.run());return b;}
-    private void render(){root=Ui.column(this);root.setBackgroundColor(Ui.BG);setContentView(root);
-        LinearLayout header=Ui.row(this);Ui.pad(header,12);Ui.Icon logo=new Ui.Icon(this,"brand",Ui.CYAN);header.addView(logo,lp(Ui.dp(this,40),Ui.dp(this,40)));TextView name=title("  THT Split");header.addView(name,new LinearLayout.LayoutParams(0,-1,1));Ui.Icon gear=new Ui.Icon(this,"gear",Ui.TEXT);header.addView(gear,lp(Ui.dp(this,40),Ui.dp(this,40)));gear.setContentDescription("Cài đặt");gear.setOnClickListener(v->{page="settings";render();});root.addView(header,lp(-1,Ui.dp(this,64)));
-        LinearLayout content=Ui.row(this);content.setGravity(Gravity.TOP);root.addView(content,new LinearLayout.LayoutParams(-1,0,1));LinearLayout nav=Ui.column(this);Ui.pad(nav,8);content.addView(nav,lp(Ui.dp(this,170),-1));
-        button(nav,"Chia màn hình",page.equals("home"),()->{page="home";render();});button(nav,"Cặp đã lưu",page.equals("pairs"),()->{page="pairs";render();});button(nav,"Cài đặt",page.equals("settings"),()->{page="settings";render();});button(nav,"Ủng hộ",page.equals("donate"),()->{page="donate";render();});
-        ScrollView scroll=new ScrollView(this);content.addView(scroll,new LinearLayout.LayoutParams(0,-1,1));body=Ui.column(this);Ui.pad(body,16);scroll.addView(body);if(page.equals("donate"))donation();else if(page.equals("pairs"))pairs();else if(page.equals("settings"))settings();else home();
+    private void space(LinearLayout l,int n){View v=new View(this);l.addView(v,lp(1,AppUi.dp(this,n)));}
+    private TextView title(String s){TextView t=AppUi.text(this,s,22,AppUi.TEXT);t.setTypeface(null,Typeface.BOLD);return t;}
+    private Button button(LinearLayout l,String s,boolean selected,Runnable click){Button b=AppUi.button(this,s,selected);LinearLayout.LayoutParams p=lp(-1,AppUi.dp(this,48));p.setMargins(0,AppUi.dp(this,4),0,AppUi.dp(this,4));l.addView(b,p);b.setOnClickListener(v->click.run());return b;}
+    private boolean landscapeLayout(){return screenWidth>=900;}
+    private void line(LinearLayout parent){View v=new View(this);v.setBackgroundColor(AppUi.LINE);parent.addView(v,lp(-1,AppUi.dp(this,1)));}
+    private void scrollBody(LinearLayout parent){
+        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setClipToPadding(false);
+        parent.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));body=AppUi.column(this);
+        AppUi.pad(body,landscapeLayout()?24:16);scroll.addView(body);
     }
-    private void home(){String denied=new RemoteControl(this).denial();if(!denied.isEmpty()){note(denied);button(body,"Kiểm tra quyền / cập nhật",true,()->{page="settings";section="updates";render();refreshRemote(true,true);});}body.addView(title("Chọn hai ứng dụng"));space(body,12);LinearLayout cards=Ui.row(this);body.addView(cards,lp(-1,-2));
-        appCard(cards,"Ứng dụng bên trái","left");Button swap=Ui.button(this,"⇄",false);LinearLayout.LayoutParams p=lp(Ui.dp(this,54),Ui.dp(this,54));p.setMargins(Ui.dp(this,12),0,Ui.dp(this,12),0);cards.addView(swap,p);swap.setContentDescription("Đổi bên");swap.setOnClickListener(v->{String l=store.s("left","");store.set("left",store.s("right",""));store.set("right",l);render();});appCard(cards,"Ứng dụng bên phải","right");
-        space(body,18);body.addView(Ui.text(this,"Tỷ lệ chia màn hình",16,Ui.MUTED));ratioRow(body,store.i("ratio",50),n->{store.set("ratio",n);render();});space(body,14);
-        LinearLayout actions=Ui.row(this);body.addView(actions);Button save=Ui.button(this,"Lưu cặp",false);actions.addView(save,new LinearLayout.LayoutParams(0,Ui.dp(this,52),1));save.setOnClickListener(v->{if(validSelection())editPair(null);});View gap=new View(this);actions.addView(gap,lp(Ui.dp(this,12),1));Button start=Ui.button(this,"Bắt đầu chia",true);actions.addView(start,new LinearLayout.LayoutParams(0,Ui.dp(this,52),2));start.setOnClickListener(v->{if(validSelection())startCurrent();});
-        if(store.b("session_active",false)){if(!store.s("transport","adb").equals("off"))button(body,"Khôi phục cặp đang chạy",false,()->send("restore"));button(body,"Tắt chia màn hình",false,()->send("stop"));}
-        space(body,16);JSONArray pairs=store.pairs();if(pairs.length()>0){body.addView(Ui.text(this,"Cặp đã lưu — mở nhanh",16,Ui.MUTED));for(int n=0;n<Math.min(3,pairs.length());n++){JSONObject pair=pairs.optJSONObject(n);if(pair!=null)button(body,pair.optString("name"),false,()->openPair(pair));}}
-        button(body,"Kiểm tra kết nối",false,()->checkConnection());
+    private void navItem(LinearLayout nav,String label,String icon,boolean selected,boolean compact,Runnable action){
+        LinearLayout item=AppUi.navigation(this,label,icon,selected,compact);
+        LinearLayout.LayoutParams p=compact?new LinearLayout.LayoutParams(0,AppUi.dp(this,68),1):lp(-1,AppUi.dp(this,60));
+        int gap=AppUi.dp(this,4);p.setMargins(gap,gap,gap,gap);nav.addView(item,p);item.setOnClickListener(v->action.run());
     }
-    private void appCard(LinearLayout parent,String label,String side){LinearLayout card=Ui.column(this);Ui.pad(card,16);card.setBackground(Ui.bg(Ui.CARD,Ui.dp(this,12)));parent.addView(card,new LinearLayout.LayoutParams(0,-2,1));card.addView(Ui.text(this,label,16,Ui.MUTED));space(card,8);String pkg=store.s(side,"");LinearLayout app=Ui.row(this);ImageView icon=new ImageView(this);try{icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg));}catch(Exception ignored){icon.setImageResource(R.drawable.icon_foreground);}app.addView(icon,lp(Ui.dp(this,48),Ui.dp(this,48)));TextView name=Ui.text(this,"  "+AppPicker.label(this,pkg),19,Ui.TEXT);name.setMaxLines(2);app.addView(name,new LinearLayout.LayoutParams(0,-2,1));card.addView(app);space(card,8);button(card,"Đổi ứng dụng",false,()->AppPicker.show(this,label,false,p->{store.set(side,p);render();}));}
+    private void render(){
+        screenWidth=getResources().getConfiguration().screenWidthDp;
+        root=AppUi.column(this);root.setBackgroundColor(AppUi.BG);setContentView(root);
+        LinearLayout header=AppUi.row(this);header.setPadding(AppUi.dp(this,16),0,AppUi.dp(this,16),0);
+        View balance=new View(this);header.addView(balance,lp(AppUi.dp(this,48),1));
+        LinearLayout brand=AppUi.row(this);brand.setGravity(Gravity.CENTER);
+        header.addView(brand,new LinearLayout.LayoutParams(0,-1,1));
+        brand.addView(new AppUi.Icon(this,"brand",AppUi.CYAN),lp(AppUi.dp(this,54),AppUi.dp(this,36)));
+        View divider=new View(this);divider.setBackgroundColor(AppUi.CYAN);LinearLayout.LayoutParams d=lp(AppUi.dp(this,2),AppUi.dp(this,28));d.setMargins(AppUi.dp(this,12),0,AppUi.dp(this,12),0);brand.addView(divider,d);
+        brand.addView(title("THT Split"));AppUi.Icon gear=new AppUi.Icon(this,"gear",AppUi.TEXT);
+        gear.setBackground(AppUi.surface(this,false));header.addView(gear,lp(AppUi.dp(this,48),AppUi.dp(this,48)));
+        gear.setContentDescription("Cài đặt");gear.setOnClickListener(v->{page="settings";render();});root.addView(header,lp(-1,AppUi.dp(this,64)));line(root);
+        LinearLayout content=landscapeLayout()?AppUi.row(this):AppUi.column(this);content.setGravity(Gravity.TOP);
+        root.addView(content,new LinearLayout.LayoutParams(-1,0,1));
+        LinearLayout nav=landscapeLayout()?AppUi.column(this):AppUi.row(this);AppUi.pad(nav,8);
+        content.addView(nav,lp(landscapeLayout()?AppUi.dp(this,184):-1,landscapeLayout()?-1:AppUi.dp(this,92)));
+        navItem(nav,"Chia màn hình","split",page.equals("home"),!landscapeLayout(),()->{page="home";render();});
+        navItem(nav,"Cặp đã lưu","bookmark",page.equals("pairs"),!landscapeLayout(),()->{page="pairs";render();});
+        navItem(nav,"Cài đặt","gear",page.equals("settings"),!landscapeLayout(),()->{page="settings";render();});
+        navItem(nav,"Ủng hộ","heart",page.equals("donate"),!landscapeLayout(),()->{page="donate";render();});
+        LinearLayout area=AppUi.column(this);content.addView(area,landscapeLayout()?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));
+        if(page.equals("settings"))settings(area);else{scrollBody(area);if(page.equals("donate"))donation();else if(page.equals("pairs"))pairs();else home();}
+    }
+    private void home(){
+        String denied=new RemoteControl(this).denial();if(!denied.isEmpty()){note(denied);button(body,"Kiểm tra quyền / cập nhật",true,()->{page="settings";section="updates";render();refreshRemote(true,true);});}
+        body.addView(title("Chọn hai ứng dụng"));space(body,16);
+        LinearLayout cards=landscapeLayout()?AppUi.row(this):AppUi.column(this);body.addView(cards,lp(-1,-2));
+        appCard(cards,"Ứng dụng bên trái","left");AppUi.Icon swap=new AppUi.Icon(this,"swap",AppUi.TEXT);swap.setBackground(AppUi.surface(this,false));
+        LinearLayout.LayoutParams p=lp(AppUi.dp(this,56),AppUi.dp(this,56));p.setMargins(AppUi.dp(this,16),AppUi.dp(this,8),AppUi.dp(this,16),AppUi.dp(this,8));p.gravity=Gravity.CENTER;
+        cards.addView(swap,p);swap.setContentDescription("Đổi bên hai ứng dụng");swap.setFocusable(true);swap.setOnClickListener(v->{String l=store.s("left","");store.set("left",store.s("right",""));store.set("right",l);render();});
+        appCard(cards,"Ứng dụng bên phải","right");space(body,20);
+        LinearLayout ratios=landscapeLayout()?AppUi.row(this):AppUi.column(this);body.addView(ratios,lp(-1,-2));
+        TextView label=AppUi.text(this,"Tỷ lệ chia màn hình",16,AppUi.TEXT);ratios.addView(label,lp(landscapeLayout()?AppUi.dp(this,184):-1,AppUi.dp(this,48)));
+        LinearLayout ratioArea=AppUi.column(this);ratios.addView(ratioArea,landscapeLayout()?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
+        ratioRow(ratioArea,store.i("ratio",50),n->{store.set("ratio",n);render();});space(body,18);
+        JSONArray saved=store.pairs();
+        if(saved.length()>0){body.addView(AppUi.text(this,"Cặp đã lưu — mở nhanh",16,AppUi.MUTED));space(body,8);LinearLayout quick=landscapeLayout()?AppUi.row(this):AppUi.column(this);
+            if(landscapeLayout()){HorizontalScrollView scroller=new HorizontalScrollView(this);scroller.setHorizontalScrollBarEnabled(false);scroller.addView(quick);body.addView(scroller,lp(-1,-2));}else body.addView(quick,lp(-1,-2));
+            for(int n=0;n<Math.min(3,saved.length());n++){JSONObject pair=saved.optJSONObject(n);if(pair!=null){LinearLayout tile=AppUi.navigation(this,pair.optString("name"),"bookmark",false,false);LinearLayout.LayoutParams q=lp(landscapeLayout()?AppUi.dp(this,280):-1,AppUi.dp(this,56));q.setMargins(0,0,AppUi.dp(this,8),AppUi.dp(this,8));quick.addView(tile,q);tile.setOnClickListener(v->openPair(pair));}}}
+        LinearLayout actions=landscapeLayout()?AppUi.row(this):AppUi.column(this);body.addView(actions,lp(-1,-2));
+        Button check=AppUi.button(this,"Kiểm tra kết nối",false);actions.addView(check,landscapeLayout()?lp(AppUi.dp(this,190),AppUi.dp(this,52)):lp(-1,AppUi.dp(this,52)));check.setOnClickListener(v->checkConnection());
+        if(landscapeLayout())actions.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));else space(actions,12);
+        Button save=AppUi.button(this,"Lưu cặp",false);actions.addView(save,landscapeLayout()?lp(AppUi.dp(this,160),AppUi.dp(this,52)):lp(-1,AppUi.dp(this,52)));save.setOnClickListener(v->{if(validSelection())editPair(null);});
+        if(landscapeLayout())actions.addView(new View(this),lp(AppUi.dp(this,12),1));else space(actions,12);
+        Button start=AppUi.button(this,"Bắt đầu chia",true);actions.addView(start,landscapeLayout()?lp(AppUi.dp(this,224),AppUi.dp(this,52)):lp(-1,AppUi.dp(this,52)));start.setOnClickListener(v->{if(validSelection())startCurrent();});
+        if(store.b("session_active",false)){space(body,12);if(!store.s("transport","adb").equals("off"))button(body,"Khôi phục cặp đang chạy",false,()->send("restore"));button(body,"Tắt chia màn hình",false,()->send("stop"));}
+    }
+    private void appCard(LinearLayout parent,String label,String side){
+        LinearLayout card=AppUi.column(this);AppUi.pad(card,20);card.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));
+        parent.addView(card,landscapeLayout()?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
+        TextView heading=AppUi.text(this,label,17,AppUi.TEXT);heading.setTypeface(null,Typeface.BOLD);card.addView(heading);space(card,12);
+        String pkg=store.s(side,"");LinearLayout app=AppUi.row(this);ImageView icon=new ImageView(this);
+        try{icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg));}catch(Exception ignored){icon.setImageResource(R.drawable.icon_foreground);}
+        app.addView(icon,lp(AppUi.dp(this,64),AppUi.dp(this,64)));TextView name=AppUi.text(this,AppPicker.label(this,pkg),20,AppUi.TEXT);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams n=new LinearLayout.LayoutParams(0,-2,1);n.leftMargin=AppUi.dp(this,16);app.addView(name,n);card.addView(app);space(card,12);
+        Button change=AppUi.button(this,"Đổi ứng dụng",false);card.addView(change,lp(-1,AppUi.dp(this,48)));change.setOnClickListener(v->AppPicker.show(this,label,false,p->{store.set(side,p);render();}));
+    }
     private interface Ratio{void selected(int n);}
-    private void ratioRow(LinearLayout parent,int value,Ratio changed){LinearLayout row=Ui.row(this);parent.addView(row,lp(-1,Ui.dp(this,50)));for(int n:new int[]{30,40,50,60,70}){Button b=Ui.button(this,n+":"+(100-n),value==n);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,Ui.dp(this,44),1);p.setMargins(Ui.dp(this,3),0,Ui.dp(this,3),0);row.addView(b,p);b.setOnClickListener(v->changed.selected(n));}}
+    private void ratioRow(LinearLayout parent,int value,Ratio changed){LinearLayout row=AppUi.row(this);parent.addView(row,lp(-1,AppUi.dp(this,50)));for(int n:new int[]{30,40,50,60,70}){Button b=AppUi.button(this,n+":"+(100-n),value==n);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,AppUi.dp(this,44),1);p.setMargins(AppUi.dp(this,3),0,AppUi.dp(this,3),0);row.addView(b,p);b.setOnClickListener(v->changed.selected(n));}}
     private boolean validSelection(){String l=store.s("left",""),r=store.s("right","");if(l.isEmpty()||r.isEmpty()||l.equals(r)){toast("Chọn hai ứng dụng khác nhau");return false;}if(getPackageManager().getLaunchIntentForPackage(l)==null||getPackageManager().getLaunchIntentForPackage(r)==null){toast("Một ứng dụng chưa cài hoặc không mở được");return false;}return true;}
-    private boolean overlay(){if(Settings.canDrawOverlays(this))return true;Ui.dialog(this).setTitle("Cấp quyền hiển thị nổi").setMessage("THT Split cần quyền này để hiện thanh điều khiển và nút kéo giữa.").setPositiveButton("Mở cài đặt",(d,n)->startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())))).setNegativeButton("Để sau",null).show();return false;}
+    private boolean overlay(){if(Settings.canDrawOverlays(this))return true;AppUi.dialog(this).setTitle("Cấp quyền hiển thị nổi").setMessage("THT Split cần quyền này để hiện thanh điều khiển và nút kéo giữa.").setPositiveButton("Mở cài đặt",(d,n)->startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())))).setNegativeButton("Để sau",null).show();return false;}
     private void send(String cmd){if(!overlay())return;try{SplitService.command(this,cmd);}catch(RuntimeException e){toast("Không khởi động được: "+e.getMessage());}}
     private boolean access(){String d=new RemoteControl(this).denial();if(d.isEmpty())return true;toast(d);page="settings";section="updates";render();refreshRemote(true,false);return false;}
     private void startCurrent(){if(!access()||!overlay())return;Intent i=new Intent(this,SplitService.class).putExtra("command","start").putExtra("left",store.s("left","")).putExtra("right",store.s("right","")).putExtra("ratio",store.i("ratio",50));try{startForegroundService(i);}catch(RuntimeException e){toast(e.getMessage());}}
     private void openPair(JSONObject p){if(!access()||!overlay())return;startForegroundService(new Intent(this,SplitService.class).putExtra("command","preset").putExtra("presetId",p.optString("id")));}
-    private void pairs(){body.addView(title("Cặp đã lưu"));space(body,12);JSONArray pairs=store.pairs();if(pairs.length()==0){body.addView(Ui.text(this,"Chưa có cặp. Chọn hai app rồi bấm Lưu cặp.",17,Ui.MUTED));return;}
-        for(int n=0;n<pairs.length();n++){JSONObject p=pairs.optJSONObject(n);if(p==null)continue;LinearLayout card=Ui.column(this);Ui.pad(card,12);card.setBackground(Ui.bg(Ui.CARD,Ui.dp(this,12)));body.addView(card,lp(-1,-2));LinearLayout top=Ui.row(this);card.addView(top);top.addView(Ui.text(this,p.optString("name"),20,Ui.TEXT),new LinearLayout.LayoutParams(0,-2,1));Button menu=Ui.button(this,"⋮",false);menu.setContentDescription("Sửa hoặc xóa cặp");top.addView(menu,lp(Ui.dp(this,48),Ui.dp(this,48)));menu.setOnClickListener(v->Ui.dialog(this).setTitle(p.optString("name")).setItems(new String[]{"Sửa cặp","Xóa cặp"},(d,which)->{if(which==0)editPair(p);else confirmDelete(p);}).show());
-            card.addView(Ui.text(this,AppPicker.label(this,p.optString("left"))+"  +  "+AppPicker.label(this,p.optString("right"))+"  •  "+p.optInt("ratio",50)+":"+(100-p.optInt("ratio",50)),15,Ui.MUTED));button(card,"Mở cặp",true,()->openPair(p));space(body,12);
+    private void pairApp(LinearLayout row,String pkg){
+        LinearLayout app=AppUi.row(this);ImageView icon=new ImageView(this);try{icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg));}catch(Exception ignored){icon.setImageResource(R.drawable.icon_foreground);}
+        app.addView(icon,lp(AppUi.dp(this,36),AppUi.dp(this,36)));TextView label=AppUi.text(this,AppPicker.label(this,pkg),16,AppUi.TEXT);label.setMaxLines(2);label.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams t=new LinearLayout.LayoutParams(0,-2,1);t.leftMargin=AppUi.dp(this,12);app.addView(label,t);row.addView(app,new LinearLayout.LayoutParams(0,-2,1));
+    }
+    private void pairs(){
+        body.addView(title("Cặp đã lưu"));space(body,16);JSONArray pairs=store.pairs();
+        if(pairs.length()==0){LinearLayout empty=AppUi.column(this);AppUi.pad(empty,24);empty.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));body.addView(empty,lp(-1,-2));empty.addView(AppUi.text(this,"Chưa có cặp ứng dụng",20,AppUi.TEXT));space(empty,8);empty.addView(AppUi.text(this,"Chọn hai ứng dụng và tỷ lệ, rồi bấm Lưu cặp để mở nhanh lần sau.",16,AppUi.MUTED));space(empty,16);button(empty,"Chọn ứng dụng",true,()->{page="home";render();});return;}
+        for(int n=0;n<pairs.length();n++){JSONObject pair=pairs.optJSONObject(n);if(pair==null)continue;LinearLayout card=AppUi.column(this);AppUi.pad(card,20);card.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));body.addView(card,lp(-1,-2));
+            LinearLayout top=AppUi.row(this);card.addView(top);TextView name=AppUi.text(this,pair.optString("name"),20,AppUi.TEXT);name.setTypeface(null,Typeface.BOLD);top.addView(name,new LinearLayout.LayoutParams(0,-2,1));
+            Button menu=AppUi.button(this,"⋮",false);menu.setContentDescription("Sửa hoặc xóa cặp "+pair.optString("name"));top.addView(menu,lp(AppUi.dp(this,48),AppUi.dp(this,48)));menu.setOnClickListener(v->AppUi.dialog(this).setTitle(pair.optString("name")).setItems(new String[]{"Sửa cặp","Xóa cặp"},(d,which)->{if(which==0)editPair(pair);else confirmDelete(pair);}).show());
+            space(card,12);LinearLayout apps=AppUi.row(this);card.addView(apps,lp(-1,-2));pairApp(apps,pair.optString("left"));TextView plus=AppUi.text(this,"+",20,AppUi.MUTED);plus.setGravity(Gravity.CENTER);apps.addView(plus,lp(AppUi.dp(this,32),AppUi.dp(this,40)));pairApp(apps,pair.optString("right"));
+            space(card,16);LinearLayout bottom=AppUi.row(this);card.addView(bottom);bottom.addView(AppUi.text(this,"Tỷ lệ "+pair.optInt("ratio",50)+":"+(100-pair.optInt("ratio",50)),16,AppUi.CYAN),new LinearLayout.LayoutParams(0,-2,1));
+            Button open=AppUi.button(this,"Mở cặp",true);bottom.addView(open,lp(AppUi.dp(this,136),AppUi.dp(this,48)));open.setOnClickListener(v->openPair(pair));space(body,16);
         }
     }
-    private void confirmDelete(JSONObject p){Ui.dialog(this).setTitle("Xóa cặp đã lưu?").setMessage(p.optString("name")+"\nHai ứng dụng vẫn được giữ trên máy.").setPositiveButton("Xóa",(d,n)->{store.deletePair(p.optString("id"));render();}).setNegativeButton("Hủy",null).show();}
-    private void editPair(JSONObject original){LinearLayout form=Ui.column(this);Ui.pad(form,16);EditText name=Ui.input(this);name.setTextColor(Ui.TEXT);name.setHintTextColor(Ui.MUTED);name.setSingleLine(true);name.setHint("Tên cặp");String[] pkgs={original==null?store.s("left",""):original.optString("left"),original==null?store.s("right",""):original.optString("right")};int[] ratio={original==null?store.i("ratio",50):original.optInt("ratio",50)};
+    private void confirmDelete(JSONObject p){AppUi.dialog(this).setTitle("Xóa cặp đã lưu?").setMessage(p.optString("name")+"\nHai ứng dụng vẫn được giữ trên máy.").setPositiveButton("Xóa",(d,n)->{store.deletePair(p.optString("id"));render();}).setNegativeButton("Hủy",null).show();}
+    private void editPair(JSONObject original){LinearLayout form=AppUi.column(this);AppUi.pad(form,16);EditText name=AppUi.input(this);name.setTextColor(AppUi.TEXT);name.setHintTextColor(AppUi.MUTED);name.setSingleLine(true);name.setHint("Tên cặp");String[] pkgs={original==null?store.s("left",""):original.optString("left"),original==null?store.s("right",""):original.optString("right")};int[] ratio={original==null?store.i("ratio",50):original.optInt("ratio",50)};
         name.setText(original==null?AppPicker.label(this,pkgs[0])+" + "+AppPicker.label(this,pkgs[1]):original.optString("name"));form.addView(name);
         for(int n=0;n<2;n++){final int side=n;Button b=button(form,(n==0?"Trái: ":"Phải: ")+AppPicker.label(this,pkgs[n]),false,()->{});b.setOnClickListener(v->AppPicker.show(this,side==0?"Ứng dụng trái":"Ứng dụng phải",false,p->{pkgs[side]=p;b.setText((side==0?"Trái: ":"Phải: ")+AppPicker.label(this,p));}));}
-        form.addView(Ui.text(this,"Tỷ lệ",16,Ui.MUTED));String[] values={"30:70","40:60","50:50","60:40","70:30"};Spinner ratios=Ui.spinner(this,values);ratios.setSelection(Math.max(0,Math.min(4,(ratio[0]-30)/10)));form.addView(ratios);
-        AlertDialog dialog=Ui.dialog(this).setTitle(original==null?"Lưu cặp mới":"Sửa cặp").setView(form).setPositiveButton("Lưu",null).setNegativeButton("Hủy",null).create();dialog.setOnShowListener(d->{dialog.getWindow().setBackgroundDrawable(Ui.bg(Ui.CARD,Ui.dp(this,12)));dialog.getButton(-1).setOnClickListener(v->{String nm=name.getText().toString().trim();if(nm.isEmpty()||nm.length()>80||pkgs[0].isEmpty()||pkgs[1].isEmpty()||pkgs[0].equals(pkgs[1])){toast("Tên tối đa 80 ký tự và hai app khác nhau");return;}try{JSONObject pair=new JSONObject().put("name",nm).put("left",pkgs[0]).put("right",pkgs[1]).put("ratio",30+ratios.getSelectedItemPosition()*10);if(original!=null)pair.put("id",original.getString("id"));store.savePair(pair);dialog.dismiss();render();}catch(JSONException e){toast(e.getMessage());}});});dialog.show();
+        form.addView(AppUi.text(this,"Tỷ lệ",16,AppUi.MUTED));String[] values={"30:70","40:60","50:50","60:40","70:30"};Spinner ratios=AppUi.spinner(this,values);ratios.setSelection(Math.max(0,Math.min(4,(ratio[0]-30)/10)));form.addView(ratios);
+        AlertDialog dialog=AppUi.dialog(this).setTitle(original==null?"Lưu cặp mới":"Sửa cặp").setView(form).setPositiveButton("Lưu",null).setNegativeButton("Hủy",null).create();dialog.setOnShowListener(d->{dialog.getWindow().setBackgroundDrawable(AppUi.bg(AppUi.CARD,AppUi.dp(this,12)));dialog.getButton(-1).setOnClickListener(v->{String nm=name.getText().toString().trim();if(nm.isEmpty()||nm.length()>80||pkgs[0].isEmpty()||pkgs[1].isEmpty()||pkgs[0].equals(pkgs[1])){toast("Tên tối đa 80 ký tự và hai app khác nhau");return;}try{JSONObject pair=new JSONObject().put("name",nm).put("left",pkgs[0]).put("right",pkgs[1]).put("ratio",30+ratios.getSelectedItemPosition()*10);if(original!=null)pair.put("id",original.getString("id"));store.savePair(pair);dialog.dismiss();render();}catch(JSONException e){toast(e.getMessage());}});});dialog.show();
     }
-    private void settings(){LinearLayout tabs=Ui.row(this);body.addView(tabs,lp(-1,-2));String[] keys={"layout","toolbar","voice","connection","updates"},labels={"Chia màn hình","Thanh điều khiển","THT Voice","Kết nối & quyền","Cập nhật"};for(int n=0;n<keys.length;n++){String key=keys[n];Button b=Ui.button(this,labels[n],section.equals(key));b.setTextSize(13);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,Ui.dp(this,48),1);p.setMargins(2,0,2,0);tabs.addView(b,p);b.setOnClickListener(v->{section=key;render();});}space(body,16);
+    private void settings(LinearLayout area){
+        String[] keys={"layout","toolbar","voice","connection","updates"},labels={"Chia màn hình","Thanh điều khiển","THT Voice","Kết nối & quyền","Cập nhật"},icons={"split","sliders","voice","link","update"};
+        LinearLayout frame=screenWidth>=900?AppUi.row(this):AppUi.column(this);frame.setGravity(Gravity.TOP);area.addView(frame,lp(-1,-1));
+        LinearLayout tabs=screenWidth>=900?AppUi.column(this):AppUi.row(this);AppUi.pad(tabs,8);
+        if(screenWidth>=900){LinearLayout.LayoutParams t=lp(AppUi.dp(this,224),-1);t.setMargins(AppUi.dp(this,8),AppUi.dp(this,16),0,AppUi.dp(this,16));frame.addView(tabs,t);tabs.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,12)));}
+        else{HorizontalScrollView scroller=new HorizontalScrollView(this);scroller.setHorizontalScrollBarEnabled(false);scroller.addView(tabs);frame.addView(scroller,lp(-1,AppUi.dp(this,80)));}
+        for(int n=0;n<keys.length;n++){String key=keys[n];LinearLayout tab=AppUi.navigation(this,labels[n],icons[n],section.equals(key),false);LinearLayout.LayoutParams t=lp(screenWidth>=900?-1:AppUi.dp(this,192),AppUi.dp(this,60));t.setMargins(0,0,AppUi.dp(this,4),AppUi.dp(this,6));tabs.addView(tab,t);tab.setOnClickListener(v->{section=key;render();});}
+        LinearLayout panel=AppUi.column(this);frame.addView(panel,screenWidth>=900?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));scrollBody(panel);
+        LinearLayout settingsCard=AppUi.column(this);settingsCard.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));AppUi.pad(settingsCard,16);body.addView(settingsCard,lp(-1,-2));body=settingsCard;
         switch(section){case "toolbar":toolbarSettings();break;case "voice":voiceSettings();break;case "connection":connectionSettings();break;case "updates":updateSettings();break;default:layoutSettings();}
     }
-    private void note(String s){TextView t=Ui.text(this,s,15,Ui.MUTED);Ui.pad(t,8);body.addView(t,lp(-1,-2));}
-    private void toggle(String label,String key,boolean def){Switch sw=new Switch(this);sw.setText(label);sw.setTextColor(Ui.TEXT);sw.setTextSize(17);sw.setChecked(store.b(key,def));Ui.pad(sw,10);body.addView(sw,lp(-1,Ui.dp(this,54)));sw.setOnCheckedChangeListener((v,checked)->store.set(key,checked));}
-    private void choice(String label,String key,String[] values,String[] labels,String def){LinearLayout row=Ui.row(this);Ui.pad(row,8);body.addView(row,lp(-1,Ui.dp(this,56)));row.addView(Ui.text(this,label,17,Ui.TEXT),new LinearLayout.LayoutParams(0,-1,1));Spinner spin=Ui.spinner(this,labels);String current=store.s(key,def);for(int n=0;n<values.length;n++)if(values[n].equals(current))spin.setSelection(n);row.addView(spin,lp(Ui.dp(this,250),-1));spin.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> a){}public void onItemSelected(AdapterView<?> a,View v,int n,long id){store.set(key,values[n]);}});}
-    private void intChoice(String label,String key,int[] values,String[] labels,int def){LinearLayout row=Ui.row(this);Ui.pad(row,8);body.addView(row,lp(-1,Ui.dp(this,56)));row.addView(Ui.text(this,label,17,Ui.TEXT),new LinearLayout.LayoutParams(0,-1,1));Spinner spin=Ui.spinner(this,labels);int val=store.i(key,def);for(int n=0;n<values.length;n++)if(values[n]==val)spin.setSelection(n);row.addView(spin,lp(Ui.dp(this,250),-1));spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> a){}public void onItemSelected(AdapterView<?> a,View v,int n,long id){store.set(key,values[n]);}});}
-    private void number(String label,String key,int def,int max){LinearLayout row=Ui.row(this);Ui.pad(row,8);body.addView(row,lp(-1,Ui.dp(this,56)));row.addView(Ui.text(this,label,17,Ui.TEXT),new LinearLayout.LayoutParams(0,-1,1));Button b=Ui.button(this,store.i(key,def)+" px",false);row.addView(b,lp(Ui.dp(this,200),-1));b.setOnClickListener(v->{EditText input=Ui.input(this);input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);input.setText(String.valueOf(store.i(key,def)));Ui.dialog(this).setTitle(label).setView(input).setPositiveButton("Lưu",(d,n)->{try{int x=Integer.parseInt(input.getText().toString());if(x<0||x>max)throw new NumberFormatException();store.set(key,x);render();}catch(NumberFormatException e){toast("Giá trị từ 0 đến "+max);}}).setNegativeButton("Hủy",null).show();});}
-    private void layoutSettings(){body.addView(title("Chia màn hình"));choice("Chế độ chia","mode",new String[]{"native","freeform"},new String[]{"Chia đôi hệ thống (EX2)","Cửa sổ tự do"},"native");
+    private void note(String s){TextView t=AppUi.text(this,s,15,AppUi.MUTED);AppUi.pad(t,8);body.addView(t,lp(-1,-2));}
+    private void toggle(String label,String key,boolean def){
+        Switch sw=new Switch(this);sw.setText(label);sw.setTextColor(AppUi.TEXT);sw.setTextSize(17);sw.setChecked(store.b(key,def));AppUi.pad(sw,10);sw.setMinHeight(AppUi.dp(this,56));
+        android.content.res.ColorStateList colors=new android.content.res.ColorStateList(new int[][]{new int[]{android.R.attr.state_checked},new int[]{}},new int[]{AppUi.CYAN,AppUi.MUTED});sw.setThumbTintList(colors);sw.setTrackTintList(colors);
+        body.addView(sw,lp(-1,-2));sw.setOnCheckedChangeListener((v,checked)->store.set(key,checked));
+    }
+    private LinearLayout settingRow(String label){
+        LinearLayout row=AppUi.row(this);AppUi.pad(row,8);row.setMinimumHeight(AppUi.dp(this,56));body.addView(row,lp(-1,-2));
+        TextView text=AppUi.text(this,label,17,AppUi.TEXT);LinearLayout.LayoutParams t=new LinearLayout.LayoutParams(0,-2,1);t.rightMargin=AppUi.dp(this,12);row.addView(text,t);return row;
+    }
+    private int selectorWidth(){return screenWidth>=1100?250:screenWidth>=900?200:150;}
+    private void choice(String label,String key,String[] values,String[] labels,String def){
+        LinearLayout row=settingRow(label);Spinner spin=AppUi.spinner(this,labels);String current=store.s(key,def);for(int n=0;n<values.length;n++)if(values[n].equals(current))spin.setSelection(n);
+        row.addView(spin,lp(AppUi.dp(this,selectorWidth()),AppUi.dp(this,48)));spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> a){}public void onItemSelected(AdapterView<?> a,View v,int n,long id){store.set(key,values[n]);}});
+    }
+    private void intChoice(String label,String key,int[] values,String[] labels,int def){
+        LinearLayout row=settingRow(label);Spinner spin=AppUi.spinner(this,labels);int val=store.i(key,def);for(int n=0;n<values.length;n++)if(values[n]==val)spin.setSelection(n);
+        row.addView(spin,lp(AppUi.dp(this,selectorWidth()),AppUi.dp(this,48)));spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onNothingSelected(AdapterView<?> a){}public void onItemSelected(AdapterView<?> a,View v,int n,long id){store.set(key,values[n]);}});
+    }
+    private void number(String label,String key,int def,int max){
+        LinearLayout row=settingRow(label);Button b=AppUi.button(this,store.i(key,def)+" px",false);row.addView(b,lp(AppUi.dp(this,selectorWidth()),AppUi.dp(this,48)));
+        b.setOnClickListener(v->{EditText input=AppUi.input(this);input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);input.setText(String.valueOf(store.i(key,def)));AppUi.dialog(this).setTitle(label).setView(input).setPositiveButton("Lưu",(d,n)->{try{int x=Integer.parseInt(input.getText().toString());if(x<0||x>max)throw new NumberFormatException();store.set(key,x);render();}catch(NumberFormatException e){toast("Giá trị từ 0 đến "+max);}}).setNegativeButton("Hủy",null).show();});
+    }
+    private void layoutSettings(){body.addView(title("Chia màn hình"));choice("Chế độ chia","mode",new String[]{"native","freeform"},new String[]{"Chia đôi (EX2)","Cửa sổ tự do"},"native");
         note("ADB nội bộ hoặc quyền hệ thống dùng chế độ đã chọn. Off luôn mở cửa sổ tự do, không xác minh bố cục trên firmware xe. App tự nhớ cặp và tỷ lệ lần trước; không tự mở app khi xe khởi động.");number("Chừa phía trên","top_px",72,400);number("Chừa điều hòa phía dưới","bottom_px",112,400);
         button(body,"Khôi phục khoảng chừa EX2",false,()->{store.set("top_px",72);store.set("bottom_px",112);render();});note("Thay đổi chế độ/khoảng chừa áp dụng khi Bắt đầu chia hoặc Khôi phục cặp.");}
-    private void toolbarSettings(){body.addView(title("Thanh điều khiển"));intChoice("Chờ ổn định sau khi mở cặp","launch_wait_ms",new int[]{0,500,1500,3000},new String[]{"Không chờ","0,5 giây","1,5 giây","3 giây"},0);note("Màn chờ che quá trình mở hai app. Thời gian chờ giúp chuyển cảnh ổn định; Off không xác định được lúc app khác tải xong nội dung.");toggle("Tự ẩn thanh điều khiển","auto_hide",true);intChoice("Ẩn sau","hide_seconds",new int[]{3,5,8,10},new String[]{"3 giây","5 giây","8 giây","10 giây"},5);choice("Kích thước nút","button_size",new String[]{"small","large"},new String[]{"Nhỏ","Lớn"},"small");choice("Vị trí nút mở lại","mini_position",new String[]{"center","left","right"},new String[]{"Giữa phía trên","Góc trái","Góc phải"},"center");
-        TextView alpha=Ui.text(this,"Độ hiển thị: "+store.i("opacity",90)+"%",17,Ui.TEXT);body.addView(alpha);SeekBar slider=new SeekBar(this);slider.setMax(60);slider.setProgress(store.i("opacity",90)-40);body.addView(slider);slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int value,boolean user){alpha.setText("Độ hiển thị: "+(40+value)+"%");if(user)store.set("opacity",40+value);}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
-        note("⌃ Ẩn thanh vẫn giữ hai app. ⌄ Hiện lại thanh. X tắt chia và trở về app trái toàn màn hình khi dùng ADB/quyền hệ thống. Off: X dừng thanh điều khiển, giữ các cửa sổ do Android quản lý. Khi toàn màn hình, nút nổi khôi phục cặp. Áp dụng giao diện mới khi thanh được hiện lại.");}
-    private void voiceSettings(){body.addView(title("Kết nối THT Voice"));toggle("Cho phép nhận lệnh từ THT Voice","voice_enabled",false);note("THT Split chỉ nhận lệnh chia màn hình. Popup, micro, vị trí và thời gian tự tắt do THT Voice quản lý; không dành diện tích cố định.");note("API v2 có phản hồi. Voice cùng chữ ký có thể dùng SignatureVoiceReceiver không cần token; khác chữ ký dùng token được lưu qua reboot. Repo Voice cần tích hợp theo tài liệu.");button(body,"Xem / sao chép token kết nối",false,()->showSecret("voice_token","Token THT Voice"));button(body,"Đổi token Voice",false,()->Ui.dialog(this).setTitle("Đổi token?").setMessage("THT Voice cần nhập token mới để tiếp tục điều khiển.").setPositiveButton("Đổi",(d,n)->{store.set("voice_token",Store.randomToken());toast("Đã đổi token");}).setNegativeButton("Hủy",null).show());}
-    private void showSecret(String key,String title){String secret=store.token(key);TextView text=Ui.text(this,secret,16,Ui.TEXT);text.setTextIsSelectable(true);Ui.pad(text,16);Ui.dialog(this).setTitle(title).setView(text).setPositiveButton("Sao chép",(d,n)->copy(secret)).setNegativeButton("Đóng",null).show();}
+    private void toolbarSettings(){
+        body.addView(title("Thanh điều khiển"));space(body,12);
+        toggle("Tự ẩn thanh điều khiển","auto_hide",true);line(body);
+        intChoice("Ẩn sau","hide_seconds",new int[]{3,5,8,10},new String[]{"3 giây","5 giây","8 giây","10 giây"},5);line(body);
+        choice("Kích thước nút","button_size",new String[]{"small","large"},new String[]{"Nhỏ","Lớn"},"small");line(body);
+        LinearLayout opacity=AppUi.row(this);AppUi.pad(opacity,8);body.addView(opacity,lp(-1,AppUi.dp(this,56)));
+        TextView alpha=AppUi.text(this,"Độ hiển thị: "+store.i("opacity",90)+"%",17,AppUi.TEXT);opacity.addView(alpha,new LinearLayout.LayoutParams(0,-2,1));
+        SeekBar slider=new SeekBar(this);slider.setProgressTintList(android.content.res.ColorStateList.valueOf(AppUi.CYAN));slider.setThumbTintList(android.content.res.ColorStateList.valueOf(AppUi.TEXT));slider.setMax(60);slider.setProgress(store.i("opacity",90)-40);
+        opacity.addView(slider,lp(AppUi.dp(this,selectorWidth()),-1));slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int value,boolean user){alpha.setText("Độ hiển thị: "+(40+value)+"%");if(user)store.set("opacity",40+value);}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});line(body);
+        choice("Vị trí nút mở lại","mini_position",new String[]{"center","left","right"},new String[]{"Giữa phía trên","Góc trái","Góc phải"},"center");line(body);
+        intChoice("Chờ ổn định sau khi mở cặp","launch_wait_ms",new int[]{0,500,1500,3000},new String[]{"Không chờ","0,5 giây","1,5 giây","3 giây"},0);
+        note("Ẩn thanh vẫn giữ hai app đang chạy. Nút X tắt chia và đưa app trái về toàn màn hình khi dùng ADB/quyền hệ thống. Với Off, X dừng thanh điều khiển và giữ cửa sổ hiện tại.");
+        note("Màn chờ che quá trình mở hai app. Off không xác định được lúc app khác tải xong nội dung. Giao diện thanh áp dụng khi hiện lại.");
+    }
+    private void voiceSettings(){body.addView(title("Kết nối THT Voice"));toggle("Cho phép nhận lệnh từ THT Voice","voice_enabled",false);note("THT Split chỉ nhận lệnh chia màn hình. Popup, micro, vị trí và thời gian tự tắt do THT Voice quản lý; không dành diện tích cố định.");note("API v2 có phản hồi. Voice cùng chữ ký có thể dùng SignatureVoiceReceiver không cần token; khác chữ ký dùng token được lưu qua reboot. Repo Voice cần tích hợp theo tài liệu.");button(body,"Xem / sao chép token kết nối",false,()->showSecret("voice_token","Token THT Voice"));button(body,"Đổi token Voice",false,()->AppUi.dialog(this).setTitle("Đổi token?").setMessage("THT Voice cần nhập token mới để tiếp tục điều khiển.").setPositiveButton("Đổi",(d,n)->{store.set("voice_token",Store.randomToken());toast("Đã đổi token");}).setNegativeButton("Hủy",null).show());}
+    private void showSecret(String key,String title){String secret=store.token(key);TextView text=AppUi.text(this,secret,16,AppUi.TEXT);text.setTextIsSelectable(true);AppUi.pad(text,16);AppUi.dialog(this).setTitle(title).setView(text).setPositiveButton("Sao chép",(d,n)->copy(secret)).setNegativeButton("Đóng",null).show();}
     private void copy(String s){((ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("THT Split",s));toast("Đã sao chép");}
     private void connectionSettings(){body.addView(title("Kết nối & quyền"));
         note("Quyền nổi: "+(Settings.canDrawOverlays(this)?"Đã cấp":"Chưa cấp")+" • Android "+Build.VERSION.RELEASE+" / API "+Build.VERSION.SDK_INT);
@@ -94,26 +196,26 @@ public final class MainActivity extends Activity {
             note("Tự kết nối ADB trên chính màn xe và mở bridge khi nhận lệnh. Lần đầu có thể cần xác nhận khóa ADB. Địa chỉ 127.0.0.1 không đổi khi đổi Wi-Fi. Không hỗ trợ ADB TLS/ghép đôi Android 11+ trong bản này.");
             button(body,"ADB: "+store.s("adb_host","127.0.0.1")+":"+store.i("adb_port",5555),false,this::adbEndpoint);
             toggle("Chuẩn bị ADB sau khởi động / cập nhật","adb_at_boot",true);
-            button(body,"Lấy lệnh bridge thủ công dự phòng",false,()->{String cmd=new ShellClient(store).startCommand();TextView t=Ui.text(this,cmd,15,Ui.TEXT);t.setTextIsSelectable(true);Ui.pad(t,16);Ui.dialog(this).setTitle("Chạy adb shell rồi dán lệnh này").setView(t).setPositiveButton("Sao chép",(d,n)->copy(cmd)).setNegativeButton("Đóng",null).show();});
+            button(body,"Lấy lệnh bridge thủ công dự phòng",false,()->{String cmd=new ShellClient(store).startCommand();TextView t=AppUi.text(this,cmd,15,AppUi.TEXT);t.setTextIsSelectable(true);AppUi.pad(t,16);AppUi.dialog(this).setTitle("Chạy adb shell rồi dán lệnh này").setView(t).setPositiveButton("Sao chép",(d,n)->copy(cmd)).setNegativeButton("Đóng",null).show();});
         }else if(method.equals("off"))note("Off mở bằng ActivityOptions, không kết nối ADB và không dùng bridge. Cần freeform bật sẵn. Khóa tỷ lệ, kéo, đổi bên, đổi app và toàn màn hình trên thanh công cụ. X dừng điều khiển, giữ cửa sổ hiện tại để tránh lần mở tiếp bị fullscreen. Android có thể bỏ qua bounds của task cũ; nếu cửa sổ từ phiên cũ đã sai, đóng chúng bằng nút của Android rồi mở cặp lại. Dùng ADB để điều khiển đầy đủ.");
         else note("Chỉ chạy khi Android cấp MANAGE_ACTIVITY_STACKS. Bản ký thông thường không tự có quyền này; không dùng shared UID trong bản cài thường.");
-        button(body,"Bật hỗ trợ cửa sổ tự do",false,()->Ui.dialog(this).setTitle("Bật freeform?").setMessage("Đổi enable_freeform_support và force_resizable_activities. Có thể cần reboot. Off không tự đổi được; dùng ADB nội bộ hoặc lệnh máy tính lần đầu.").setPositiveButton("Bật",(d,n)->freeform(true)).setNegativeButton("Hủy",null).show());
+        button(body,"Bật hỗ trợ cửa sổ tự do",false,()->AppUi.dialog(this).setTitle("Bật freeform?").setMessage("Đổi enable_freeform_support và force_resizable_activities. Có thể cần reboot. Off không tự đổi được; dùng ADB nội bộ hoặc lệnh máy tính lần đầu.").setPositiveButton("Bật",(d,n)->freeform(true)).setNegativeButton("Hủy",null).show());
         button(body,"Khôi phục tùy chọn freeform",false,()->freeform(false));
     }
     private String methodLabel(String m){return m.equals("off")?"Off — mở trực tiếp":m.equals("system")?"Quyền hệ thống":"ADB nội bộ";}
     private void chooseTransport(){
         if(store.b("session_active",false)||store.b("session_busy",false)){toast("Tắt chia màn hiện tại trước khi chuyển phương thức");return;}
-        String[] values={"adb","off","system"};Ui.dialog(this).setTitle("Phương thức điều khiển").setItems(new String[]{"ADB nội bộ (mặc định)","Off — mở trực tiếp","Quyền hệ thống"},(d,n)->{
+        String[] values={"adb","off","system"};AppUi.dialog(this).setTitle("Phương thức điều khiển").setItems(new String[]{"ADB nội bộ (mặc định)","Off — mở trực tiếp","Quyền hệ thống"},(d,n)->{
             if(values[n].equals("system")&&!Backend.systemGranted(this)){toast("Bản APK này chưa được cấp quyền hệ thống");return;}
             store.set("transport",values[n]);store.set("connection_status","Đã chọn "+methodLabel(values[n])+"; chưa kiểm tra");render();
         }).setNegativeButton("Hủy",null).show();
     }
     private void adbEndpoint(){
         if(store.b("session_active",false)||store.b("session_busy",false)){toast("Tắt chia trước khi đổi kết nối");return;}
-        LinearLayout form=Ui.column(this);Ui.pad(form,16);EditText host=Ui.input(this);host.setSingleLine(true);host.setHint("Địa chỉ chính màn xe");host.setText(store.s("adb_host","127.0.0.1"));form.addView(host);EditText port=Ui.input(this);port.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);port.setText(String.valueOf(store.i("adb_port",5555)));form.addView(port);
-        AlertDialog dialog=Ui.dialog(this).setTitle("ADB nội bộ").setView(form).setPositiveButton("Lưu",null).setNegativeButton("Hủy",null).create();dialog.setOnShowListener(x->dialog.getButton(-1).setOnClickListener(v->{try{int n=Integer.parseInt(port.getText().toString());String h=host.getText().toString().trim();if(n<1||n>65535||h.isEmpty()||h.length()>64)throw new IllegalArgumentException();store.set("adb_host",h);store.set("adb_port",n);store.set("connection_status","Đã lưu địa chỉ; chưa kiểm tra");dialog.dismiss();render();}catch(IllegalArgumentException e){toast("Nhập địa chỉ hợp lệ và cổng 1–65535");}}));dialog.show();
+        LinearLayout form=AppUi.column(this);AppUi.pad(form,16);EditText host=AppUi.input(this);host.setSingleLine(true);host.setHint("Địa chỉ chính màn xe");host.setText(store.s("adb_host","127.0.0.1"));form.addView(host);EditText port=AppUi.input(this);port.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);port.setText(String.valueOf(store.i("adb_port",5555)));form.addView(port);
+        AlertDialog dialog=AppUi.dialog(this).setTitle("ADB nội bộ").setView(form).setPositiveButton("Lưu",null).setNegativeButton("Hủy",null).create();dialog.setOnShowListener(x->dialog.getButton(-1).setOnClickListener(v->{try{int n=Integer.parseInt(port.getText().toString());String h=host.getText().toString().trim();if(n<1||n>65535||h.isEmpty()||h.length()>64)throw new IllegalArgumentException();store.set("adb_host",h);store.set("adb_port",n);store.set("connection_status","Đã lưu địa chỉ; chưa kiểm tra");dialog.dismiss();render();}catch(IllegalArgumentException e){toast("Nhập địa chỉ hợp lệ và cổng 1–65535");}}));dialog.show();
     }
-    private void runIo(Callable<String> task){io.execute(()->{String result;try{result=task.call();}catch(Exception e){result="Không thành công: "+com.tht.split.core.FailureText.describe(e);store.set("last_error",result);android.util.Log.e("THTSplit",result);}final String msg=result;runOnUiThread(()->{if(!isFinishing()&&!isDestroyed())Ui.dialog(this).setTitle("THT Split").setMessage(msg).setPositiveButton("Đóng",null).show();});});}
+    private void runIo(Callable<String> task){io.execute(()->{String result;try{result=task.call();}catch(Exception e){result="Không thành công: "+com.tht.split.core.FailureText.describe(e);store.set("last_error",result);android.util.Log.e("THTSplit",result);}final String msg=result;runOnUiThread(()->{if(!isFinishing()&&!isDestroyed())AppUi.dialog(this).setTitle("THT Split").setMessage(msg).setPositiveButton("Đóng",null).show();});});}
     private void checkConnection(){runIo(()->{JSONObject p=new Backend(this,store.s("transport","adb")).ping();String text=methodLabel(store.s("transport","adb"))+" sẵn sàng • UID "+p.getInt("uid")+" • API "+p.getInt("sdk")+(p.has("bridgeVersion")?" • bridge v"+p.getInt("bridgeVersion"):"")+"\nChưa chứng minh bố cục hiển thị đúng; hãy thử hai app trên xe.";store.set("connection_status",text);return text;});}
     private void freeform(boolean enable){runIo(()->{if(!enable&&!store.b("freeform_backup",false))return "Chưa có bản lưu tùy chọn cũ; không thay đổi.";JSONObject q=new JSONObject().put("op",enable?"FREEFORM_ENABLE":"FREEFORM_RESTORE");if(!enable)for(String key:new String[]{"enable_freeform_support","force_resizable_activities"})q.put(key,store.s("old_"+key,"null"));JSONObject out=new Backend(this,store.s("transport","adb")).call(q);if(enable&&!store.b("freeform_backup",false)){for(String key:new String[]{"enable_freeform_support","force_resizable_activities"})store.set("old_"+key,out.getString(key));store.set("freeform_backup",true);}if(!enable)store.set("freeform_backup",false);return enable?"Đã bật hỗ trợ freeform. Có thể cần reboot; ADB nội bộ tự thử kết nối lại khi dùng.":"Đã khôi phục tùy chọn cũ.";});}
     private void updateSettings(){
@@ -130,26 +232,40 @@ public final class MainActivity extends Activity {
     private void refreshRemote(boolean force,boolean show){
         RemoteControl remote=new RemoteControl(this);if(!remote.configured()){if(show)toast(remote.status());return;}if(refreshing)return;refreshing=true;final String before=remote.policy().toString()+remote.status()+remote.lastError();
         io.execute(()->{String result;try{remote.refresh(force);result=remote.status();}catch(Exception e){result=remote.lastError()+"\n"+remote.status();}final String message=result;
-            runOnUiThread(()->{refreshing=false;if(isFinishing()||isDestroyed())return;if(show||!before.equals(remote.policy().toString()+remote.status()+remote.lastError()))render();if(show)Ui.dialog(this).setTitle("Cập nhật & quyền sử dụng").setMessage(message).setPositiveButton("Đóng",null).show();});});
+            runOnUiThread(()->{refreshing=false;if(isFinishing()||isDestroyed())return;if(show||!before.equals(remote.policy().toString()+remote.status()+remote.lastError()))render();if(show)AppUi.dialog(this).setTitle("Cập nhật & quyền sử dụng").setMessage(message).setPositiveButton("Đóng",null).show();});});
     }
     private void downloadUpdate(){if(downloading){toast("Đang tải, vui lòng đợi");return;}downloading=true;toast("Đang tải APK…");io.execute(()->{try{
         RemoteControl r=new RemoteControl(this);r.refresh(true);JSONObject latest=r.policy().getJSONObject("latest");ApkUpdates.download(this,latest);
-        runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()){render();Ui.dialog(this).setTitle("Đã kiểm tra APK").setMessage("Cài bản cập nhật "+latest.optString("versionName")+"?").setPositiveButton("Cài đặt",(d,n)->installDownloaded()).setNegativeButton("Để sau",null).show();}});
-        }catch(Exception e){String msg=com.tht.split.core.FailureText.describe(e);runOnUiThread(()->{if(!isDestroyed())Ui.dialog(this).setTitle("Không tải được cập nhật").setMessage(msg).setPositiveButton("Đóng",null).show();});}finally{runOnUiThread(()->downloading=false);}});
+        runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()){render();AppUi.dialog(this).setTitle("Đã kiểm tra APK").setMessage("Cài bản cập nhật "+latest.optString("versionName")+"?").setPositiveButton("Cài đặt",(d,n)->installDownloaded()).setNegativeButton("Để sau",null).show();}});
+        }catch(Exception e){String msg=com.tht.split.core.FailureText.describe(e);runOnUiThread(()->{if(!isDestroyed())AppUi.dialog(this).setTitle("Không tải được cập nhật").setMessage(msg).setPositiveButton("Đóng",null).show();});}finally{runOnUiThread(()->downloading=false);}});
     }
     private void installDownloaded(){
         if(!getPackageManager().canRequestPackageInstalls()){try{startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName())));toast("Cho phép cài từ THT Split, quay lại rồi bấm Tiếp tục cài APK đã tải");}catch(ActivityNotFoundException e){toast("Firmware chưa có trang cấp quyền cài APK");}return;}
         io.execute(()->{try{ApkUpdates.install(this);}catch(Exception e){runOnUiThread(()->toast(com.tht.split.core.FailureText.describe(e)));}});
     }
     private void donation(){
-        body.addView(title("Ủng hộ THT Split"));note("Cảm ơn bạn đã đồng hành. Ủng hộ là tự nguyện.");
-        note("Ngân hàng: "+DonationProfile.BANK+"\nChủ tài khoản: "+DonationProfile.HOLDER+"\nSố tài khoản: "+DonationProfile.ACCOUNT);
-        button(body,"Sao chép số tài khoản",true,()->copy(DonationProfile.ACCOUNT));
-        ImageView image=new ImageView(this);image.setContentDescription("QR ủng hộ "+DonationProfile.BANK+", tài khoản "+DonationProfile.ACCOUNT);
-        image.setBackgroundColor(android.graphics.Color.WHITE);image.setScaleType(ImageView.ScaleType.FIT_CENTER);body.addView(image,lp(Ui.dp(this,300),Ui.dp(this,300)));
-        try(InputStream in=getAssets().open(DonationProfile.QR_ASSET)){
-            android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeStream(in);if(bmp==null)throw new IOException("Không đọc được QR");image.setImageBitmap(bmp);
-        }catch(IOException e){image.setVisibility(View.GONE);note("Không đọc được QR. Bạn có thể sao chép số tài khoản bên trên.");}
+        body.addView(title("Ủng hộ THT Split"));space(body,6);
+        note("Cảm ơn bạn đã đồng hành và giúp THT Split ngày càng hoàn thiện.");space(body,12);
+        boolean sideBySide=screenWidth>=900;
+        LinearLayout content=sideBySide?AppUi.row(this):AppUi.column(this);content.setGravity(Gravity.TOP);body.addView(content,lp(-1,-2));
+        LinearLayout bank=AppUi.column(this);AppUi.pad(bank,24);bank.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,16)));
+        content.addView(bank,sideBySide?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
+        LinearLayout heading=AppUi.row(this);bank.addView(heading);AppUi.Icon heart=new AppUi.Icon(this,"heart",AppUi.CYAN);
+        heading.addView(heart,lp(AppUi.dp(this,40),AppUi.dp(this,40)));TextView bankName=AppUi.text(this,DonationProfile.BANK,22,AppUi.TEXT);bankName.setTypeface(null,Typeface.BOLD);
+        LinearLayout.LayoutParams bankLabel=new LinearLayout.LayoutParams(0,-2,1);bankLabel.leftMargin=AppUi.dp(this,12);heading.addView(bankName,bankLabel);space(bank,20);line(bank);space(bank,20);
+        bank.addView(AppUi.text(this,"SỐ TÀI KHOẢN",13,AppUi.MUTED));space(bank,6);TextView account=AppUi.text(this,DonationProfile.ACCOUNT,screenWidth>=900?32:26,AppUi.CYAN);account.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));account.setTextIsSelectable(true);bank.addView(account);space(bank,20);
+        bank.addView(AppUi.text(this,"CHỦ TÀI KHOẢN",13,AppUi.MUTED));space(bank,6);TextView holder=AppUi.text(this,DonationProfile.HOLDER,20,AppUi.TEXT);holder.setTypeface(null,Typeface.BOLD);bank.addView(holder);space(bank,24);
+        Button copy=AppUi.button(this,"Sao chép số tài khoản",true);bank.addView(copy,lp(-1,AppUi.dp(this,52)));copy.setOnClickListener(v->copy(DonationProfile.ACCOUNT));
+        TextView voluntary=AppUi.text(this,"Ủng hộ hoàn toàn tự nguyện. Cảm ơn sự hỗ trợ của bạn!",15,AppUi.MUTED);voluntary.setLineSpacing(AppUi.dp(this,4),1);space(bank,16);bank.addView(voluntary);
+        if(sideBySide)content.addView(new View(this),lp(AppUi.dp(this,24),1));else space(content,20);
+        LinearLayout qr=AppUi.column(this);AppUi.pad(qr,24);qr.setGravity(Gravity.CENTER_HORIZONTAL);qr.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,16)));
+        content.addView(qr,sideBySide?lp(AppUi.dp(this,348),-2):lp(-1,-2));TextView scan=AppUi.text(this,"Quét mã để ủng hộ",19,AppUi.TEXT);scan.setTypeface(null,Typeface.BOLD);qr.addView(scan);space(qr,16);
+        int size=sideBySide?280:Math.min(280,Math.max(160,screenWidth-96));ImageView image=new ImageView(this);
+        image.setContentDescription("QR ủng hộ "+DonationProfile.BANK+", tài khoản "+DonationProfile.ACCOUNT);image.setBackgroundColor(android.graphics.Color.WHITE);
+        image.setScaleType(ImageView.ScaleType.FIT_CENTER);image.setPadding(AppUi.dp(this,12),AppUi.dp(this,12),AppUi.dp(this,12),AppUi.dp(this,12));qr.addView(image,lp(AppUi.dp(this,size),AppUi.dp(this,size)));
+        try(InputStream in=getAssets().open(DonationProfile.QR_ASSET)){android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeStream(in);if(bmp==null)throw new IOException("Không đọc được QR");image.setImageBitmap(bmp);}
+        catch(IOException e){image.setVisibility(View.GONE);qr.addView(AppUi.text(this,"Không đọc được QR. Hãy sao chép số tài khoản.",15,AppUi.MUTED));}
+        space(qr,12);TextView hint=AppUi.text(this,"Mở ứng dụng ngân hàng trên điện thoại\nđể quét mã QR.",14,AppUi.MUTED);hint.setGravity(Gravity.CENTER);qr.addView(hint);
     }
     private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
     @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request==31&&result==RESULT_OK&&data!=null&&data.getData()!=null&&exportedLog!=null)try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out==null)throw new IOException("Không mở được tệp");out.write(exportedLog.getBytes("UTF-8"));toast("Đã xuất log");}catch(Exception e){toast("Không lưu được log: "+e.getMessage());}}

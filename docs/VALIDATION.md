@@ -133,3 +133,23 @@ Không coi cổng TCP đang nghe hoặc build đạt là xác thực ADB thành 
   debug vẫn có thể khác APK0.2.9. Release workflow từ chối thiếu endpoint/secrets.
 - Kiểm tra tác vụ/khóa/lease/installer cùng signer theo REMOTE_CONTROL.md sau cấu
   hình; unit test không xác minh hành vi mạng hoặc PackageInstaller trên xe.
+
+
+## 0.3.1-test — QR ủng hộ nhúng sẵn và không cần duyệt
+- CI commit1bc8b14446be4e19797feffc5d449728ac9d43b5:
+  https://github.com/meomeo2099/THT-Split/actions/runs/37301624495
+  Android build/unit/lint,7 Node tests, giải mã QR kiểm profile/EMV CRC và
+  Wrangler dry-run đều đạt. Chưa deploy Worker hoặc thử APK mới trên LDPlayer/xe.
+- QR downloaded original JPEG490×490 từ link chủ dự án cung cấp; asset trong APK
+  byte-for-byte bằng source. Ngân hàng/STK trong payload khớp profile, CRC hợp lệ.
+  Holder hiển thị theo chủ dự án gửi; không xác minh tên qua hệ thống ngân hàng.
+- Thiết bị mới enabled ngay; cấu hình cũ autoApprove=false không làm chờ duyệt,
+  pending migrate enabled. Locked vẫn giữ qua heartbeat/migrate/reenroll. Admin
+  chỉ có Khóa/Mở khóa cho thiết bị; cập nhật bắt buộc vẫn giữ.
+- com.tht.split/versionCode13/versionName0.3.1-test/min26/target32.
+- SHA256: c0252c65bc6c5829ff4cfc4d9ac54eb7cf8cb6b17c083bcf1beb1109d7b61201.
+- Signer SHA256: f15296a430902ad605593b462a224044d04e608ae4eb9955b2d15da01d4a2745.
+  Khác0.3.0 debug signer. Chưa có signer phát hành ổn định; cần giữ cấu hình trước
+  nếu buộc cài mới. Không hứa token/preset/RSA tồn tại sau gỡ app.
+- Mục ủng hộ không cần mạng/Worker. Khóa/cập nhật từ xa còn cần endpoint thật và
+  signer ổn định cho APK được phát hành; xem REMOTE_CONTROL.md.

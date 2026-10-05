@@ -16,8 +16,11 @@ App chấp nhận policy pending cũ như enabled để không kẹt quy trình 
 unknown state vẫn bị chặn. Stop/Home/Hide thoát được, cache locked không tự xóa.
 Người dùng xác nhận0.2.9 ADB và test OK LDPlayer9; chưa xác nhận reboot/xe thật.
 Giữ bridge v6 và backend task. Chưa deploy Worker, chưa có URL/signer ổn định.
-Node7 regression tests local đạt; CI Android của mốc này đang chờ.0.3.0 code
-trước đó build/unit/lint + Wrangler dry-run đạt run37290015077.
+Node7 regression tests local/CI, kiểm QR đúng profile/CRC, Wrangler dry-run,
+build/unit/lint đều đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37301624495.
+Code1bc8b14446be4e19797feffc5d449728ac9d43b5; APK0.3.1-test/code13.
+APK test đã có STK/QR nhưng chưa cấu hình Worker thật. Signer CI khác0.3.0;
+không hứa cài đè hoặc giữ dữ liệu nếu buộc gỡ/cài lại. Chưa thử LDPlayer/xe.
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.

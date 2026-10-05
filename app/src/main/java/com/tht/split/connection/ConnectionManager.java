@@ -3,6 +3,7 @@ package com.tht.split.connection;
 import android.content.Context;
 import com.tht.split.Store;
 import com.tht.split.bridge.ShellClient;
+import com.tht.split.core.FailureText;
 import org.json.JSONObject;
 import java.io.IOException;
 
@@ -18,7 +19,7 @@ public final class ConnectionManager {
                 // Key and bridge secret never leave this device or appear in an API/log response.
                 String output=adb.bootstrap(shell.startCommand()+" sleep 1; echo THT_BOOTSTRAP_SENT");
                 if(!output.contains("THT_BOOTSTRAP_SENT"))throw new IOException("Không gửi được lệnh mở bridge");
-            }catch(Exception e){s.set("connection_status","ADB chưa kết nối. Kiểm tra cổng và xác nhận khóa trên màn xe.");throw new IOException("Không kết nối được ADB nội bộ. Kiểm tra cổng, ADB Wi-Fi và xác nhận khóa; sau đó thử lại.",e);}
+            }catch(Exception e){String detail="Không kết nối được ADB nội bộ. "+FailureText.describe(e);s.set("connection_status",detail);s.set("last_error",detail);throw new IOException(detail,e);}
             Exception last=null;for(int i=0;i<12;i++){try{JSONObject p=shell.ping();checkUid(p);checkVersion(p);s.set("connection_status","ADB nội bộ → bridge sẵn sàng");return p;}catch(java.net.ConnectException e){last=e;Thread.sleep(250);}}
             throw new IOException("Bridge chưa chạy. Xem log hỗ trợ hoặc dùng lệnh ADB thủ công.",last);
         }

@@ -83,3 +83,10 @@ sau đó focus task đã có. Reset dùng resizeStack allowResizeInDockedMode=tr
 preserveWindows=false, animate=false; không resizeTask native hoặc force-stop.
 Full/stop đọc getTaskBounds + mode của task được chọn, đối chiếu display thực.
 Đọc đúng bounds vẫn không xác minh surface/OpenGL/nội dung app; log giữ kết quả.
+
+## Khóa ADB từ0.2.9
+Decode PKCS8 trả PrivateKey thay cast CRT. Public modulus lấy bằng KeyFactory
+RSAPrivateKeySpec, public exponent F4 cho provider non-CRT (khóa app-only, generator
+cũ Conscrypt mặc định65537; generator mới pin2048/F4). AUTH Cipher dùng PrivateKey.
+Không tạo khóa khác khi file có lỗi, không đổi khóa cũ hay xác thực vượt hộp thoại.
+UI/boot hiện nguyên nhân gốc có lọc token/encoded keys, log lỗi Kiểm tra hỗ trợ chẩn đoán.

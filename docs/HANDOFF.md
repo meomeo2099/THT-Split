@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.2.8-test, 05/10/2026
+# Bàn giao THT Split — 0.2.9-test, 05/10/2026
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
@@ -162,3 +162,22 @@ bounds/configuration cũ với lỗi surface của Maps/LDPlayer; chưa xác nh�
 - Thêm5 regression tests logic. Bridge v6 cần reboot/kết nối lại bằng lệnh mới.
   CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37275295920.
   Chưa thử bản sửa trên LDPlayer/xe; xem VALIDATION cho checksum và giới hạn.
+
+## Sửa đọc khóa ADB Android9 —0.2.9
+Log người dùng05/10 14:48:13, Android9 LDPlayer: LocalAdb.loadKey ném
+ClassCastException: OpenSSLRSAPrivateKey cannot be cast to RSAPrivateCrtKey.
+Lỗi xảy ra trước socket.connect, không phải bằng chứng ADB/TCP/IPv6 không hỗ trợ.
+Nguồn0.2.2 cũng có cast này; khác provider có thể giải thích bản Android khác chạy.
+- Giữ PrivateKey chuẩn từ PKCS8, không ép RSAPrivateCrtKey. AUTH dùng Cipher với
+  PrivateKey; public ADB lấy modulus qua RSAPrivateKeySpec. Nếu provider không có
+  CRT interface, dùng F4=65537 của khóa do app tạo; không có import khóa bên ngoài.
+- Sinh mới2048/F4 tường minh. Khóa PKCS8 cũ đọc nguyên bytes, không xoay/xóa/tạo
+  lại khi lỗi; identity RSA vẫn giữ nếu cập nhật cài đè cùng chữ ký giữ dữ liệu.
+- Giữ bridge v6, không đổi socket/cổng/task backend hay nới checksum để che lỗi.
+- ConnectionManager/UI/boot ghi nguyên nhân gốc có lọc secrets; Kiểm tra hiện
+  UID/API/bridgeVersion. Có thể thu log chỉ bằng Kiểm tra, không phải đóng UI để chia.
+- Thêm2 tests khóa non-CRT/PKCS8 identity và2 tests cause/redaction. Unit provider
+  JVM không chứng minh Conscrypt/ADB xác thực trên thiết bị; cần thử Android9 thật.
+- Sau cài đặt127.0.0.1:5555, Kiểm tra khi chưa mở bridge thủ công, xác nhận RSA nếu
+  có; reboot rồi thử tự mở lại. Không yêu cầu chạy lệnh dự phòng như điều kiện test.
+- Chưa có kết quả CI/thiết bị ở mốc commit; xem VALIDATION khi build hoàn tất.

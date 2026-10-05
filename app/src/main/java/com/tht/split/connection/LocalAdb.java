@@ -9,13 +9,12 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.*;
 
 /** One short lived authenticated shell stream; no arbitrary shell API exposed to callers. */
 public final class LocalAdb implements AutoCloseable {
-    private final Socket socket=new Socket();private final RSAPrivateCrtKey key;
+    private final Socket socket=new Socket();private final PrivateKey key;
     private InputStream in;private OutputStream out;
     public LocalAdb(Context c,String host,int port)throws Exception {
         if(port<1||port>65535)throw new IOException("Cổng ADB từ 1 đến 65535");
@@ -23,11 +22,11 @@ public final class LocalAdb implements AutoCloseable {
         if(!address.isLoopbackAddress()&&NetworkInterface.getByInetAddress(address)==null)throw new IOException("Chỉ cho phép địa chỉ của chính màn xe");
         key=loadKey(c);try{socket.connect(new InetSocketAddress(address,port),3500);socket.setSoTimeout(12000);in=socket.getInputStream();out=socket.getOutputStream();connect();}catch(Exception e){close();throw e;}
     }
-    private static synchronized RSAPrivateCrtKey loadKey(Context c)throws Exception {
+    private static synchronized PrivateKey loadKey(Context c)throws Exception {
         AtomicFile file=new AtomicFile(new File(c.getNoBackupFilesDir(),"adb-private.pk8"));byte[] encoded;
         if(file.getBaseFile().exists()){encoded=file.readFully();}
-        else {KeyPairGenerator gen=KeyPairGenerator.getInstance("RSA");gen.initialize(2048);encoded=gen.generateKeyPair().getPrivate().getEncoded();FileOutputStream output=null;try{output=file.startWrite();output.write(encoded);file.finishWrite(output);}catch(IOException e){if(output!=null)file.failWrite(output);throw e;}}
-        return (RSAPrivateCrtKey)KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(encoded));
+        else {KeyPairGenerator gen=KeyPairGenerator.getInstance("RSA");gen.initialize(new RSAKeyGenParameterSpec(2048,RSAKeyGenParameterSpec.F4));encoded=gen.generateKeyPair().getPrivate().getEncoded();FileOutputStream output=null;try{output=file.startWrite();output.write(encoded);file.finishWrite(output);}catch(IOException e){if(output!=null)file.failWrite(output);throw e;}}
+        return AdbRsa.decodePrivate(encoded);
     }
     private void send(int cmd,int a,int b,byte[] bytes)throws IOException{AdbWire.write(out,new AdbWire.Packet(cmd,a,b,bytes));}
     private void connect()throws Exception {

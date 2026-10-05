@@ -39,4 +39,27 @@ public class AdbProtocolTest {
         assertEquals(35,digest.length);assertArrayEquals(token,Arrays.copyOfRange(digest,15,35));assertArrayEquals(new byte[]{0x30,0x21,0x30,0x09,0x06,0x05,0x2b,0x0e,0x03,0x02,0x1a,0x05,0x00,0x04,0x14},Arrays.copyOf(digest,15));
         try{AdbRsa.sign((RSAPrivateCrtKey)k.getPrivate(),new byte[19]);fail();}catch(IllegalArgumentException expected){}
     }
+    private static RSAPrivateKey nonCrt(PrivateKey key)throws Exception {
+        java.security.spec.RSAPrivateKeySpec spec=KeyFactory.getInstance("RSA").getKeySpec(key,java.security.spec.RSAPrivateKeySpec.class);
+        return new RSAPrivateKey(){
+            public BigInteger getModulus(){return spec.getModulus();}
+            public BigInteger getPrivateExponent(){return spec.getPrivateExponent();}
+            public String getAlgorithm(){return "RSA";}
+            public String getFormat(){return key.getFormat();}
+            public byte[] getEncoded(){return key.getEncoded();}
+        };
+    }
+    @Test public void nonCrtProviderKeyKeepsAdbIdentityAndSignsChallenge()throws Exception{
+        KeyPairGenerator g=KeyPairGenerator.getInstance("RSA");g.initialize(2048);KeyPair original=g.generateKeyPair();
+        RSAPrivateKey key=nonCrt(original.getPrivate());assertFalse(key instanceof RSAPrivateCrtKey);
+        assertArrayEquals(AdbRsa.publicKey(original.getPrivate()),AdbRsa.publicKey(key));
+        byte[] token=new byte[20];new SecureRandom().nextBytes(token);
+        Cipher verify=Cipher.getInstance("RSA/ECB/PKCS1Padding");verify.init(Cipher.DECRYPT_MODE,original.getPublic());
+        byte[] digest=verify.doFinal(AdbRsa.sign(key,token));assertEquals(35,digest.length);assertArrayEquals(token,Arrays.copyOfRange(digest,15,35));
+    }
+    @Test public void savedPkcs8ReloadKeepsExistingIdentity()throws Exception{
+        KeyPairGenerator g=KeyPairGenerator.getInstance("RSA");g.initialize(2048);PrivateKey original=g.generateKeyPair().getPrivate();
+        byte[] encoded=original.getEncoded();byte[] identity=AdbRsa.publicKey(original);
+        for(int i=0;i<2;i++){PrivateKey restored=AdbRsa.decodePrivate(encoded);assertArrayEquals(identity,AdbRsa.publicKey(nonCrt(restored)));assertArrayEquals(encoded,restored.getEncoded());}
+    }
 }

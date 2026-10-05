@@ -53,3 +53,12 @@ ActivityStarter: FLAG_ACTIVITY_LAUNCH_ADJACENT có nhánh dùng stack đang focu
 Off bỏ flag này, giữ NEW_TASK/RESET_TASK_IF_NEEDED để reuse, không MULTIPLE_TASK.
 Nguồn: https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-9.0.0_r54/services/core/java/com/android/server/am/ActivityManagerService.java
 https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-9.0.0_r54/services/core/java/com/android/server/am/ActivityStarter.java
+
+## Conscrypt / khóa ADB Android9
+Log LDPlayer do người dùng cung cấp: provider trả OpenSSLRSAPrivateKey, không có
+RSAPrivateCrtKey; cast cũ ném ClassCastException trước kết nối mạng.
+Nguồn API chuẩn kiểm tra khi sửa:
+https://android.googlesource.com/platform/external/conscrypt/+/refs/tags/android-9.0.0_r54/common/src/main/java/org/conscrypt/OpenSSLRSAKeyFactory.java
+https://android.googlesource.com/platform/external/conscrypt/+/refs/tags/android-9.0.0_r54/common/src/main/java/org/conscrypt/OpenSSLRSAKeyPairGenerator.java
+KeyFactory hỗ trợ RSAPrivateKeySpec cho key không có CRT; generator mặc định e65537.
+THT không import private key ngoài app; sinh mới dùng RSAKeyGenParameterSpec2048/F4.

@@ -1,11 +1,11 @@
-# Cài và kiểm thử 0.2.8-test trên EX2
+# Cài và kiểm thử 0.2.9-test trên EX2
 
 Chưa test xe thật. Android headunit phải có ADB mở sẵn; app không mở khóa ADB hoặc
 thay firmware/OTA. Quan sát bố cục khi xe đang đỗ.
 
 ## Cài lần đầu
 ```sh
-adb install -r THT-Split-0.2.8-test.apk
+adb install -r THT-Split-0.2.9-test.apk
 adb shell appops set com.tht.split SYSTEM_ALERT_WINDOW allow
 ```
 Nếu khác chữ ký, không gỡ app khi còn dữ liệu cặp cần giữ. Dùng khóa cũ hoặc ghi lại
@@ -145,3 +145,18 @@ Cài, reboot LDPlayer/màn và lấy/chạy lại lệnh bridge từ APK mới �
    Thử kéo/zoom bản đồ và ghi có vẽ lại không; thử mở Maps bình thường từ launcher
    để phân biệt lỗi chỉ xảy ra sau resize. Không tự force-stop app để che lỗi.
 5. Cần kiểm trên EX2 thật; LDPlayer và read-back bounds không xác minh driver/GPU xe.
+
+## Kiểm tra0.2.9 — ADB Android9 không cần mở bridge thủ công
+Log thực xác nhận ClassCastException khi decode RSA, trước socket.connect. Không
+suy ra cổng đóng từ thông báo generic của APK cũ; TCP có listener chưa chứng minh auth.
+1. Giữ dữ liệu/khóa nếu cài đè cùng signer; cài mới khác signer có thể cần xác nhận
+   lại khóa app. Không gỡ APK khi chưa giữ cấu hình.
+2. LDPlayer9: ADB đã bật, app127.0.0.1:5555 → Kiểm tra/kết nối khi chưa chạy bridge
+   thủ công. Đạt nếu UID2000/API28/bridge6, không ClassCastException.
+3. Xác nhận khóa tht@split nếu xuất hiện. Lần đầu có thể timeout; xác nhận rồi bấm lại.
+4. Reboot thật, kiểm ADB5555 còn mở, bấm Kiểm tra hoặc mở cặp. Thành công mới xác nhận
+   tự mở bridge sau reboot; nếu adbd không mở app không tự bật được.
+5. Kiểm lại trên bản Android khác đã kết nối được và EX2; không hứa mọi firmware.
+6. Nếu còn lỗi: chụp lỗi gốc trong Kiểm tra hoặc Xuất log hỗ trợ; logcat có tagTHTSplit.
+Bridge vẫn v6 từ0.2.8, sửa nằm trong client APK. Bridge v6 đang chạy/token đúng có
+thể được reuse; test tự bootstrap cần bắt đầu sau reboot mà chưa chạy lệnh dự phòng.

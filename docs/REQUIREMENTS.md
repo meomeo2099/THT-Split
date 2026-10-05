@@ -31,8 +31,15 @@ Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đ�
 ## Chốt giao diện/quản lý05/10/2026
 - Bỏ nút tài liệu Voice, hướng dẫn kiểm thử và mở trang phát hành khỏi app.
 - Cập nhật trong app, có phiên bản tối thiểu bắt buộc; kiểm APK trước cài.
-- Không nhập key; tự đăng ký thiết bị, chủ dự án duyệt/khóa/mở từ xa.
+- Không nhập key; tự đăng ký thiết bị, chủ dự án khóa/mở từ xa (bỏ duyệt theo chốt mới).
 - Người dùng chọn Worker Cloudflare riêng cho THT Split.
-- Thêm ủng hộ có QR/STK thật của chủ dự án; thông tin chưa được cung cấp.
-- Không lưu tài khoản/khóa ký/admin credential vào git. Endpoint và signer cần
+- Thêm ủng hộ có QR/STK thật của chủ dự án; đã nhận thông tin và link QR của chủ dự án.
+- Không lưu thông tin đăng nhập/khóa ký/admin credential vào git; được nhúng
+  profile ủng hộ công khai do chủ dự án yêu cầu. Endpoint và signer cần
   cấu hình trước bản dùng chính thức; không giả định đã deploy.
+
+## Chốt tiếp05/10/2026 18:05
+- STK, tên chủ tài khoản và QR được nhúng sẵn, dùng khi offline/chưa có Worker.
+- Không cần duyệt: thiết bị tự đăng ký và được dùng ngay; quản trị chỉ khóa/mở.
+- Khóa đang lưu phải giữ khi migrate pending cũ hoặc khôi phục credential.
+- Giữ phần cập nhật bắt buộc của yêu cầu trước; ủng hộ không phụ thuộc license.

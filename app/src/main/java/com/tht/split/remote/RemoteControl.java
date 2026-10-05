@@ -31,7 +31,7 @@ public final class RemoteControl {
         store.prefs.getLong("checked_at",0),System.currentTimeMillis(),p.optLong("offlineSeconds",604800));
         String reason=p.optString("reason","");return s+(s.isEmpty()||reason.isEmpty()?"":". "+reason); }
     public String status() { if(!configured())return "Quản lý từ xa chưa được cấu hình trong bản test này";
-        String d=denial();return d.isEmpty()?"Thiết bị đã được duyệt • tự kiểm tra khi có mạng":d; }
+        String d=denial();return d.isEmpty()?"Thiết bị đang mở • tự kiểm tra khi có mạng":d; }
     public String lastError() { return store.s("error",""); }
     public void refresh(boolean force) throws Exception { if(!configured())return;synchronized(LOCK){
         long now=System.currentTimeMillis(),last=store.prefs.getLong("attempt_at",0);

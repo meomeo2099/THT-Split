@@ -8,7 +8,8 @@ public final class AccessRules {
         if (!configured) return ""; // Development builds explicitly show remote control as unconfigured.
         if (!known) return "Cần kết nối mạng để đăng ký thiết bị";
         if ("locked".equals(state)) return "Thiết bị đã bị khóa";
-        if (!"enabled".equals(state)) return "Thiết bị đang chờ nhà phát hành duyệt";
+        // Accept a saved legacy pending policy while upgrading the old Worker.
+        if (!"enabled".equals(state) && !"pending".equals(state)) return "Trạng thái quyền sử dụng không hợp lệ";
         if (installed < minimum) return "Cần cập nhật phiên bản bắt buộc";
         if (now < checkedAt || now - checkedAt > offlineSeconds * 1000L)
             return "Cần kết nối mạng để xác nhận quyền sử dụng";

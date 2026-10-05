@@ -6,8 +6,10 @@ credential tự sinh, cache policy riêng. Worker/admin secret không trong APK.
 AccessRules chặn lệnh tại service dùng chung UI/Voice/toolbar; Stop/Home/Hide thoát
 được, khóa chỉ dừng overlay, không đóng app khác. Poll ≤5 phút online, lease ngoại
 tuyến hữu hạn. ApkUpdates kiểm SHA256/package/version/signer rồi PackageInstaller.
-Worker Durable Object transaction giữ lock khi heartbeat/đăng ký lại. UI ủng hộ
-đọc cùng policy, QR tải riêng không mang credential. Chi tiết REMOTE_CONTROL.md.
+Worker Durable Object transaction giữ lock khi heartbeat/đăng ký lại. Từ0.3.1 UI ủng hộ
+đọc DonationProfile + QR bundle trong assets, dùng hoàn toàn offline. Worker tự
+đăng ký enabled, quản trị Khóa/Mở khóa, migrate pending cũ và giữ locked.
+Chi tiết REMOTE_CONTROL.md.
 
 ```mermaid
 flowchart TD

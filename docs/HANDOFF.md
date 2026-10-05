@@ -1,24 +1,23 @@
-# Bàn giao THT Split — 0.3.0-test, 05/10/2026
+# Bàn giao THT Split — 0.3.1-test, 05/10/2026
 
-## Mốc mới nhất — quản lý/cập nhật/ủng hộ
-Người dùng đã xác nhận0.2.9 kết nối ADB và test OK trên LDPlayer9; chưa xác nhận
-reboot tự kết nối lại hoặc EX2 thật. Giữ nguyên bridge v6 và cơ chế cửa sổ.
-0.3.0 bỏ ba nút tài liệu/phát hành trong app, giữ tài liệu tích hợp trong repo.
-RemoteControl + AccessRules áp quyền dùng ở UI/service/Voice/toolbar, cache lock,
-lease ngoại tuyến7 ngày; máy mới pending. APK HTTPS/SHA256/package/version/signer
-trước PackageInstaller; không tự cài im lặng hoặc gỡ bản cũ. Ủng hộ lấy QR/STK từ
-Worker. `server/` có quản trị duyệt/khóa/cập nhật/ủng hộ và transaction chống ghi
-đè lock. Xem REMOTE_CONTROL.md cho triển khai/cấu hình và giới hạn bảo mật.
-Chưa deploy Worker, chưa có URL/ngân hàng/QR thật/keystore ổn định. Test build khi
-thiếu CONTROL_URL hiện rõ chưa cấu hình và vẫn dùng bộ chia để kiểm thử.
-Release workflow bắt buộc endpoint/secrets ký; không coi test APK là bản đã khóa từ xa.
-Node server regression đạt6 tests local/CI. CI cuối build/unit/lint + Wrangler
-dry-run đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37290015077.
-Code commit a12dd9be583537cfb653dca5c85e200ed63b352a; APK0.3.0-test code12.
-APK test không chứa endpoint: UI mới dùng được, các chức năng quản trị/ủng hộ chưa
-hoạt động thật. Chưa thử APK mới trên LDPlayer/xe, chưa deploy Cloudflare.
-Tách khóa identity khỏi khóa mạng để UI không đợi HTTP khi hiện mã thiết bị;
-không dựng lại UI nếu policy không đổi, serialize APK download/install qua Activity recreate.
+## Mốc mới nhất — ủng hộ dùng ngay, bỏ duyệt thiết bị
+Chủ dự án đã cung cấp STK/holder/link VietQR và yêu cầu nhúng vào app.0.3.1
+(versionCode13) dùng DonationProfile công khai + assets/donation-qr.jpg; QR/STK
+hiển thị ngay cả khi offline hoặc chưa cấu hình Worker. Giữ nguyên bytes ảnh đã
+lấy từ link của chủ dự án (response thực là JPEG490×490). Đã decode QR, đối chiếu
+account/BIN và checksum EMV CRC; không tạo/sửa nội dung QR hoặc xác minh tên chủ
+qua ngân hàng. Holder dùng đúng nội dung chủ dự án cung cấp.
+Worker: thiết bị mới enabled ngay, bỏ autoApprove/duyệt; UI thiết bị chỉ Khóa/Mở
+khóa. Pending cũ được migrate thành enabled khi heartbeat, locked giữ nguyên.
+Khôi phục credential API reenroll không chuyển enabled về pending và không xóa
+locked; vẫn bảo vệ identity không cho credential khác ghi đè. Bỏ cấu hình ủng hộ
+trong Worker vì profile/QR nằm trong APK. Giữ cập nhật bắt buộc đã yêu cầu trước.
+App chấp nhận policy pending cũ như enabled để không kẹt quy trình duyệt cũ;
+unknown state vẫn bị chặn. Stop/Home/Hide thoát được, cache locked không tự xóa.
+Người dùng xác nhận0.2.9 ADB và test OK LDPlayer9; chưa xác nhận reboot/xe thật.
+Giữ bridge v6 và backend task. Chưa deploy Worker, chưa có URL/signer ổn định.
+Node7 regression tests local đạt; CI Android của mốc này đang chờ.0.3.0 code
+trước đó build/unit/lint + Wrangler dry-run đạt run37290015077.
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.

@@ -8,7 +8,8 @@ Luôn trả lời bằng tiếng Việt. Đọc theo thứ tự:
 
 Không làm lại phần đã xong. Kiểm tra `git log -5`, `git status` trước khi sửa.
 Commit backup sau mỗi mốc hoàn chỉnh; cập nhật HANDOFF trong cùng commit.
-Không ghi token bridge/Voice, khóa ký hoặc tài khoản vào git.
+Không ghi token bridge/Voice, khóa ký hoặc thông tin đăng nhập tài khoản vào git.
+STK và QR ủng hộ công khai được nhúng trong APK khi chủ dự án đã yêu cầu rõ ràng.
 Không gọi bản chạy trên xe thành công nếu chỉ build hoặc chạy unit test.
 Không xóa dữ liệu/force-stop app bên thứ ba để chia màn hình.
 X là tắt chia; Off chỉ dừng điều khiển/overlay vì không có quyền sửa task. Chevron là ẩn/hiện thanh. Popup thuộc THT Voice, không dành chỗ cố định.

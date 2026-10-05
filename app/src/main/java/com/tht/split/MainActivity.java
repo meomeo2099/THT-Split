@@ -119,7 +119,7 @@ public final class MainActivity extends Activity {
     private void updateSettings(){
         body.addView(title("Phiên bản & cập nhật"));note("THT Split "+BuildConfig.VERSION_NAME);
         RemoteControl remote=new RemoteControl(this);note(remote.status());
-        if(remote.configured()){note("Mã thiết bị: "+remote.deviceId());button(body,"Sao chép mã thiết bị",false,()->copy(remote.deviceId()));note("Không cần nhập key. Thiết bị mới chờ duyệt; quyền đã duyệt dùng ngoại tuyến theo thời hạn của nhà phát hành.");}
+        if(remote.configured()){note("Mã thiết bị: "+remote.deviceId());button(body,"Sao chép mã thiết bị",false,()->copy(remote.deviceId()));note("Không cần nhập key hoặc chờ duyệt. App tự đăng ký; nhà phát hành có thể khóa/mở từ xa.");}
         button(body,"Kiểm tra cập nhật & quyền sử dụng",true,()->refreshRemote(true,true));
         JSONObject latest=remote.policy().optJSONObject("latest");
         if(latest!=null&&latest.optInt("versionCode")>BuildConfig.VERSION_CODE){note("Có bản "+latest.optString("versionName")+(remote.policy().optInt("minimumVersionCode")>BuildConfig.VERSION_CODE?" • BẮT BUỘC CẬP NHẬT":""));note(latest.optString("notes"));button(body,"Tải và cài cập nhật",true,this::downloadUpdate);}
@@ -143,17 +143,13 @@ public final class MainActivity extends Activity {
     }
     private void donation(){
         body.addView(title("Ủng hộ THT Split"));note("Cảm ơn bạn đã đồng hành. Ủng hộ là tự nguyện.");
-        JSONObject donate=new RemoteControl(this).policy().optJSONObject("donation");
-        if(donate==null||donate.optString("account").isEmpty()){note("Nhà phát hành chưa cấu hình thông tin nhận ủng hộ.");return;}
-        note("Ngân hàng: "+donate.optString("bank")+"\nChủ tài khoản: "+donate.optString("holder")+"\nSố tài khoản: "+donate.optString("account"));
-        button(body,"Sao chép số tài khoản",true,()->copy(donate.optString("account")));String qr=donate.optString("qrUrl");
-        if(!RemoteControl.https(qr)){note("Chưa có mã QR");return;}
-        ImageView image=new ImageView(this);image.setContentDescription("QR chuyển khoản ủng hộ");image.setBackgroundColor(android.graphics.Color.WHITE);image.setScaleType(ImageView.ScaleType.FIT_CENTER);body.addView(image,lp(Ui.dp(this,280),Ui.dp(this,280)));
-        io.execute(()->{HttpURLConnection con=null;try{con=(HttpURLConnection)new URL(qr).openConnection();con.setConnectTimeout(8000);con.setReadTimeout(8000);con.setInstanceFollowRedirects(false);if(con.getResponseCode()!=200)throw new IOException("Không tải được QR");
-            ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=con.getInputStream()){byte[] buf=new byte[4096];int n;while((n=in.read(buf))!=-1){if(out.size()+n>2097152)throw new IOException("QR quá lớn");out.write(buf,0,n);}}
-            byte[] bytes=out.toByteArray();android.graphics.BitmapFactory.Options opts=new android.graphics.BitmapFactory.Options();opts.inJustDecodeBounds=true;android.graphics.BitmapFactory.decodeByteArray(bytes,0,bytes.length,opts);
-            if(opts.outWidth<=0||opts.outHeight<=0||opts.outWidth>2048||opts.outHeight>2048)throw new IOException("QR không hợp lệ");opts.inJustDecodeBounds=false;android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeByteArray(bytes,0,bytes.length,opts);if(bmp==null)throw new IOException("QR không đọc được");runOnUiThread(()->{if(!isDestroyed())image.setImageBitmap(bmp);});
-        }catch(Exception e){runOnUiThread(()->{if(!isDestroyed())image.setContentDescription("Không tải được QR. Dùng số tài khoản bên trên.");});}finally{if(con!=null)con.disconnect();}});
+        note("Ngân hàng: "+DonationProfile.BANK+"\nChủ tài khoản: "+DonationProfile.HOLDER+"\nSố tài khoản: "+DonationProfile.ACCOUNT);
+        button(body,"Sao chép số tài khoản",true,()->copy(DonationProfile.ACCOUNT));
+        ImageView image=new ImageView(this);image.setContentDescription("QR ủng hộ "+DonationProfile.BANK+", tài khoản "+DonationProfile.ACCOUNT);
+        image.setBackgroundColor(android.graphics.Color.WHITE);image.setScaleType(ImageView.ScaleType.FIT_CENTER);body.addView(image,lp(Ui.dp(this,300),Ui.dp(this,300)));
+        try(InputStream in=getAssets().open(DonationProfile.QR_ASSET)){
+            android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeStream(in);if(bmp==null)throw new IOException("Không đọc được QR");image.setImageBitmap(bmp);
+        }catch(IOException e){image.setVisibility(View.GONE);note("Không đọc được QR. Bạn có thể sao chép số tài khoản bên trên.");}
     }
     private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
     @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request==31&&result==RESULT_OK&&data!=null&&data.getData()!=null&&exportedLog!=null)try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out==null)throw new IOException("Không mở được tệp");out.write(exportedLog.getBytes("UTF-8"));toast("Đã xuất log");}catch(Exception e){toast("Không lưu được log: "+e.getMessage());}}

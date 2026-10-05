@@ -26,6 +26,13 @@ jobs:
         with:
           node-version: '22'
       - run: node --test server/worker.test.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Kiểm tra QR nhận ủng hộ đúng tài khoản
+        run: |
+          python3 -m pip install 'Pillow>=10,<13' 'zxing-cpp==3.0.0'
+          python3 server/verify-donation.py
       - name: Kiểm tra gói Worker không triển khai
         working-directory: server
         run: npx --yes wrangler@4 deploy --dry-run --outdir "$RUNNER_TEMP/worker-check"

@@ -64,3 +64,14 @@ màn nhỏ xếp dọc. QR có nền trắng/padding bên ngoài, ảnh bundle v
 hàng nguyên trạng, dùng offline. Không dựng/sửa payload QR.
 Không thay launcher icon, toolbar, grip hoặc hành vi task/Voice/Bridge trong mốc này.
 Chưa xác minh pixels thực trên LDPlayer/xe; build/lint không thay kiểm tra trực quan.
+
+##0.3.3 — căn nhóm nút và quản lý cặp
+Cài đặt → Thanh điều khiển → Vị trí nhóm nút: Bên trái / Bên phải, mặc định phải.
+Giữ overlay ngang toàn chiều rộng, cùng toolbarPx/top/session bounds. Bên trái
+brand104dp rồi5 ratio và6 icon; khoảng linh hoạt chuyển ra cuối, chừa mép trái40dp.
+Bên phải giữ brand weight1 và chừa phải40dp như trước. mini_position độc lập.
+Chỉ đổi hiển thị khi render tiếp (hiện lại thanh hoặc mở cặp), không gửi resize
+riêng vì vị trí nhóm nút không đổi vùng chia. Off vẫn khóa task controls.
+Cặp lưu có3 nút nhìn thấy ngay: Sửa cặp (sáng), Xóa cặp (đỏ), Mở cặp (cyan),
+cao52dp; màn nhỏ chia đều hàng. Bỏ dialog menu⋮; xác nhận Xóa nêu rõ tên cặp,
+giữ Hủy và màu đỏ cho nút xác nhận. Không thay nội dung QR/icon launcher.

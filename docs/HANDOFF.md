@@ -1,4 +1,17 @@
-# Bàn giao THT Split — 0.3.2-test, 05/10/2026
+# Bàn giao THT Split — 0.3.3-test, 05/10/2026
+
+## Mốc mới — nhóm nút trái/phải và thao tác cặp rõ hơn
+Theo ảnh người dùng và chốt chọn Bên trái/Bên phải: thêm toolbar_side trong
+Cài đặt → Thanh điều khiển → Vị trí nhóm nút. Giữ thanh ngang phía trên, chỉ
+dồn nhóm ratio/icon sang trái hoặc phải; mặc định phải giữ giao diện cũ.
+Áp dụng khi hiện lại thanh/mở cặp; key lưu lâu dài trong Store hiện có.
+Không chuyển thanh thành cột, không đổi toolbar height/insets/geometry/backend.
+Sửa/Xóa/Mở cặp là3 nút riêng52dp ngay trên card, bỏ menu⋮ khó nhìn theo ảnh.
+Xóa màu đỏ/nền riêng và vẫn có xác nhận rõ tên cặp; Hủy không đổi dữ liệu,
+xóa chỉ xóa preset. Logic editPair/openPair/Store giữ nguyên.
+0.3.3-test/code15 đang chờ CI. Chưa thử thao tác và hiển thị trên LDPlayer/xe.
+Không nâng bridge v6 hay cần khởi động lại bridge chỉ vì thêm vị trí nhóm nút.
+
 
 ## Mốc giao diện bên trong — theo chốt23:12
 0.3.2-test/versionCode14 làm lại MainActivity theo ảnh mẫu đã tìm lại: header giữa,

@@ -49,3 +49,9 @@ Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đ�
 - Giữ nguyên giao diện và hành vi khi đang chia: toolbar, grip, tỷ lệ, swap, fullscreen, ẩn/X.
 - Không thay backend ADB/Bridge/Off/system, API Voice, profile/bytes QR hoặc cơ chế quản lý từ xa.
 - Phạm vi này không thay launcher icon; icon và component mới chỉ dùng trong MainActivity.
+
+## Chốt23:41 — trái/phải và Sửa/Xóa
+- Thêm hai lựa chọn Bên trái/Bên phải cho nhóm nút trên thanh ngang như ảnh gửi;
+  cập nhật phạm vi giữ toolbar của chốt23:12 chỉ ở phần căn nhóm nút.
+- Sửa/Xóa cặp rõ hơn: nút riêng, Xóa đỏ, giữ xác nhận và không gỡ hai app.
+- Giữ tất cả lệnh/geometry/chức năng chia và các giới hạn Off.

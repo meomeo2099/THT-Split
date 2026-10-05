@@ -41,6 +41,11 @@ public final class AppUi {
         d.setCornerRadius(dp(c,10));d.setStroke(dp(c,1),primary?CYAN:LINE);
         b.setBackground(new RippleDrawable(ColorStateList.valueOf(0x3310CBE5),d,null));return b;
     }
+    public static Button danger(Context c,String value){
+        Button b=button(c,value,false);b.setTextColor(RED);
+        GradientDrawable d=bg(0xFF261C29,dp(c,10));d.setStroke(dp(c,1),RED);
+        b.setBackground(new RippleDrawable(ColorStateList.valueOf(0x33F45364),d,null));return b;
+    }
     public static LinearLayout navigation(Context c,String label,String kind,boolean selected,boolean compact){
         LinearLayout row=compact?column(c):row(c);row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(dp(c,compact?4:12),dp(c,compact?4:8),dp(c,8),dp(c,compact?4:8));

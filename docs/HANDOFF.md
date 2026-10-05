@@ -160,4 +160,5 @@ bounds/configuration cũ với lỗi surface của Maps/LDPlayer; chưa xác nh�
   Bounds đúng không chứng minh layer bản đồ đã vẽ; cần kiểm trực quan cả Maps/YouTube.
 - Stop fallback app còn lại khi bên trái đã đóng; hai app đã đóng thì không sửa task khác.
 - Thêm5 regression tests logic. Bridge v6 cần reboot/kết nối lại bằng lệnh mới.
-  Chưa build/kiểm thiết bị ở thời điểm commit mã; xem VALIDATION cho kết quả CI cuối.
+  CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37275295920.
+  Chưa thử bản sửa trên LDPlayer/xe; xem VALIDATION cho checksum và giới hạn.

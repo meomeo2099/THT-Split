@@ -89,3 +89,17 @@ APK: com.tht.split/versionCode9/0.2.7-test/min26/target32.
 SHA256: 12eccd8bb789296f147d37624fa9041c2c87ca2049a3388518c8337221eb88b6.
 Bridge v5 cần reboot/kết nối lại. APK CI có thể khác signer bản cũ.
 Nếu read-back khác yêu cầu, verified=false/callback requested và log có expected/actual.
+
+## Mốc0.2.8 — chuyển toàn màn hình
+Commit c391b83124fa58be2df00d74ab0b03ecd1e6587a; CI build/unit/lint đạt:
+https://github.com/meomeo2099/THT-Split/actions/runs/37275295920
+Thêm5 tests: reset bounds cả hai trước focus, bounds cũ dù mode đã1, stop fallback,
+target đóng không làm thay đổi app còn lại, cả hai đóng không ảnh hưởng task khác.
+Fake tests chỉ kiểm thứ tự/trạng thái; chưa kiểm Binder/configuration/Maps renderer
+trên LDPlayer hoặc GPU xe. Ảnh UI Maps toàn màn nhưng lớp bản đồ vẽ thiếu chưa có
+log bounds, không đủ chứng minh nguyên nhân là LDPlayer hoặc task bounds.
+APK: com.tht.split/versionCode10/0.2.8-test/min26/target32.
+SHA256: 24db6193704236693a0dc0b78502be13796e6caac6b5067597ce2640f7041b11.
+Bridge v6 cần reboot/kết nối lại. APK debug CI có thể khác signer bản trước;
+không gỡ app khi chưa giữ cấu hình. Cần khóa ký ổn định ngoài git trước release.
+Full read-back đúng chỉ xác nhận mode/bounds, không chứng minh lớp bản đồ đã vẽ hết.

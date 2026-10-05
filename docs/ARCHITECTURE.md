@@ -76,3 +76,10 @@ Native: resizeDockedStack trái rồi resizeStack phải với allowResizeInDock
 Read-back getTaskBounds cho cả hai, đối chiếu vùng chia sai số2px. Backend giữ
 verified=false của bridge nếu bounds chưa đúng. Log hỗ trợ có expected/actual
 bounds; không coi mode3/4 là chứng minh khoảng chừa đã được áp dụng.
+
+## Fullscreen từ0.2.8 / bridge v6
+PairController dọn primary, mode1/resetBounds(null) cả hai task còn tồn tại,
+sau đó focus task đã có. Reset dùng resizeStack allowResizeInDockedMode=true,
+preserveWindows=false, animate=false; không resizeTask native hoặc force-stop.
+Full/stop đọc getTaskBounds + mode của task được chọn, đối chiếu display thực.
+Đọc đúng bounds vẫn không xác minh surface/OpenGL/nội dung app; log giữ kết quả.

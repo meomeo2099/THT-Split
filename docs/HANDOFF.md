@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.2.7-test, 05/10/2026
+# Bàn giao THT Split — 0.2.8-test, 05/10/2026
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
@@ -16,7 +16,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 |---|---|
 | UI/preset/overlay | Giữ chọn hai app, CRUD, ẩn/hiện, tỷ lệ, đổi bên, fullscreen, Home/X |
 | ADB nội bộ | Client RSA TCP original; khóa private lưu noBackupFiles; localhost mặc định, cổng chỉnh được; chỉ địa chỉ chính thiết bị |
-| Bridge v5 | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
+| Bridge v6 | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
 | Boot/cập nhật | Foreground ConnectionService chuẩn bị bridge nếu tùy chọn bật; khi lệnh tới tiếp tục thử kết nối |
 | Off | ActivityOptions freeform với bounds và scoped hidden API access; status=requested; không giả lập resize task |
 | Hệ thống | Kiểm MANAGE_ACTIVITY_STACKS trước chọn/chạy; gọi backend trực tiếp, không shared UID trong APK thường |
@@ -43,7 +43,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 
 ## Kiểm tra cần tiếp trên xe
 1. Cài APK cùng signer bản test trước; cấp overlay, chọn ADB nội bộ/cổng thực tế, Kiểm tra.
-2. Xác nhận khóa nếu có → bridge UID2000/version5 → thử native/freeform.
+2. Xác nhận khóa nếu có → bridge UID2000/version6 → thử native/freeform.
 3. Reboot thật, đổi mạng Wi-Fi → gọi chia; ghi log/cổng/ảnh/insets/mode thật.
 4. Bật freeform bằng ADB lần đầu → chọn Off → quan sát cả hai app, thử swap/stop/fullscreen.
 5. Kiểm certificate/quyền platform trước thử system; không suy ra quyền từ cài được APK.
@@ -145,3 +145,19 @@ tính secondary theo display, chưa áp bounds phải.
 - CI lần đầu bắt lỗi thiếu khai báo JSONException ở hàm bounds; đã sửa và chạy lại.
   CI bản cuối build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37272679706.
   Chưa thử bản sửa trên LDPlayer/xe.
+
+## Sửa chuyển toàn màn hình0.2.8
+Ảnh người dùng: ADB → Google Maps toàn màn hình, UI tìm kiếm/nút đã trải rộng
+nhưng lớp bản đồ vẫn chỉ vẽ bên trái, phần còn lại đen. Ảnh không phân biệt được
+bounds/configuration cũ với lỗi surface của Maps/LDPlayer; chưa xác nhận nguyên nhân.
+- PairController xử lý fullscreen/stop cùng thứ tự: tìm app được chọn trước,
+  dọn primary, mode1 cả hai task còn sống, resizeStack(null) cả hai với
+  preserveWindows=false để kế thừa display bounds và cập nhật cấu hình.
+- Focus task đã có qua setFocusedTask, bỏ launcher intent fullscreen lần nữa.
+  Không force-stop/xóa dữ liệu/restart cưỡng bức app bên thứ ba.
+- Fullscreen đọc mode/bounds sau thao tác, so với kích thước display thực gửi từ app;
+  verified=false nếu không khớp. last_layout lưu expected/actualFullscreenBounds.
+  Bounds đúng không chứng minh layer bản đồ đã vẽ; cần kiểm trực quan cả Maps/YouTube.
+- Stop fallback app còn lại khi bên trái đã đóng; hai app đã đóng thì không sửa task khác.
+- Thêm5 regression tests logic. Bridge v6 cần reboot/kết nối lại bằng lệnh mới.
+  Chưa build/kiểm thiết bị ở thời điểm commit mã; xem VALIDATION cho kết quả CI cuối.

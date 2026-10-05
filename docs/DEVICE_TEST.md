@@ -1,11 +1,11 @@
-# Cài và kiểm thử 0.2.7-test trên EX2
+# Cài và kiểm thử 0.2.8-test trên EX2
 
 Chưa test xe thật. Android headunit phải có ADB mở sẵn; app không mở khóa ADB hoặc
 thay firmware/OTA. Quan sát bố cục khi xe đang đỗ.
 
 ## Cài lần đầu
 ```sh
-adb install -r THT-Split-0.2.7-test.apk
+adb install -r THT-Split-0.2.8-test.apk
 adb shell appops set com.tht.split SYSTEM_ALERT_WINDOW allow
 ```
 Nếu khác chữ ký, không gỡ app khi còn dữ liệu cặp cần giữ. Dùng khóa cũ hoặc ghi lại
@@ -134,3 +134,14 @@ và không vào vùng điều hòa. Đổi khoảng chừa rồi khôi phục c�
 Nếu toast Android chưa giữ bounds: xuất log hỗ trợ (last_layout có expected/actual
 cả hai bên). Có thể chọn cửa sổ tự do thủ công; không fallback tự động.
 Verified chỉ xác nhận mode/stack/bounds read-back, không xác nhận nội dung đã vẽ.
+
+## Kiểm tra0.2.8 / bridge v6 — Maps toàn màn hình
+Cài, reboot LDPlayer/màn và lấy/chạy lại lệnh bridge từ APK mới để nạp v6.
+1. ADB/native Maps trái + YouTube phải, mở toàn màn Maps → restore5 lần.
+   Lặp Maps bên phải sau swap; bản đồ phải vẽ hết vùng cửa sổ, không có mảng đen cũ.
+2. Lặp với ADB/freeform và YouTube toàn màn; dùng30/50/70 trước khi chuyển.
+3. Đóng app không được chọn rồi full app còn lại; X ưu tiên trái hoặc app còn sống.
+4. Nếu Maps vẫn đen: xuất log hỗ trợ, có fullscreenMode và expected/actualFullscreenBounds.
+   Thử kéo/zoom bản đồ và ghi có vẽ lại không; thử mở Maps bình thường từ launcher
+   để phân biệt lỗi chỉ xảy ra sau resize. Không tự force-stop app để che lỗi.
+5. Cần kiểm trên EX2 thật; LDPlayer và read-back bounds không xác minh driver/GPU xe.

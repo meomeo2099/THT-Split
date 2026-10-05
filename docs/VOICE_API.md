@@ -72,3 +72,7 @@ Voice không lựa chọn backend qua intent. Split dùng Cài đặt → Phươ
 
 Không triển khai Telnet/Shizuku. ADB TLS/wireless pairing Android 11+ chưa được hỗ trợ.
 Popup, STT/TTS, HVAC và tìm đường Vietmap thuộc Voice. Không dành vùng popup cố định trong Split.
+
+Từ0.2.8 fullscreen/stop ADB/system cũng đọc lại mode/bounds task được chọn.
+Nếu không khớp display thực, trả requested/LAYOUT_UNVERIFIED; client đọc message.
+Verified=true vẫn không chứng minh nội dung Maps/OpenGL đã vẽ đầy cửa sổ.

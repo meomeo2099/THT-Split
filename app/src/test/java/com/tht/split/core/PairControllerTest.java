@@ -9,6 +9,7 @@ public final class PairControllerTest {
         final Map<Integer,Integer> modes=new HashMap<>();
         final Map<Integer,Integer> stacks=new HashMap<>();
         final List<String> calls=new ArrayList<>();
+        final Set<Integer> clipped=new HashSet<>();
         int left=1,right=2;
         boolean refuseMode;
         public void clearPrimary(){calls.add("clear");for(Map.Entry<Integer,Integer> e:modes.entrySet())if(e.getValue()==3||e.getValue()==4)e.setValue(1);}
@@ -23,7 +24,8 @@ public final class PairControllerTest {
             if(!refuseMode)for(Map.Entry<Integer,Integer> e:modes.entrySet())if(stack(e.getKey())==stack(id))e.setValue(mode);
         }
         public void resize(int l,int r){calls.add("resize:"+l+":"+r);}
-        public void focus(int id){calls.add("focus:"+id);}
+        public void resetBounds(int id){calls.add("reset:"+id);clipped.remove(id);}
+        public void focus(int id){if(clipped.contains(id))throw new IllegalStateException("stale bounds at focus");calls.add("focus:"+id);}
     }
     @Test public void swapDismissesOldPrimaryBeforeAssigningNewPrimary()throws Exception{
         Fake f=new Fake();f.modes.put(1,3);f.modes.put(2,4);f.left=2;f.right=1;
@@ -69,5 +71,29 @@ public final class PairControllerTest {
     }
     @Test(expected=java.io.IOException.class) public void rejectedWindowModeDoesNotReportSuccess()throws Exception{
         Fake f=new Fake();f.refuseMode=true;new PairController(f,true).layout();
+    }
+    @Test public void fullscreenClearsBothBoundsBeforeFocusingMaps()throws Exception{
+        Fake f=new Fake();f.modes.put(1,3);f.modes.put(2,4);f.clipped.addAll(Arrays.asList(1,2));
+        assertEquals(1,new PairController(f,true).fullscreen(false,false));
+        assertEquals(Arrays.asList("clear","mode:1:1","reset:1","mode:2:1","reset:2","focus:1"),f.calls);
+        assertTrue(f.clipped.isEmpty());
+    }
+    @Test public void alreadyFullscreenStillClearsOldFreeformBounds()throws Exception{
+        Fake f=new Fake();f.modes.put(1,1);f.modes.put(2,5);f.clipped.addAll(Arrays.asList(1,2));
+        assertEquals(2,new PairController(f,false).fullscreen(true,false));
+        assertTrue(f.clipped.isEmpty());assertEquals(1,f.mode(1));assertEquals(1,f.mode(2));
+        assertEquals("focus:2",f.calls.get(f.calls.size()-1));
+    }
+    @Test public void stopFallsBackToRemainingApp()throws Exception{
+        Fake f=new Fake();f.modes.put(2,4);f.clipped.add(2);
+        assertEquals(2,new PairController(f,true).fullscreen(false,true));assertEquals(1,f.mode(2));
+        assertFalse(f.calls.contains("reset:1"));assertEquals("focus:2",f.calls.get(f.calls.size()-1));
+    }
+    @Test public void missingFullscreenTargetDoesNotCollapseOtherApp()throws Exception{
+        Fake f=new Fake();f.modes.put(2,4);
+        try{new PairController(f,true).fullscreen(false,false);fail("missing target");}catch(java.io.IOException expected){assertTrue(f.calls.isEmpty());}
+    }
+    @Test public void stopWithBothAppsClosedDoesNotTouchAnotherPair()throws Exception{
+        Fake f=new Fake();assertEquals(-1,new PairController(f,true).fullscreen(false,true));assertTrue(f.calls.isEmpty());
     }
 }

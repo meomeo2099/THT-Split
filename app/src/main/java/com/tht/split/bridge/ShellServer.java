@@ -123,6 +123,10 @@ public final class ShellServer {
             invoke("resizeTask",new Class<?>[]{int.class,Rect.class,int.class},rightTask,right,0);
         }
     }
+    private static void resetBounds(int taskId)throws Exception {
+        // Null inherits display bounds. preserveWindows=false lets Android reconfigure the app.
+        invoke("resizeStack",new Class<?>[]{int.class,Rect.class,boolean.class,boolean.class,boolean.class,int.class},stackId(taskId),null,true,false,false,-1);
+    }
     private static LayoutMath.Box box(Rect r){return new LayoutMath.Box(r.left,r.top,r.right,r.bottom);}
     private static JSONArray bounds(Rect r)throws JSONException{return new JSONArray(new int[]{r.left,r.top,r.right,r.bottom});}
     private static JSONObject observedBounds(int lt,int rt,Rect left,Rect right)throws Exception {
@@ -137,6 +141,16 @@ public final class ShellServer {
         return new JSONObject().put("verified",match).put("expectedLeftBounds",bounds(left)).put("expectedRightBounds",bounds(right)).put("actualLeftBounds",bounds(actualLeft)).put("actualRightBounds",bounds(actualRight))
             .put("note",match?"Android giữ đúng bounds yêu cầu":"Android chưa giữ đúng tỷ lệ/khoảng chừa yêu cầu; kiểm log hoặc chọn cửa sổ tự do trong cài đặt");
     }
+    private static JSONObject observedFullscreen(int taskId,Rect expected)throws Exception {
+        Rect actual=null;int mode=-1;boolean match=false;
+        for(int i=0;i<5;i++){
+            actual=(Rect)invoke("getTaskBounds",new Class<?>[]{int.class},taskId);mode=windowMode(taskId);
+            match=mode==1&&BoundsCheck.matches(box(expected),box(actual),2);
+            if(match)break;if(i<4)Thread.sleep(100);
+        }
+        return new JSONObject().put("verified",match).put("fullscreenTask",taskId).put("fullscreenStack",stackId(taskId)).put("fullscreenMode",mode).put("expectedFullscreenBounds",bounds(expected)).put("actualFullscreenBounds",bounds(actual))
+            .put("note",match?"Android giữ bounds toàn màn hình; nội dung do ứng dụng vẽ":"Android chưa giữ đúng vùng toàn màn hình; hãy xuất log hỗ trợ");
+    }
     private static String mode(JSONObject q){String m=q.optString("mode","native");if(!m.equals("native")&&!m.equals("freeform"))throw new IllegalArgumentException("Mode");return m;}
     private static void writeSetting(String key,String value)throws Exception {
         if(value.equals("null"))exec("settings","delete","global",key);
@@ -144,7 +158,7 @@ public final class ShellServer {
     }
     private static JSONObject handle(JSONObject q)throws Exception{
         String op=q.getString("op");JSONObject out=new JSONObject();
-        if(op.equals("PING"))return out.put("bridgeVersion",5).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
+        if(op.equals("PING"))return out.put("bridgeVersion",6).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
             String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];
@@ -155,7 +169,7 @@ public final class ShellServer {
         }
         String leftPkg=pkg(q,"left"),rightPkg=pkg(q,"right");if(leftPkg.equals(rightPkg))throw new IllegalArgumentException("Chọn hai ứng dụng khác nhau");
         String mode=mode(q);
-        if(op.equals("LAYOUT")||op.equals("RESIZE")){
+        if(op.equals("LAYOUT")||op.equals("RESIZE")||op.equals("FULLSCREEN")||op.equals("STOP")){
             String lc=component(q,"leftComponent",leftPkg),rc=component(q,"rightComponent",rightPkg);
             Rect l=rect(q,"leftBounds"),r=rect(q,"rightBounds");
             PairController controller=new PairController(new PairController.Tasks(){
@@ -167,24 +181,18 @@ public final class ShellServer {
                 public void isolate(int id)throws Exception{ShellServer.isolate(id);}
                 public void setMode(int id,int windowMode)throws Exception{ShellServer.setMode(id,windowMode);}
                 public void resize(int lt,int rt)throws Exception{ShellServer.resize(lt,rt,mode,l,r);}
+                public void resetBounds(int id)throws Exception{ShellServer.resetBounds(id);}
                 public void focus(int id)throws Exception{invoke("setFocusedTask",new Class<?>[]{int.class},id);}
             },mode.equals("native"));
+            if(op.equals("FULLSCREEN")||op.equals("STOP")){
+                String side=q.optString("side","left");if(!side.equals("left")&&!side.equals("right"))throw new IllegalArgumentException("Side");
+                Rect expected=rect(q,"fullscreenBounds");
+                int selected=controller.fullscreen(side.equals("right"),op.equals("STOP"));
+                return selected<0?out.put("verified",true).put("note","Hai ứng dụng đã đóng"):observedFullscreen(selected,expected);
+            }
             if(op.equals("LAYOUT"))controller.layout();else controller.resize();
             int lt=task(leftPkg),rt=task(rightPkg);
             return observedBounds(lt,rt,l,r).put("leftTask",lt).put("rightTask",rt).put("leftStack",stackId(lt)).put("rightStack",stackId(rt)).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
-        }
-        int lt=task(leftPkg),rt=task(rightPkg);
-        if(op.equals("FULLSCREEN")||op.equals("STOP")){
-            String side=q.optString("side","left");if(!side.equals("left")&&!side.equals("right"))throw new IllegalArgumentException("Side");
-            // Collapse the primary first so the secondary becomes a regular window; then focus chosen task.
-            if(lt>=0)setMode(lt,1);
-            if(mode.equals("freeform")&&rt>=0)setMode(rt,1);
-            int focus=side.equals("right")?rt:lt;
-            if(focus<0&&op.equals("STOP"))focus=lt>=0?lt:rt;
-            if(focus>=0)setMode(focus,1);
-            else if(op.equals("FULLSCREEN"))throw new IOException("Ứng dụng đã đóng");
-            if(focus>=0){String selected=(focus==rt)?"rightComponent":"leftComponent";launch(component(q,selected,focus==rt?rightPkg:leftPkg),1);}
-            return out;
         }
         throw new IllegalArgumentException("Lệnh không hỗ trợ");
     }

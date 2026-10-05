@@ -3,6 +3,7 @@ package com.tht.split.bridge;
 import android.graphics.Rect;
 import android.os.Process;
 import com.tht.split.core.TaskParser;
+import com.tht.split.core.PairController;
 import org.json.*;
 import java.io.*;
 import java.net.*;
@@ -66,6 +67,20 @@ public final class ShellServer {
         return -1;
     }
     private static void setMode(int id,int mode)throws Exception{invoke("setTaskWindowingMode",new Class<?>[]{int.class,int.class,boolean.class},id,mode,true);}
+    private static void clearPrimary()throws Exception {
+        List<?> infos=(List<?>)invoke("getAllStackInfos",new Class<?>[]{});
+        // Snapshot IDs before changing stacks; changing the primary also collapses secondaries.
+        List<Integer> primary=new ArrayList<>();
+        for(Object info:infos){
+            if(info.getClass().getField("displayId").getInt(info)!=0)continue;
+            Object config=info.getClass().getField("configuration").get(info);
+            Object wc=config.getClass().getField("windowConfiguration").get(config);
+            if((Integer)wc.getClass().getMethod("getWindowingMode").invoke(wc)!=3)continue;
+            int[] ids=(int[])info.getClass().getField("taskIds").get(info);
+            if(ids.length>0)primary.add(ids[ids.length-1]);
+        }
+        for(int id:primary)setMode(id,1);
+    }
     private static void launch(String comp,int mode)throws Exception{
         if(systemContext!=null){android.app.ActivityOptions options=android.app.ActivityOptions.makeBasic();android.app.ActivityOptions.class.getMethod("setLaunchWindowingMode",int.class).invoke(options,mode);systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_LAUNCHER).setComponent(android.content.ComponentName.unflattenFromString(comp)).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),options.toBundle());return;}
         String output=exec("am","start","-W","--user","current","--windowingMode",String.valueOf(mode),"-a","android.intent.action.MAIN","-c","android.intent.category.LAUNCHER","-f","0x10000000","-n",comp);if(output.contains("Error:")||output.contains("Exception"))throw new IOException(output);}
@@ -76,7 +91,8 @@ public final class ShellServer {
     }
     private static void resize(int leftTask,int rightTask,String mode,Rect left,Rect right)throws Exception{
         if(mode.equals("native")){
-            invoke("resizeDockedStack",new Class<?>[]{Rect.class,Rect.class,Rect.class,Rect.class,Rect.class},left,left,left,right,right);
+            // Final bounds: no temporary task/inset rectangles from divider animation.
+            invoke("resizeDockedStack",new Class<?>[]{Rect.class,Rect.class,Rect.class,Rect.class,Rect.class},left,null,null,null,null);
         }else{
             invoke("resizeTask",new Class<?>[]{int.class,Rect.class,int.class},leftTask,left,0);
             invoke("resizeTask",new Class<?>[]{int.class,Rect.class,int.class},rightTask,right,0);
@@ -89,7 +105,7 @@ public final class ShellServer {
     }
     private static JSONObject handle(JSONObject q)throws Exception{
         String op=q.getString("op");JSONObject out=new JSONObject();
-        if(op.equals("PING"))return out.put("bridgeVersion",2).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
+        if(op.equals("PING"))return out.put("bridgeVersion",3).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
             String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];
@@ -100,18 +116,22 @@ public final class ShellServer {
         }
         String leftPkg=pkg(q,"left"),rightPkg=pkg(q,"right");if(leftPkg.equals(rightPkg))throw new IllegalArgumentException("Chọn hai ứng dụng khác nhau");
         String mode=mode(q);
-        if(op.equals("LAYOUT")){
+        if(op.equals("LAYOUT")||op.equals("RESIZE")){
             String lc=component(q,"leftComponent",leftPkg),rc=component(q,"rightComponent",rightPkg);
             Rect l=rect(q,"leftBounds"),r=rect(q,"rightBounds");
-            launch(lc,mode.equals("native")?3:5);int lt=awaitTask(leftPkg);setMode(lt,mode.equals("native")?3:5);
-            launch(rc,mode.equals("native")?4:5);int rt=awaitTask(rightPkg);setMode(rt,mode.equals("native")?4:5);
-            resize(lt,rt,mode,l,r);
-            int lm=windowMode(lt),rm=windowMode(rt);
-            if(lm!=(mode.equals("native")?3:5)||rm!=(mode.equals("native")?4:5))throw new IOException("Firmware không giữ chế độ chia yêu cầu: "+lm+"/"+rm);
-            return out.put("leftTask",lt).put("rightTask",rt).put("leftMode",lm).put("rightMode",rm);
+            PairController controller=new PairController(new PairController.Tasks(){
+                public void clearPrimary()throws Exception{ShellServer.clearPrimary();}
+                public int launch(boolean left,int windowMode)throws Exception{ShellServer.launch(left?lc:rc,windowMode);return awaitTask(left?leftPkg:rightPkg);}
+                public int find(boolean left)throws Exception{return task(left?leftPkg:rightPkg);}
+                public int mode(int id)throws Exception{return windowMode(id);}
+                public void setMode(int id,int windowMode)throws Exception{ShellServer.setMode(id,windowMode);}
+                public void resize(int lt,int rt)throws Exception{ShellServer.resize(lt,rt,mode,l,r);}
+            },mode.equals("native"));
+            if(op.equals("LAYOUT"))controller.layout();else controller.resize();
+            int lt=task(leftPkg),rt=task(rightPkg);
+            return out.put("leftTask",lt).put("rightTask",rt).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
         }
         int lt=task(leftPkg),rt=task(rightPkg);
-        if(op.equals("RESIZE")){if(lt<0||rt<0)throw new IOException("Một app đã đóng; hãy khôi phục cặp");resize(lt,rt,mode,rect(q,"leftBounds"),rect(q,"rightBounds"));return out;}
         if(op.equals("FULLSCREEN")||op.equals("STOP")){
             String side=q.optString("side","left");if(!side.equals("left")&&!side.equals("right"))throw new IllegalArgumentException("Side");
             // Collapse the primary first so the secondary becomes a regular window; then focus chosen task.
@@ -121,6 +141,7 @@ public final class ShellServer {
             if(focus<0&&op.equals("STOP"))focus=lt>=0?lt:rt;
             if(focus>=0)setMode(focus,1);
             else if(op.equals("FULLSCREEN"))throw new IOException("Ứng dụng đã đóng");
+            if(focus>=0){String selected=(focus==rt)?"rightComponent":"leftComponent";launch(component(q,selected,focus==rt?rightPkg:leftPkg),1);}
             return out;
         }
         throw new IllegalArgumentException("Lệnh không hỗ trợ");

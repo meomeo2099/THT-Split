@@ -57,3 +57,9 @@ flowchart TD
 ## Mốc tiếp tục
 Mã cho ADB/Off/system có điều kiện và API phía Split đã có. Còn thử firmware xe,
 chữ ký platform nếu có, ghép client trong Voice và ký phát hành ổn định ngoài git.
+
+## Phục hồi task từ0.2.5
+Bridge v3 / system dùng PairController: dọn primary màn chính, dựng cặp có thứ tự,
+kiểm mode trước resize. RESIZE cần launcher components để mở lại app đã đóng.
+Native resize gửi bounds cuối, không dùng temporary task/inset bounds. Off giữ
+ActivityOptions và trả requested; không có khả năng quan sát/sửa task tương đương.

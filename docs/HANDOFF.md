@@ -1,4 +1,4 @@
-# Bàn giao THT Split — 0.2.4-test, 05/10/2026
+# Bàn giao THT Split — 0.2.5-test, 05/10/2026
 
 ## Đọc trước khi tiếp tục
 AGENTS.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
@@ -16,7 +16,7 @@ Commit tiếng Việt và hướng dẫn trên GitHub để dự án Voice tiế
 |---|---|
 | UI/preset/overlay | Giữ chọn hai app, CRUD, ẩn/hiện, tỷ lệ, đổi bên, fullscreen, Home/X |
 | ADB nội bộ | Client RSA TCP original; khóa private lưu noBackupFiles; localhost mặc định, cổng chỉnh được; chỉ địa chỉ chính thiết bị |
-| Bridge | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
+| Bridge v3 | Tự mở khi chưa có listener, token riêng, kiểm UID/version; không tự kill tiến trình hoặc bật adbd |
 | Boot/cập nhật | Foreground ConnectionService chuẩn bị bridge nếu tùy chọn bật; khi lệnh tới tiếp tục thử kết nối |
 | Off | ActivityOptions freeform với bounds và scoped hidden API access; status=requested; không giả lập resize task |
 | Hệ thống | Kiểm MANAGE_ACTIVITY_STACKS trước chọn/chạy; gọi backend trực tiếp, không shared UID trong APK thường |
@@ -91,3 +91,18 @@ Theo yêu cầu người dùng để dễ với tay từ ghế lái. Chưa quan 
 - Spinner cài đặt và tỷ lệ preset dùng adapter riêng cho cả dòng chọn/dropdown:
   chữ sáng/nền navy, popup cùng palette. Ô nhập ADB/insets/preset/tìm app cùng màu.
 - Chưa quan sát bản sửa trên LDPlayer/xe; kiểm title/dòng chọn/ô nhập/button/dropdown.
+
+## Sửa phục hồi cửa sổ0.2.5
+Ảnh LDPlayer: đổi bên báo duplicate split-screen-primary; đóng một app rồi đổi tỷ lệ
+báo thiếu task; khôi phục fullscreen gây chồng app/ô trống.
+- Backend ADB/system dọn primary đang có trên màn chính trước khi dựng cặp.
+- Native mở/reuse cả hai app ở fullscreen trước, sau đó đặt trái3/phải4 rồi resize.
+- RESIZE kiểm task/mode; app đã đóng hoặc mode bị Android thay đổi thì dựng lại cặp.
+- resizeDockedStack dùng bounds cuối, bỏ các task/inset bounds tạm của animation.
+- FULLSCREEN/STOP đưa app được chọn ra trước qua launcher intent, giữ dữ liệu/task.
+- PairController có regression tests cho swap, task thiếu, fullscreen, thay app,
+  resize bình thường, freeform và firmware từ chối mode. Không force-stop/removeTask.
+- Bridge nâng v3: cài APK không thay mã bridge đang chạy. Reboot màn/LDPlayer một lần
+  rồi kết nối lại; nếu ADB nội bộ vẫn lỗi phải chạy lệnh bridge thủ công sau reboot.
+- Off vẫn có giới hạn launch bounds; sửa này không chứng minh Off resize task được.
+- Chưa kiểm bản0.2.5 trên LDPlayer/xe. Build/unit/lint sẽ xác minh qua CI.

@@ -15,7 +15,7 @@ public final class SplitEngine {
     public int toolbarPx(){return Math.round((store.s("button_size","small").equals("large")?60:48)*context.getResources().getDisplayMetrics().density);}
     private String component(String p)throws Exception{Intent i=context.getPackageManager().getLaunchIntentForPackage(p);if(i==null||i.getComponent()==null)throw new IllegalArgumentException("Ứng dụng chưa cài hoặc không mở được: "+p);return i.getComponent().flattenToString();}
     private JSONObject request(String op,boolean toolbar)throws Exception{String l=state.s("left",""),r=state.s("right","");if(l.isEmpty()||r.isEmpty()||l.equals(r))throw new IllegalArgumentException("Hãy chọn hai ứng dụng khác nhau");
-        LayoutMath g=geometry(toolbar);return new JSONObject().put("op",op).put("mode",state.s("mode","native")).put("left",l).put("right",r).put("leftBounds",new JSONArray(g.left.array())).put("rightBounds",new JSONArray(g.right.array()));}
+        LayoutMath g=geometry(toolbar);return new JSONObject().put("op",op).put("mode",state.s("mode","native")).put("left",l).put("right",r).put("leftComponent",component(l)).put("rightComponent",component(r)).put("leftBounds",new JSONArray(g.left.array())).put("rightBounds",new JSONArray(g.right.array()));}
     private void call(JSONObject q)throws Exception {lastResult=new Backend(context,state.s("transport","adb")).call(q);}
     public boolean supportsTaskResize(){return !state.s("transport","adb").equals("off");}
     public void status()throws Exception{call(new JSONObject().put("op","PING"));}

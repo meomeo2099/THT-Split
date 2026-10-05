@@ -102,3 +102,14 @@ khi kết nối. Freeform có nút khôi phục trong app với ADB/system; Off 
 - Off: kiểm thực tế cửa sổ đổi hay chỉ handle đổi. Nếu task không nhận launch bounds,
   thử ADB nội bộ/freeform; không gọi Off resize thành công chỉ vì handle di chuyển.
 - Thử Không chờ và1,5s; mở app thiếu phải dọn overlay và báo lỗi.
+
+## Kiểm tra phục hồi0.2.5 / bridge v3
+Cài APK, khởi động lại LDPlayer/màn để dừng bridge v2 rồi kết nối lại bằng cách
+đang dùng. Không killall app_process. Nếu dùng thủ công, lấy/chạy lại lệnh bridge.
+1. ADB/native: mở Maps/YouTube, đổi bên qua lại5 lần; không duplicate primary.
+2. Đóng trái rồi bấm tỷ lệ/hiện thanh; cặp phải mở lại. Lặp với app phải.
+3. Fullscreen từng bên rồi khôi phục5 lần; không ô đen/chồng hai app cùng bên.
+4. Đổi app trái/phải khi đang chia; primary cũ phải được dọn.
+5. Tỷ lệ/ẩn/hiện trên cặp khỏe không relaunch; kiểm nội dung app còn giữ.
+6. X về app trái fullscreen và giữ dữ liệu. Ghi SDK/mode/ảnh/log nếu lỗi.
+Off không có quyền sửa task, kiểm riêng và không suy kết quả ADB sang Off.

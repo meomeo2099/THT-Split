@@ -23,6 +23,6 @@ public final class ConnectionManager {
             throw new IOException("Bridge chưa chạy. Xem log hỗ trợ hoặc dùng lệnh ADB thủ công.",last);
         }
     }
-    private static void checkVersion(JSONObject p)throws IOException{if(p.optInt("bridgeVersion",1)!=2)throw new IOException("Bridge phiên bản cũ còn chạy. Khởi động lại màn xe rồi thử kết nối để nạp bridge mới.");}
+    private static void checkVersion(JSONObject p)throws IOException{if(p.optInt("bridgeVersion",1)!=3)throw new IOException("Bridge phiên bản cũ còn chạy. Khởi động lại màn/LDPlayer rồi kết nối để nạp bridge v3; nếu dùng lệnh thủ công, chạy lại lệnh sau khởi động.");}
     private static void checkUid(JSONObject p)throws Exception{int uid=p.getInt("uid");if(uid!=2000&&uid!=0)throw new IOException("Bridge không có quyền shell");}
 }

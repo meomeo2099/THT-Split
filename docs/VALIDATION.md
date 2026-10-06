@@ -8,10 +8,23 @@ khi refresh trùng admin lock hoặc GitHub403/mất credential. Manual source v
 ADMIN_PASSWORD alias vẫn có auth. YAML/Bash parse và bundle node --check đạt.
 Generator đã kiểm với APK0.3.8 thật ký khóa cố định (bản sao ngoài git): lấy
 đúng package/version/SHA/size/cert, từ chối pin sai. Không phát hành bản sao đó.
-Chờ CI Worker dry-run/ZIP; chưa deploy CF/chưa có token GitHub server thật để
-kiểm end-to-end private Releases; chưa thử cập nhật trên LDPlayer/xe.
+Code c48179f6a0520855f0ffe429ff948077287140b6. Worker37430158450/job112158886834
+completed/success,22 tests/dry-run/bundle/ZIP đạt. Artifact11396771043 khớp mã,
+config và README tại code đó; gói giao cập nhật README sau release, mã giữ nguyên.
+Debug37430158472/job112158886529 completed/success, ký pin thành công.
+Release37430158461/job112158887289 completed/success; artifact11396324728.
+Release404436462/v0.3.9-test là prerelease/published, APKasset614833839,
+checksum614833836,update.json614833838 đầy đủ. APK aapt com.tht.split/code21/
+0.3.9-test/min26/target32, apksigner verify thành công.
+SHA file APK 5ae67af5ad1a047757b41be4a61cb595d65c0a59da7d5d57f875858171d8635a
+khớp checksum/update.json/GitHub asset digest. Cert thực e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2
+khớp pin. QR assets nguyên0.3.8, dex giữ sleep1/origin/api/config. app/src không
+đổi; release tối ưu resource filename nên không dùng so đường dẫn debug icon.
+Lỗi Cannot recover key trước đã hết ở CI mới; không gọi API đọc Secret thực.
+Chưa deploy CF/chưa có token GitHub server thật để kiểm end-to-end private
+Releases; chưa thử cập nhật trên LDPlayer/xe.
 
-## 0.3.9-test/code21 — khóa ký cố định, đang vướng Secret
+## Mốc05e7ffe/0.3.9-test/code21 — lỗi Secret ở lần chạy đầu (đã hết ở mốc mới)
 Code05e7ffe8ec6cc43779fcf6bd96f23c85fcac704a. Thay version/workflow/docs, không
 đổi app/src hoặc server so2264b4b. YAML parse, bash -n toàn bộ run steps, tag
 tự lấy v0.3.9-test và từ chối tag thủ công sai; Node8 tests local đạt.

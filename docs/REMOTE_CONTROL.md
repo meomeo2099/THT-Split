@@ -17,8 +17,8 @@ repo/channel hoặc ID tùy ý bị từ chối. App vẫn kiểm chứng chỉ 
 
 Nguồn GitHub tự điền phiên bản/URL/SHA, source Manual còn dùng được. Không tăng
 mandatory cho debug cũ khác signer. Xem server/README.md để deploy/bảng cấu hình
-và phân biệt SHA chứng chỉ với SHA APK. Token ở Worker không sửa lỗi GitHub
-THT_KEY_PASSWORD;0.3.9 vẫn phải build thành công mới có manifest để lấy.
+và phân biệt SHA chứng chỉ với SHA APK. 0.3.9-test/code21 đã phát hành có đủ APK/
+checksum/update.json, signer đúng pin. Chưa deploy Worker/test cập nhật xe.
 
 ## Quyết định mới06/10/2026
 Bỏ đăng ký thiết bị để ai cài cũng sử dụng ngay. Không nhập key, không duyệt,

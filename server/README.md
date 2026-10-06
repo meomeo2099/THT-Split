@@ -64,11 +64,10 @@ cache 5 phút. Kiểm tra GitHub ngay bỏ cache thời gian. Lỗi GitHub giữ
 đã cache; không thay state/minimum. Chỉ 5 APK đã xác minh gần nhất được proxy.
 Nếu tag đã tồn tại, không tự ghi đè; dùng bản mới hoặc xử lý draft hỏng riêng.
 
-Repo hiện chưa có APK 0.3.9 phát hành: lần build trước Cannot recover key.
-Chủ dự án cần sửa Secret GitHub THT_KEY_PASSWORD đúng nội dung tệp trong gói
-keystore. Sau đó chạy workflow mới có update.json; rerun workflow cũ trước
-khi bổ sung metadata sẽ không tạo update.json. GitHub Token ở Worker chỉ cần
-đọc Releases, không phải mật khẩu keystore và không sửa lỗi ký APK.
+Bản 0.3.9-test/code21 đã phát hành thành công ngày06/10/2026, có đầy đủ 3 assets
+và đúng khóa cố định. Lỗi Cannot recover key của lần build trước đã hết trong
+lần chạy mới. Giữ 4 Secrets ký APK đã hoạt động cho các bản tiếp theo.
+GitHub Token ở Worker chỉ đọc Releases, khác các Secrets keystore ở GitHub.
 
 ## Hai SHA khác nhau
 

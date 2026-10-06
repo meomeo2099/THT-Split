@@ -21,11 +21,23 @@ CI Worker riêng để Node tests/dry-run/ZIP không phụ thuộc lỗi ký And
 release-metadata.py đã thử bằng bản sao APK0.3.8 ký khóa tht-split thật: package/
 code20/name/SHA/size/cert đúng, pin sai bị từ chối. APK ký thử xóa sau kiểm tra,
 không phải một bản phát hành0.3.9 hoặc thử cập nhật Android trên thiết bị.
-Đang chờ CI Worker; chưa deploy Cloudflare vì chưa có credential ở phiên làm việc.
-APK0.3.9 vẫn chờ chủ dự án sửa THT_KEY_PASSWORD. Khi đã sửa chạy release ở HEAD
-hiện tại để có update.json; rerun snapshot05e7ffe cũ không tạo manifest mới.
+Code c48179f6a0520855f0ffe429ff948077287140b6. Worker CI37430158450/
+job112158886834 completed/success: Node22 tests, Wrangler dry-run, bundle/ZIP đạt.
+Android debug37430158472/job112158886529 cũng completed/success; signer pin đạt.
+Release37430158461/job112158887289 completed/success: unit/lint/signature/metadata/
+publish đạt. Lỗi key password đã hết ở lần chạy mới, không đọc Secret thực từ API.
+Release https://github.com/meomeo2099/THT-Split/releases/tag/v0.3.9-test,
+id404436462/prerelease=true/draft=false, đủ APK/sha/update.json. APK code21/min26/
+target32 đã aapt/apksigner verify và đối chiếu hash/metadata/GitHub digest.
+APK SHA256:5ae67af5ad1a047757b41be4a61cb595d65c0a59da7d5d57f875858171d8635a.
+Cert SHA256:e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2.
+QR assets byte-identical0.3.8; app/src không đổi, dex có remote sleep1/API config/
+Worker origin. Release tối ưu tên resource nên không so tên resource như debug.
+Worker ZIP giao kèm README cập nhật trạng thái phát hành (mã/config đúng artifact
+đã CI); chưa deploy Cloudflare vì chưa có credential ở phiên làm việc. Chưa thử
+private GitHub API bằng token Worker thật hoặc cập nhật Android/LDPlayer/xe.
 
-## Mốc0.3.9 — bắt đầu khóa ký cố định
+## Mốc05e7ffe/0.3.9 — bắt đầu khóa ký cố định (lịch sử)
 Đã tạo keystore riêng ngoài git, alias tht-split/RSA3072/JKS. Chủ dự án xác nhận
 đã thêm 4 Secrets THT_KEYSTORE_B64/THT_STORE_PASSWORD/THT_KEY_ALIAS/THT_KEY_PASSWORD.
 SHA256 chứng chỉ công khai:
@@ -46,8 +58,8 @@ job112152153353 cũng thất bại packageDebug. Keystore/store password/alias �
 Gói tạo ban đầu đã giải mã/ký thử/verify bằng apksigner thành công ngoài git.
 Cần chủ dự án cập nhật THT_KEY_PASSWORD bằng nội dung đúng tệp cùng tên trong
 gói đã nhận, không thay keystore hay dùng store password cho key password.
-Chưa tạo APK0.3.9 hoặc Release. Khi sửa Secret dùng workflow ở HEAD mới để có
-metadata GitHub. Không cần bump code/tag hoặc sửa runtime để sửa Secret.
+Lần chạy đầu chưa tạo APK0.3.9 hoặc Release; lần mới đã đạt theo mốc phía trên.
+Không cần bump code/tag hoặc sửa runtime để sửa Secret.
 Chưa kiểm trên LDPlayer9/xe, chưa xác nhận hết lỗi ADB.
 Bản debug cũ khác signer không cài đè. Người dùng sao lưu cấu hình cần giữ trước
 khi tự chuyển một lần; app không tự gỡ bản cũ. Giữ khóa này cho mọi bản sau.

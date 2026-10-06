@@ -1,5 +1,10 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt06/10 18:32 — tạo bản mới thử cập nhật
+- Phát hành0.3.10-test/code22 với cùng khóa ký cố định của0.3.9-test/code21.
+- Giữ chức năng/Bridge/Worker, dùng bản mới để thử cập nhật đè và giữ cấu hình.
+- Không bỏ kiểm chữ ký, không tự gỡ app hoặc thay khóa ký để vượt lỗi bản cũ.
+
 ## Chốt06/10 14:43 — mật khẩu quản trị ngắn hơn, giữ dữ liệu Worker
 - Cho phép ADMIN_TOKEN/ADMIN_PASSWORD từ8 đến256 ký tự; giữ mật khẩu cũ hợp lệ.
 - Gửi gói Worker cập nhật, giữ CONTROL/class/namespace và toàn bộ config/cache.

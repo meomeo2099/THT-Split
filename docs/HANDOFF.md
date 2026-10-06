@@ -1,4 +1,21 @@
-# Bàn giao THT Split — 0.3.9-test, 06/10/2026
+# Bàn giao THT Split — 0.3.10-test, 06/10/2026
+
+## Bản thử cập nhật cùng khóa — chốt18:32
+Tăng versionCode21→22, versionName0.3.9-test→0.3.10-test để chủ dự án thử
+cập nhật trong app. Không đổi app/src/assets, keystore, Worker hoặc Bridge.
+Giữ pin chứng chỉ tht-split và 4 Secrets đã ký0.3.9 thành công; release tự chạy
+khi đẩy main, chỉ publish sau unit/lint/signature/metadata và đủ3 assets.
+Ảnh18:29 báo APK khác chữ ký giữa bản cài trên máy và APK cập nhật; chưa lấy
+chứng chỉ bản đang cài nên chưa xác định chính xác phiên bản/khóa trên máy.
+Test phải bắt đầu từ APK0.3.9-test/code21 ký đúng tht-split. Nếu bản cũ ký khóa
+khác, không cài đè bằng khóa mới; chủ dự án ghi lại cấu hình trước khi tự gỡ/cài
+một lần. Không bỏ kiểm chữ ký hoặc tự gỡ app để che lỗi. Worker nguồn GitHub
+cần nhận prerelease và Kiểm tra GitHub ngay để bỏ cache5 phút. Giữ minimum21
+hoặc thấp hơn khi thử cập nhật tự nguyện; không buộc22 trước khi test thành công.
+Bước thử: cài0.3.9 đúng signer → lưu preset/cài đặt → Worker nhận0.3.10/code22 →
+trong app Kiểm tra/Tải và cài → xác nhận0.3.10, preset/cài đặt còn và chia/ADB.
+Hiện mới chuẩn bị version/docs; sẽ bổ sung CI, release và hash sau build.
+
 
 ## Worker mật khẩu ngắn hơn — chốt14:43
 ADMIN_TOKEN/ADMIN_PASSWORD chấp nhận8..256 ký tự, health/admin gate cùng kiểm;

@@ -67,7 +67,7 @@ public final class MainActivity extends Activity {
         if(page.equals("settings"))settings(area);else{scrollBody(area);if(page.equals("donate"))donation();else if(page.equals("pairs"))pairs();else home();}
     }
     private void home(){
-        String denied=new RemoteControl(this).denial();if(!denied.isEmpty()){note(denied);button(body,"Kiểm tra quyền / cập nhật",true,()->{page="settings";section="updates";render();refreshRemote(true,true);});}
+        String denied=new RemoteControl(this).denial();if(!denied.isEmpty()){note(denied);button(body,"Kiểm tra cập nhật",true,()->{page="settings";section="updates";render();refreshRemote(true,true);});}
         body.addView(title("Chọn hai ứng dụng"));space(body,16);
         LinearLayout cards=landscapeLayout()?AppUi.row(this):AppUi.column(this);body.addView(cards,lp(-1,-2));
         appCard(cards,"Ứng dụng bên trái","left");AppUi.Icon swap=new AppUi.Icon(this,"swap",AppUi.TEXT);swap.setBackground(AppUi.surface(this,false));
@@ -225,8 +225,8 @@ public final class MainActivity extends Activity {
     private void updateSettings(){
         body.addView(title("Phiên bản & cập nhật"));note("THT Split "+BuildConfig.VERSION_NAME);
         RemoteControl remote=new RemoteControl(this);note(remote.status());
-        if(remote.configured()){note("Mã thiết bị: "+remote.deviceId());button(body,"Sao chép mã thiết bị",false,()->copy(remote.deviceId()));note("Không cần nhập key hoặc chờ duyệt. App tự đăng ký; nhà phát hành có thể khóa/mở từ xa.");}
-        button(body,"Kiểm tra cập nhật & quyền sử dụng",true,()->refreshRemote(true,true));
+        note("Không cần đăng ký hoặc nhập key. Cài xong có thể dùng ngay, kể cả khi chưa kết nối mạng.");
+        button(body,"Kiểm tra cập nhật",true,()->refreshRemote(true,true));
         JSONObject latest=remote.policy().optJSONObject("latest");
         if(latest!=null&&latest.optInt("versionCode")>BuildConfig.VERSION_CODE){note("Có bản "+latest.optString("versionName")+(remote.policy().optInt("minimumVersionCode")>BuildConfig.VERSION_CODE?" • BẮT BUỘC CẬP NHẬT":""));note(latest.optString("notes"));button(body,"Tải và cài cập nhật",true,this::downloadUpdate);}
         if(new File(getCacheDir(),"verified-update.apk").exists())button(body,"Tiếp tục cài APK đã tải",false,this::installDownloaded);
@@ -236,7 +236,7 @@ public final class MainActivity extends Activity {
     private void refreshRemote(boolean force,boolean show){
         RemoteControl remote=new RemoteControl(this);if(!remote.configured()){if(show)toast(remote.status());return;}if(refreshing)return;refreshing=true;final String before=remote.policy().toString()+remote.status()+remote.lastError();
         io.execute(()->{String result;try{remote.refresh(force);result=remote.status();}catch(Exception e){result=remote.lastError()+"\n"+remote.status();}final String message=result;
-            runOnUiThread(()->{refreshing=false;if(isFinishing()||isDestroyed())return;if(show||!before.equals(remote.policy().toString()+remote.status()+remote.lastError()))render();if(show)AppUi.dialog(this).setTitle("Cập nhật & quyền sử dụng").setMessage(message).setPositiveButton("Đóng",null).show();});});
+            runOnUiThread(()->{refreshing=false;if(isFinishing()||isDestroyed())return;if(show||!before.equals(remote.policy().toString()+remote.status()+remote.lastError()))render();if(show)AppUi.dialog(this).setTitle("Cập nhật ứng dụng").setMessage(message).setPositiveButton("Đóng",null).show();});});
     }
     private void downloadUpdate(){if(downloading){toast("Đang tải, vui lòng đợi");return;}downloading=true;toast("Đang tải APK…");io.execute(()->{try{
         RemoteControl r=new RemoteControl(this);r.refresh(true);JSONObject latest=r.policy().getJSONObject("latest");ApkUpdates.download(this,latest);

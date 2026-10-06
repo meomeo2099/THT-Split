@@ -1,5 +1,12 @@
 # Cài và kiểm thử 0.2.9-test trên EX2
 
+## Kiểm mới0.3.6 — thay yêu cầu đăng ký của0.3.5
+Cài mới offline/Worker Hello World vẫn dùng ngay; không có mã đăng ký/lease.
+Legacy per-device lock không chặn cache chung mới; token/RSA/preset giữ khi cùng
+signer. Worker GET công khai không tạo records, đăng ký cũ410. Kiểm khóa chung,
+mandatory, offline cache và Stop/Home/Hide. Chưa thử LDPlayer/xe bản này.
+
+
 ## Kiểm thêm0.3.5
 - Deploy Worker gọi health đúng trước cài app mới; Hello World phải báo lỗi đăng ký.
 - Máy mới online được enabled không duyệt. Khóa rồi mất mạng/lệnh Voice/UI vẫn chặn; Stop/Home/Hide thoát được.

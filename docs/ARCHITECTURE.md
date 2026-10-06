@@ -1,5 +1,13 @@
 # Kiến trúc THT Split 0.2
 
+## Chính sách công khai0.3.6 — thay cơ chế đăng ký dưới đây
+RemoteControl GET /api/config không body/identifier/auth. Không enrollment/lease;
+cache tht_public_policy tách cache per-device cũ. Thiếu cấu hình cho dùng ngay.
+Network executor riêng giữ poll; require chỉ kiểm cached khóa chung/minversion,
+không chờ mạng kể cả lần đầu. Worker public GET không ghi; admin chỉ sửa config
+chung trong CONTROL. Route per-device cũ410, không đọc hoặc xóa records cũ.
+
+
 ## Tối ưu0.3.5
 Origin mặc định là Worker chiamanhinh.mavoice.workers.dev. API phải chạy server
 đúng mã và storage/admin secret; Hello World không đăng ký được máy mới.

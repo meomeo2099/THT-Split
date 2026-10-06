@@ -1,71 +1,67 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
+import {Script} from 'node:vm';
 import worker,{Control,validateConfig} from './worker.mjs';
 import {adminPage} from './admin.mjs';
-import {Script} from 'node:vm';
 globalThis.crypto??=webcrypto;
-test('health reports configuration without exposing secrets and missing storage fails closed',async()=>{
- const env={ADMIN_TOKEN:'a'.repeat(32)};
- const health=await worker.fetch(new Request('https://control.test/api/health'),env);
- assert.deepEqual(await health.json(),{service:'tht-split-control',protocol:1,storage:false,adminConfigured:true});
- assert.equal((await worker.fetch(new Request('https://control.test/api/device',{method:'POST',body:'{}'}),env)).status,503);
- let called=false;const incomplete={CONTROL:{idFromName:()=>'',get:()=>{called=true;return {};}}};
- assert.equal((await worker.fetch(new Request('https://control.test/api/device',{method:'POST',body:'{}'}),incomplete)).status,503);assert.equal(called,false);
-});
 class Storage {
-  data=new Map();tail=Promise.resolve();
-  async get(k){return structuredClone(this.data.get(k));}
-  async put(k,v){this.data.set(k,structuredClone(v));}
-  async list({prefix,limit,startAfter}){return new Map([...this.data].filter(([k])=>k.startsWith(prefix)&&(!startAfter||k>startAfter)).sort(([a],[b])=>a.localeCompare(b)).slice(0,limit));}
-  async transaction(fn){const run=this.tail.then(()=>fn(this));this.tail=run.catch(()=>{});return run;}
+ data=new Map();writes=0;
+ async get(k){return structuredClone(this.data.get(k));}
+ async put(k,v){this.writes++;this.data.set(k,structuredClone(v));}
 }
-const id='a'.repeat(64),credential='b'.repeat(64);
-const device=(extra={})=>({deviceId:id,credential,model:'LDPlayer',sdk:28,versionCode:12,versionName:'0.3.0-test',...extra});
 const request=(path,b)=>new Request('https://control.test'+path,{method:b?'POST':'GET',...(b?{body:JSON.stringify(b)}:{})});
-const config=(extra={})=>({minimumVersionCode:0,offlineSeconds:604800,latest:null,...extra});
-function setup(){return new Control({storage:new Storage()});}
-test('packaged single-module Worker serves health and preserves lock on heartbeat',async()=>{
- await import('./pack.mjs');const {default:bundle,Control:BundledControl}=await import('./build/distribution/worker.mjs');
- const c=new BundledControl({storage:new Storage()});const env={CONTROL:{idFromName:()=>'',get:()=>c},ADMIN_TOKEN:'s'.repeat(32)};
- assert.equal((await (await bundle.fetch(request('/api/health'),env)).json()).storage,true);
- assert.equal((await (await bundle.fetch(request('/api/device',device()),env)).json()).state,'enabled');
- const lock=request('/api/admin/device',{id,state:'locked'});lock.headers.set('Authorization','Bearer '+env.ADMIN_TOKEN);assert.equal((await bundle.fetch(lock,env)).status,200);
- assert.equal((await (await bundle.fetch(request('/api/device',device()),env)).json()).state,'locked');
+const config=(extra={})=>({state:'enabled',reason:'',minimumVersionCode:0,latest:null,...extra});
+function setup(){const c=new Control({storage:new Storage()});return {c,env:{CONTROL:{idFromName:()=>'',get:()=>c},ADMIN_TOKEN:'secret-admin-password-at-least-32-characters'}};}
+const authorized=(path,b,env)=>{const r=request(path,b);r.headers.set('Authorization','Bearer '+env.ADMIN_TOKEN);return r;};
+test('fresh install reads public configuration without authentication, enrollment or storage writes',async()=>{
+ const {c,env}=setup();delete env.ADMIN_TOKEN;
+ for(let n=0;n<3;n++){const r=await worker.fetch(request('/api/config'),env);assert.equal(r.status,200);assert.deepEqual(await r.json(),config());}
+ assert.equal(c.storage.writes,0);assert.equal(c.storage.data.size,0);
 });
-test('fresh devices are enabled without approval and wrong credentials cannot replace identity',async()=>{
- const c=setup();const r=await c.fetch(request('/api/device',device()));assert.equal(r.status,200);assert.equal((await r.json()).state,'enabled');
- assert.equal((await c.fetch(request('/api/device',device({credential:'c'.repeat(64)})))).status,403);
+test('all enrollment and per-device admin routes are retired without modifying records',async()=>{
+ const {c,env}=setup();
+ for(const path of ['/api/device','/api/admin/device','/api/admin/reenroll'])assert.equal((await worker.fetch(request(path,{deviceId:'a'.repeat(64),credential:'b'.repeat(64)}),env)).status,410);
+ assert.equal(c.storage.writes,0);
 });
-test('admin lock survives repeated enrollment and concurrent heartbeats',async()=>{
- const c=setup();await c.fetch(request('/api/device',device()));
- await Promise.all([c.fetch(request('/api/device',device())),c.fetch(request('/api/admin/device',{id,state:'locked',reason:'Khóa kiểm thử'})),c.fetch(request('/api/device',device()))]);
- const r=await c.fetch(request('/api/device',device()));assert.equal((await r.json()).state,'locked');
+test('admin token protects writes and public reads never overwrite a global lock',async()=>{
+ const {c,env}=setup();
+ assert.equal((await worker.fetch(request('/api/admin/config',config({state:'locked'})),env)).status,401);
+ assert.equal(c.storage.writes,0);
+ assert.equal((await worker.fetch(authorized('/api/admin/config',config({state:'locked',reason:'Bảo trì'}),env),env)).status,200);
+ for(let n=0;n<5;n++)assert.equal((await (await worker.fetch(request('/api/config'),env)).json()).state,'locked');
+ assert.equal(c.storage.writes,1);
+ await worker.fetch(authorized('/api/admin/config',config(),env),env);
+ assert.equal((await (await worker.fetch(request('/api/config'),env)).json()).state,'enabled');
 });
-test('reenroll preserves locked and enabled states without another approval',async()=>{
- const c=setup();await c.fetch(request('/api/device',device()));await c.fetch(request('/api/admin/device',{id,state:'locked'}));await c.fetch(request('/api/admin/reenroll',{id}));
- const r=await c.fetch(request('/api/device',device({credential:'c'.repeat(64)})));assert.equal((await r.json()).state,'locked');
- await c.fetch(request('/api/admin/device',{id,state:'enabled'}));await c.fetch(request('/api/admin/reenroll',{id}));assert.equal((await (await c.fetch(request('/api/device',device()))).json()).state,'enabled');
+test('mandatory update metadata is validated and public clients can read it anonymously',async()=>{
+ const {env}=setup();const latest={versionCode:19,versionName:'0.3.7',apkUrl:'https://apk.test/app.apk',sha256:'d'.repeat(64),notes:'Mới'};
+ assert.throws(()=>validateConfig(config({minimumVersionCode:19})));
+ assert.throws(()=>validateConfig(config({latest:{...latest,apkUrl:'http://apk.test/app.apk'}})));
+ assert.throws(()=>validateConfig(config({latest:{...latest,sha256:'bad'}})));
+ assert.throws(()=>validateConfig(config({state:'pending'})));
+ const cfg=config({minimumVersionCode:19,latest});
+ assert.equal((await worker.fetch(authorized('/api/admin/config',cfg,env),env)).status,200);
+ assert.deepEqual(await (await worker.fetch(request('/api/config'),env)).json(),cfg);
 });
-test('mandatory policy requires downloadable metadata and rejects non-HTTPS/checksum errors',()=>{
- assert.throws(()=>validateConfig(config({minimumVersionCode:13})));assert.throws(()=>validateConfig(config({latest:{versionCode:13,apkUrl:'http://apk.test/app.apk',sha256:'d'.repeat(64)}})));
- assert.throws(()=>validateConfig(config({latest:{versionCode:13,apkUrl:'https://apk.test/app.apk',sha256:'bad'}})));
- const ok=validateConfig(config({minimumVersionCode:13,latest:{versionCode:13,versionName:'0.3.1',apkUrl:'https://apk.test/app.apk',sha256:'d'.repeat(64)}}));assert.equal(ok.minimumVersionCode,13);
+test('legacy enrollment records and lease fields do not enter public policy or admin output',async()=>{
+ const {c,env}=setup();await c.storage.put('device:old',{id:'old',state:'locked',credentialHash:'secret'});
+ await c.storage.put('config',{minimumVersionCode:0,latest:null,offlineSeconds:3600,autoApprove:false});
+ const r=await worker.fetch(request('/api/config'),env);assert.deepEqual(await r.json(),config());
+ const admin=await worker.fetch(authorized('/api/admin/state',null,env),env);assert.deepEqual(await admin.json(),{config:config()});
+ assert.equal(c.storage.data.get('device:old').state,'locked'); // Retired data is neither deleted nor used.
 });
-test('admin API requires server-only token; admin device list never exposes credentials',async()=>{
- const c=setup();let forwarded=0;const env={ADMIN_TOKEN:'secret-admin-password-at-least-32-characters',CONTROL:{idFromName:()=>'',get:()=>({fetch:r=>{forwarded++;return c.fetch(r);}})}};
- assert.equal((await worker.fetch(request('/api/admin/state'),env)).status,401);assert.equal(forwarded,0);
- await c.fetch(request('/api/device',device()));const req=request('/api/admin/state');req.headers.set('Authorization','Bearer '+env.ADMIN_TOKEN);const result=await worker.fetch(req,env);assert.equal(result.status,200);assert.equal((await result.json()).devices[0].credentialHash,undefined);
+test('health exposes protocol2/no registration and missing storage returns update error only',async()=>{
+ const r=await worker.fetch(request('/api/health'),{});assert.deepEqual(await r.json(),{service:'tht-split-control',protocol:2,registration:false,storage:false,adminConfigured:false});
+ assert.equal((await worker.fetch(request('/api/config'),{})).status,503);
 });
-test('legacy autoApprove=false and pending records migrate without touching a lock',async()=>{
- const c=setup();await c.storage.put('config',{...config(),autoApprove:false});
- assert.equal((await (await c.fetch(request('/api/device',device()))).json()).state,'enabled');
- const old=await c.storage.get('device:'+id);old.state='pending';await c.storage.put('device:'+id,old);
- assert.equal((await (await c.fetch(request('/api/device',device()))).json()).state,'enabled');
- assert.equal((await c.fetch(request('/api/admin/device',{id,state:'pending'}))).status,400);
-});
-test('admin screen has lock/unlock without approval controls and valid emitted script',async()=>{
- const html=await adminPage().text();assert.ok(html.includes('Mở khóa'));assert.ok(html.includes('Khóa'));
- assert.ok(!html.includes('Tự duyệt'));assert.ok(!html.includes('Duyệt / Mở'));assert.ok(!html.includes('Khôi phục cài lại'));
+test('admin screen has shared lock/update controls with no device list or offline lease',async()=>{
+ const html=await adminPage().text();assert.ok(html.includes('Mở cho mọi người'));assert.ok(html.includes('Tạm khóa toàn ứng dụng'));
+ assert.ok(!html.includes('id="devices"'));assert.ok(!html.includes('id="offline"'));assert.ok(!html.includes('reenroll'));
  const script=html.match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)[1];assert.doesNotThrow(()=>new Script(script));
+});
+test('single-module Worker bundle serves the same anonymous public policy',async()=>{
+ await import('./pack.mjs');const {default:bundle,Control:BundledControl}=await import('./build/distribution/worker.mjs');
+ const c=new BundledControl({storage:new Storage()});const env={CONTROL:{idFromName:()=>'',get:()=>c}};
+ assert.deepEqual(await (await bundle.fetch(request('/api/config'),env)).json(),config());assert.equal(c.storage.writes,0);
 });

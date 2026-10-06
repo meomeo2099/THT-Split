@@ -1,4 +1,19 @@
-# Bàn giao THT Split — 0.3.5-test, 06/10/2026
+# Bàn giao THT Split — 0.3.6-test, 06/10/2026
+## Mốc mới — bỏ đăng ký để ai cài cũng dùng ngay
+Chốt mới của chủ dự án bỏ đăng ký từng thiết bị.0.3.6/code18 dùng GET /api/config
+công khai; không đọc Android ID/model hay sinh/gửi credential. Không có mã thiết
+bị/UI đăng ký/API heartbeat/lease. Máy mới offline/Worker Hello World vẫn chạy.
+Cache tht_public_policy mới không dùng khóa/lease per-device cũ; giữ preset,
+Voice/Bridge token/RSA và signer requirements. Không xóa hồ sơ server cũ nhưng
+không đọc/liệt kê hoặc dùng chúng. Route đăng ký/admin-device/reenroll trả410.
+Giữ yêu cầu trước về cập nhật bắt buộc và khóa/mở chung toàn app: mặc định
+enabled/min0. Config đã nhận locked/min vẫn giữ khi lỗi mạng; Stop/Home/Hide
+thoát được. GET config không ghi storage; admin writes có secret. CONTROL/name
+chiamanhinh giữ namespace, health protocol2/registrationfalse. README/REMOTE_CONTROL
+đã viết lại cho cơ chế dùng ngay. Các mốc đăng ký bên dưới là lịch sử đã bỏ.
+Node8 tests local đạt; chờ CI Java4 tests/public policy/lint/build, QR/Wrangler
+dry-run. Chưa deploy CF/test xe; icon0.3.5, chia/backend/overlay không đổi.
+
 
 ## Mốc Worker thật, launcher icon và giảm chờ
 Chủ dự án cung cấp https://chiamanhinh.mavoice.workers.dev. GET / và POST

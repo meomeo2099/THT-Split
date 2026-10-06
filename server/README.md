@@ -1,10 +1,12 @@
-# Worker chiamanhinh · THT Split
+# Worker chiamanhinh · THT Split0.3.6
 
-Địa chỉ của chủ dự án: https://chiamanhinh.mavoice.workers.dev
-Lúc kiểm tra06/10/2026, Worker này đang chạy Hello World, chưa có API của Split.
-Đây là mã thay thế để có trang quản trị, khóa/mở thiết bị và cập nhật bắt buộc.
+Địa chỉ: https://chiamanhinh.mavoice.workers.dev
 
-Giải nén gói Worker, mở terminal trong thư mục có `wrangler.jsonc`:
+Ai cài app0.3.6 cũng dùng ngay, không đăng ký thiết bị hoặc nhập key. Mới cài
+offline/Worker chưa hoạt động vẫn dùng được. Worker dành cho cập nhật và khóa/
+mở toàn ứng dụng; không còn danh sách hay khóa từng thiết bị.
+
+Giải nén gói, mở terminal trong thư mục có wrangler.jsonc:
 
 ```sh
 npx --yes wrangler@4 login
@@ -12,23 +14,20 @@ npx --yes wrangler@4 secret put ADMIN_TOKEN
 npx --yes wrangler@4 deploy
 ```
 
-Đăng nhập đúng tài khoản có subdomain `mavoice`. Khi lệnh secret hỏi mật khẩu,
-nhập mật khẩu quản trị ngẫu nhiên ít nhất32 ký tự. Không gửi mật khẩu này cho
-khách hoặc đưa vào app/mã nguồn. Tên Worker đã đặt đúng `chiamanhinh`;
-deploy thay mã Hello World của Worker này, không tạo tên Worker khác.
+Đăng nhập tài khoản subdomain mavoice; Worker name đã đúng chiamanhinh. Nhập mật
+khẩu quản trị ngẫu nhiên ít nhất32 ký tự khi secret hỏi. Không nhúng vào app/git.
+CONTROL SQLite được cấu hình tự động; giữ namespace khi nâng, không xóa dữ liệu.
+Chỉ dán source trong trình soạn thảo web mà thiếu binding CONTROL chưa đủ.
 
-Sau deploy mở `/api/health`: phải có service=tht-split-control, protocol=1,
-storage=true, adminConfigured=true. Mở trang chính, đăng nhập mật khẩu vừa đặt.
-App0.3.5 đã gắn URL trên, online lần đầu tự đăng ký được dùng ngay. Chỉ Khóa/Mở
-khóa thiết bị, không duyệt, khách không nhập key. Máy đã nhận khóa giữ khóa khi
-mất mạng. Máy mới chưa đăng ký hoặc hết thời hạn phải kết nối lại.
+Health sau deploy: service=tht-split-control, protocol=2, registration=false,
+storage=true, adminConfigured=true. GET /api/config không cần auth và không ghi
+hồ sơ. Route đăng ký/quản lý từng thiết bị cũ trả410; dữ liệu cũ không được dùng.
+Trang chính đăng nhập mật khẩu quản trị để Mở cho mọi người/Tạm khóa toàn ứng
+dụng và nhập metadata cập nhật. Máy nhận khóa giữ cache khi mất mạng.
 
-Cập nhật: nhập versionCode/tên bản/URL APK HTTPS công khai/SHA256/nội dung.
-Version tối thiểu0 = tự nguyện. Chỉ nâng tối thiểu sau khi APK cùng chữ ký đã cài
-đè thử được. APK test ký runner chưa phù hợp làm chuỗi cập nhật ổn định.
+Cập nhật: versionCode/tên bản/URL APK HTTPS công khai/SHA256/nội dung.
+Version tối thiểu0 = tự nguyện; chỉ tăng sau khi APK cùng signer cài đè thử được.
+Bản test runner thay signer nên chưa là chuỗi cập nhật ổn định.
 
-Gói không chứa ADMIN_TOKEN, khóa ký APK, thông tin Cloudflare hay dữ liệu thiết bị.
-Durable Object CONTROL được Wrangler tạo/bind theo cấu hình; chỉ dán worker.mjs
-trong trình soạn thảo web mà thiếu binding này sẽ chưa chạy API thiết bị.
-
-Trong repo, hướng dẫn đầy đủ tại docs/REMOTE_CONTROL.md.
+Gói không có ADMIN_TOKEN, khóa ký, đăng nhập Cloudflare hoặc dữ liệu thiết bị.
+Hướng dẫn đầy đủ trong docs/REMOTE_CONTROL.md của repo.

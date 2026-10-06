@@ -1,5 +1,12 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt mới06/10 — ưu tiên hơn yêu cầu đăng ký cũ
+- Bỏ đăng ký thiết bị để ai cài cũng sử dụng ngay, kể cả cài lần đầu offline.
+- Bỏ mã thiết bị, private credential đăng ký, duyệt/heartbeat/lease và khóa từng máy.
+- Giữ cập nhật/mandatory và khóa/mở chung toàn ứng dụng; mặc định mở.
+- Worker chưa hoạt động không chặn người mới dùng. Khóa/min đã nhận giữ cache.
+
+
 ## Chốt06/10/2026
 - Gắn Worker của chủ dự án: https://chiamanhinh.mavoice.workers.dev cho khóa/mở
   và cập nhật. Worker hiện Hello World phải được thay bằng mã quản trị có CONTROL.

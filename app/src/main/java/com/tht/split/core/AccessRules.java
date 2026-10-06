@@ -1,30 +1,12 @@
 package com.tht.split.core;
 
-/** Policy remains cached across reboot; an offline error never clears a lock. */
+/** Public application policy. Installation never requires enrollment or an offline lease. */
 public final class AccessRules {
     private AccessRules() {}
-    public interface Policy {
-        String denial();
-        void refresh() throws Exception;
-    }
-    /** Valid cached leases avoid network waits. Background polling still refreshes policy.
-     * Unknown, expired, locked or mandatory-update policies never gain access on an I/O error. */
-    public static String commandDenial(String action, Policy policy) {
-        if (exitCommand(action)) return "";
-        if (policy.denial().isEmpty()) return "";
-        try { policy.refresh(); } catch (Exception ignored) { /* Keep the saved policy. */ }
-        return policy.denial();
-    }
-    public static String denial(boolean configured, boolean known, String state, int minimum,
-                                int installed, long checkedAt, long now, long offlineSeconds) {
-        if (!configured) return ""; // Development builds explicitly show remote control as unconfigured.
-        if (!known) return "Cần kết nối mạng để đăng ký thiết bị";
-        if ("locked".equals(state)) return "Thiết bị đã bị khóa";
-        // Accept a saved legacy pending policy while upgrading the old Worker.
-        if (!"enabled".equals(state) && !"pending".equals(state)) return "Trạng thái quyền sử dụng không hợp lệ";
+    public static String denial(boolean configured, String state, int minimum, int installed) {
+        if (!configured) return "";
+        if ("locked".equals(state)) return "Ứng dụng đang tạm khóa";
         if (installed < minimum) return "Cần cập nhật phiên bản bắt buộc";
-        if (now < checkedAt || now - checkedAt > offlineSeconds * 1000L)
-            return "Cần kết nối mạng để xác nhận quyền sử dụng";
         return "";
     }
     public static boolean exitCommand(String action) {

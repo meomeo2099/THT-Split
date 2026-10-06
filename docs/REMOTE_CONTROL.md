@@ -1,117 +1,97 @@
-# Quản lý THT Split không cần nhập key — 0.3.5
+# THT Split dùng ngay, cập nhật và khóa chung — 0.3.6
 
-## Worker chủ dự án đã tạo06/10/2026
-https://chiamanhinh.mavoice.workers.dev đã được đặt mặc định trong APK và
-CI/release. Không phải nhập URL/key ở máy khách. THT_CONTROL_URL chỉ dùng khi
-chủ dự án chủ động override lúc build. Kiểm tra thực tế trước lần sửa này:
-GET / và POST /api/device với {} đều200 text/plain Hello World, chưa có mã Split.
-Chưa đăng nhập/triển khai vào tài khoản Cloudflare của chủ dự án.
-Phải triển khai mã server dưới đây trước khi máy mới đăng ký và chia được.
+## Quyết định mới06/10/2026
+Bỏ đăng ký thiết bị để ai cài cũng sử dụng ngay. Không nhập key, không duyệt,
+không sinh/gửi mã Android ID, model hay credential đăng ký. Bản mới chạy được
+ngay khi cài offline, Worker chưa deploy hoặc đang lỗi. Quyền overlay/ADB/
+freeform của Android vẫn cần theo phương thức chia đã chọn.
 
-## Chức năng đã viết
-- Bỏ ba nút trong app: tài liệu Voice, hướng dẫn kiểm thử và mở trang phát hành.
-  Tài liệu tích hợp vẫn được giữ trên GitHub cho dự án THTVoice.
-- App tự đăng ký, hiển thị mã thiết bị và được sử dụng ngay, không cần duyệt.
-- Trang quản trị khóa/mở thiết bị, đặt lý do, xem model/version/lần kết nối.
-- Cập nhật tự kiểm tra khi mở app và lúc đang chia; có nút kiểm tra thủ công.
-  `minimumVersionCode` chặn thao tác chia trên bản cũ, không tự cài im lặng.
-- APK tải trong app, giới hạn64MB, HTTPS kể cả redirect, SHA256, package/version/
-  signer phải khớp. Android vẫn yêu cầu người dùng xác nhận cài đặt.
-- Mục Ủng hộ: profile ngân hàng/chủ tài khoản/STK và QR đã nhúng vào APK.
-  Sao chép STK, QR hiển thị offline, không phụ thuộc Worker/khóa.
+Worker vẫn giữ cập nhật tự nguyện/bắt buộc và khóa/mở toàn ứng dụng đã yêu cầu.
+Không còn khóa một máy riêng, danh sách thiết bị, heartbeat hoặc thời hạn ngoại
+tuyến. Mặc định state=enabled, minimumVersionCode=0. Khi app đã nhận khóa chung
+hoặc yêu cầu cập nhật bắt buộc, cache đó vẫn có hiệu lực qua lỗi mạng/reboot.
+Máy chưa từng nhận cấu hình dùng ngay; đây không phải khóa chống cài lại tuyệt đối.
 
-## Triển khai Worker riêng
-Thư mục `server/` là Worker ES module và trang quản trị, không chứa mật khẩu.
-Yêu cầu Node hiện hành và Wrangler hỗ trợ `exports` Durable Objects SQLite.
-Tài liệu Cloudflare: https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/
-và https://developers.cloudflare.com/workers/configuration/secrets/.
+## API công khai
+App gọi GET https://chiamanhinh.mavoice.workers.dev/api/config, không có body,
+mã thiết bị, credential hay Authorization. Phản hồi chung:
+
+```json
+{"state":"enabled","reason":"","minimumVersionCode":0,"latest":null}
+```
+
+latest có versionCode/versionName/apkUrl HTTPS/sha256/notes. App kiểm nội dung
+trước lưu. Cache mới tht_public_policy không đọc state/lease của đăng ký cũ trong
+tht_remote; khóa từng thiết bị cũ không chặn phiên bản công khai. Preset, token
+Voice/Bridge và khóa RSA được giữ nguyên khi cập nhật cùng signer giữ dữ liệu.
+
+Lệnh chia không chờ mạng; kiểm cache chung tại service/boot/UI. Service dùng
+executor mạng riêng, tick ngay khi tạo/mỗi60s, request tối đa5 phút; UI lúc mở
+hoặc kiểm tra thủ công. Khi nhận khóa chung, dừng overlay, không force-stop app
+khác. Stop/Home/Hide luôn thoát được. Không push khi app đã dừng/force-stop.
+
+Worker GET không tạo/sửa bản ghi thiết bị. Các route /api/device,
+/api/admin/device và /api/admin/reenroll trả410. Records cũ được giữ nguyên trong
+storage nhưng không đọc/liệt kê/sử dụng; không xóa namespace khi nâng Worker.
+Config cũ thiếu state chuyển enabled, bỏ offlineSeconds/autoApprove khỏi phản hồi.
+CONTROL chỉ lưu cấu hình chung. Health protocol2, registration=false.
+
+## Triển khai Worker của chủ dự án
+URL đã gắn mặc định trong APK/CI/release: https://chiamanhinh.mavoice.workers.dev.
+THT_CONTROL_URL lúc build chỉ cần khi chủ dự án đổi origin (HTTPS, không dấu / cuối).
+Worker tại lần kiểm tra0.3.5 đang trả Hello World; chưa deploy mã quản trị thật.
+Việc này chỉ làm kiểm tra cập nhật báo lỗi, không chặn người mới dùng0.3.6.
+
+Giải nén Worker.zip hoặc mở terminal ở thư mục server của repo:
 
 ```sh
-cd server
 npx --yes wrangler@4 login
 npx --yes wrangler@4 secret put ADMIN_TOKEN
 npx --yes wrangler@4 deploy
 ```
-Nhập mật khẩu ngẫu nhiên dài ít nhất32 ký tự khi được hỏi. Không gửi mật khẩu này
-cho khách, không cho vào APK/GitHub/source. Mở URL Worker, đăng nhập bằng mật khẩu.
-Worker dùng Durable Object SQLite + transaction: đăng ký/heartbeat không ghi đè
-trạng thái khóa do admin đặt. Không dùng KV eventual consistency cho lệnh khóa.
-Wrangler name đã đổi thành `chiamanhinh`; đăng nhập tài khoản có subdomain
-`mavoice` để thay mã Worker Hello World hiện có. CONTROL được tạo/bind bằng
-Durable Object exports SQLite. Không dùng tên khác hoặc xóa namespace cũ.
-`server/pack.mjs`/CI có gói Worker.zip gồm module một tệp, wrangler.jsonc và README.
-Giải nén và chạy ba lệnh trên trong thư mục có wrangler.jsonc cũng được.
-Đừng chỉ dán source trong web editor mà bỏ binding CONTROL.
-Sau deploy `/api/health` phải có service=tht-split-control, protocol=1,
-storage=true, adminConfigured=true; API thiết bị trả503 nếu thiếu storage/admin.
 
-Trong GitHub repository Settings → Secrets and variables → Actions → Variables,
-`THT_CONTROL_URL` chỉ cần nếu đổi origin, **không có dấu / cuối**. Để trống dùng
-chiamanhinh.mavoice.workers.dev. Worker trả Hello World thì app báo chưa chạy API;
-không bỏ chặn đăng ký lần đầu. Mục ủng hộ vẫn dùng ngay, kể cả offline.
+Đăng nhập đúng tài khoản subdomain mavoice. Nhập mật khẩu ngẫu nhiên ít nhất32 ký
+tự khi secret put hỏi; không gửi cho khách/đưa vào APK/source/GitHub. Wrangler
+name=chiamanhinh thay mã Worker hiện có, CONTROL SQLite được tạo/bind qua exports.
+Giữ tên class/namespace khi nâng, không dùng tên mới hoặc xóa dữ liệu.
 
-## Khóa ký ổn định và phát hành
-Khóa test của runner cũ thay đổi giữa build, không thể bảo đảm cập nhật đè0.2.9.
-Phải chọn một keystore ổn định; ưu tiên keystore đã ký APK đang cài nếu còn giữ.
-Không đưa `.jks` hoặc mật khẩu vào git. Thêm GitHub Actions Secrets:
-`THT_KEYSTORE_B64`, `THT_STORE_PASSWORD`, `THT_KEY_ALIAS`, `THT_KEY_PASSWORD`.
-Test CI sẽ dùng khóa này nếu đã cấu hình; Release buộc đủ tất cả secrets.
+GET /api/health sau deploy: service=tht-split-control, protocol=2,
+registration=false, storage=true, adminConfigured=true. GET /api/config không
+cần admin secret. Thiếu CONTROL trả503, app giữ config đã lưu hoặc dùng mặc định.
+Trang chính đăng nhập mật khẩu quản trị, chọn Mở cho mọi người/Tạm khóa toàn ứng
+dụng và cấu hình cập nhật. API admin vẫn yêu cầu mật khẩu.
 
-Workflow “Phát hành APK cùng khóa ký” chạy thủ công với tag phiên bản. Workflow
-build/unit/lint trước, đính kèm `THT-Split.apk` và SHA256 vào GitHub Releases.
-Tăng `versionCode`/`versionName` trong app/build.gradle trước mỗi bản.
-Repo riêng tư: link Releases không tải công khai được; đặt APK trên HTTPS công khai
-do chủ dự án quản lý. Không đưa GitHub PAT vào APK để tải private repo.
+## Ký APK và cập nhật
+APK tải qua HTTPS, tối đa64MB/5redirect; kiểm SHA256/package/version/signer/minSDK,
+Android vẫn yêu cầu xác nhận cài đặt. Không gỡ app để đổi chữ ký.
 
-Trang quản trị → Cập nhật: nhập versionCode/tên bản/URL APK/SHA256/nội dung.
-Để version tối thiểu0 cho cập nhật tự nguyện. Chỉ nâng version tối thiểu sau khi
-đã thử APK **cùng signer**, đúng package, tải được và cài được trên thiết bị đích.
-Version tối thiểu không được vượt version APK đã cấu hình.
-Checksum Windows: `Get-FileHash .\THT-Split.apk -Algorithm SHA256`.
+CI debug runner thay signer giữa build, không cài đè được chuỗi bản test trước.
+Cấu hình keystore ổn định (ưu tiên key đã ký APK đang cài nếu còn giữ) qua Secrets:
+THT_KEYSTORE_B64/THT_STORE_PASSWORD/THT_KEY_ALIAS/THT_KEY_PASSWORD. Keystore và
+mật khẩu không ở git. Workflow phát hành buộc đủ signer secrets. Repo private:
+đặt APK trên HTTPS công khai, không đưa PAT vào app. Không dùng link artifact
+cần đăng nhập cho cập nhật.
+
+Quản trị nhập versionCode/tên bản/URL APK/SHA256/nội dung. Tối thiểu0 = tự nguyện.
+Chỉ tăng minimumVersionCode sau khi APK cùng signer đã tải và cài đè thử được.
+Checksum Windows: Get-FileHash .\THT-Split.apk -Algorithm SHA256.
 
 ## Ủng hộ
-Chủ dự án đã cung cấp thông tin MB Bank và ảnh VietQR. `DonationProfile.java` có
-profile công khai; `assets/donation-qr.jpg` giữ nguyên ảnh tải từ link được cung cấp.
-Ảnh đã được decode, đối chiếu STK/BIN và kiểm CRC EMV. Tên chủ tài khoản dùng đúng
-nội dung chủ dự án gửi, không suy ra tên từ QR. Màn ủng hộ không tải ảnh qua mạng,
-không cần Worker và không cho metadata server thay QR/STK. Muốn đổi profile sửa
-source/asset và phát hành APK. Chỉ thông tin ủng hộ này được chủ dự án cho phép
-nhúng; mọi credential đăng nhập/admin/signing vẫn không nằm trong git.
+DonationProfile và donation-qr.jpg công khai được chủ dự án cung cấp, đã nhúng
+offline: MB Bank, 67777777778, TRAN HUU TAI. Bytes QR/profile không đổi; Worker
+không thay metadata/QR. Sao chép STK giữ nguyên. Tên holder do chủ dự án cung cấp.
 
-## Hành vi khóa / ngoại tuyến
-- Khi online, kiểm tra tối đa mỗi5 phút; service tick ngay khi tạo và mỗi phút trên
-  executor mạng riêng, UI lúc resume/thủ công. Lệnh chia có cache quyền còn hạn
-  chạy ngay, không đợi request mạng. Thiếu/hết quyền vẫn phải refresh và bị chặn
-  nếu không xác nhận được. Không có push nền khi app bị dừng/force-stop.
-- Thiết bị mới online lần đầu tự đăng ký enabled, không có bước duyệt.
-- Đang mở: ngoại tuyến mặc định7 ngày kể từ lần xác nhận thành công; admin chỉnh
-  từ1 giờ đến30 ngày. Hết hạn phải online lại. Lỗi mạng không tự khóa một máy mới
-  được xác nhận; cũng không xóa lệnh khóa/cập nhật bắt buộc đã nhận.
-- Khóa hoặc bản quá cũ: chặn mở/khôi phục/đổi tỷ lệ/đổi bên/đổi app/show/status ở
-  SplitService, gồm UI, Voice và toolbar. Voice nhận `error/ACCESS_BLOCKED`.
-- Vẫn cho Stop/Home/Hide để thoát phiên. Khi service phát hiện khóa, dừng overlay
-  điều khiển; không force-stop app khác, không tắt màn xe hay xóa dữ liệu.
-- Cài lại cùng signer/user: dùng hash Android ID scoped làm mã thiết bị, không gửi
-  serial/VIN. Private credential tự sinh, không hiển thị như key cho khách nhập.
-  Nếu cài lại mất credential: API quản trị `/api/admin/reenroll` cho khôi phục
-  bằng id, giữ nguyên locked/enabled. Không tạo pending hoặc yêu cầu duyệt lại.
-  UI quản trị thiết bị chỉ có Khóa/Mở khóa.
-- Factory reset, đổi Android user/signer hoặc thiết bị bị can thiệp có thể đổi
-  identity. Đây là kiểm soát của app thường, không phải chống sửa APK/root tuyệt đối.
-  Mã nguồn công khai có thể bị sửa để bỏ client gate. Không hứa khóa tức thì khi
-  thiết bị offline hoặc khóa cả hệ điều hành xe.
+## Kiểm thử tiếp
+1. Cài mới offline hoặc Worker Hello World: dùng ngay, không có mã/đăng ký.
+2. Cập nhật cùng signer giữ preset/RSA/token; legacy lock/lease không được áp vào
+   cache chung mới. Không gỡ bản đang dùng khi chưa giữ cấu hình.
+3. GET /api/config nhiều lần không sinh hồ sơ. POST đăng ký cũ410. Admin chỉ có
+   cấu hình chung, sai/mất mật khẩu không sửa được.
+4. Khóa chung → kiểm tra mạng → service/UI/Voice chặn; Stop/Home/Hide thoát được.
+   Mất mạng giữ khóa đã nhận. Admin mở → Kiểm tra cập nhật → dùng lại.
+5. Cập nhật đúng signer trước, rồi mới thử mandatory. SHA/signer/package sai,
+   HTTP redirect/link private/hủy cài phải giữ bản hiện tại.
+6. Icon0.3.5/QR/chia/kéo/ratio/Off giữ nguyên; thử LDPlayer/xe thật.
 
-## Thử cần làm sau cấu hình
-1. App mới online tự đăng ký enabled → mở cặp bằng UI/Voice, không cần admin duyệt.
-2. Admin khóa → kiểm tra thủ công hoặc đợi ≤5 phút online → toolbar dừng, chia bị
-   chặn; Stop/Home vẫn thoát được. Mất mạng rồi mở lại vẫn giữ khóa.
-3. Admin mở → kiểm tra mạng → dùng lại; thử ngoại tuyến trong/hết lease.
-4. Bản mới versionCode lớn hơn, đúng SHA/signer; cập nhật tự nguyện trước, cài đè
-   giữ preset/token/RSA; sau đó thử bắt buộc với máy còn bản cũ.
-5. Sai SHA/signer/package, HTTP redirect, link private, hủy cài đặt: phải báo lỗi,
-   giữ bản hiện tại. Không tự gỡ APK cũ.
-6. QR/STK đúng, sao chép nguyên STK, QR hiện ngay khi airplane mode/chưa có Worker.
-   Migrate pending cũ → enabled; migrate/khôi phục credential không làm mất locked.
-
-Đã có URL Worker và gắn vào APK; chưa deploy mã quản trị vào tài khoản Cloudflare
-của chủ dự án, chưa có khóa ký ổn định. Unit/build không thay thế các bước thử trên.
+Chưa triển khai vào tài khoản Cloudflare hay thử xe thật. Build/unit/lint không
+thay thế thao tác thiết bị. Không còn phụ thuộc Worker để đăng ký lần đầu.

@@ -62,15 +62,28 @@ Trang chính đăng nhập mật khẩu quản trị, chọn Mở cho mọi ngư
 dụng và cấu hình cập nhật. API admin vẫn yêu cầu mật khẩu.
 
 ## Ký APK và cập nhật
+Từ0.3.9-test/code21, dùng keystore cố định alias tht-split do chủ dự án giữ.
+SHA256 chứng chỉ: e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2.
+Chủ dự án đã báo thêm 4 Secrets cho repository. Workflow buộc đủ Secrets và
+chứng chỉ khớp; không fallback sang khóa debug mới. SHA này là của chứng chỉ,
+không điền vào trường sha256 của bản cập nhật (trường đó là SHA file APK).
+
 APK tải qua HTTPS, tối đa64MB/5redirect; kiểm SHA256/package/version/signer/minSDK,
 Android vẫn yêu cầu xác nhận cài đặt. Không gỡ app để đổi chữ ký.
 
-CI debug runner thay signer giữa build, không cài đè được chuỗi bản test trước.
+Trước0.3.9, CI debug runner thay signer giữa build, không cài đè chuỗi bản test cũ.
 Cấu hình keystore ổn định (ưu tiên key đã ký APK đang cài nếu còn giữ) qua Secrets:
 THT_KEYSTORE_B64/THT_STORE_PASSWORD/THT_KEY_ALIAS/THT_KEY_PASSWORD. Keystore và
 mật khẩu không ở git. Workflow phát hành buộc đủ signer secrets. Repo private:
 đặt APK trên HTTPS công khai, không đưa PAT vào app. Không dùng link artifact
 cần đăng nhập cho cập nhật.
+
+Release tự chạy khi main sửa app/build.gradle; tag bằng v + versionName. Thủ
+công qua Actions → Phát hành APK cùng khóa ký vẫn được, tag phải đúng app.
+Bản hậu tố -test là prerelease, không xuất hiện ở API GitHub releases/latest.
+Worker hiện chưa tự đồng bộ GitHub Releases; nhập metadata thủ công qua admin.
+Khi chuyển từ debug cũ sang khóa cố định cần sao lưu cấu hình rồi người dùng
+gỡ/cài lại một lần. Không bật mandatory cho các bản debug có chữ ký khác.
 
 Quản trị nhập versionCode/tên bản/URL APK/SHA256/nội dung. Tối thiểu0 = tự nguyện.
 Chỉ tăng minimumVersionCode sau khi APK cùng signer đã tải và cài đè thử được.

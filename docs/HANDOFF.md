@@ -1,4 +1,21 @@
-# Bàn giao THT Split — 0.3.8-test, 06/10/2026
+# Bàn giao THT Split — 0.3.9-test, 06/10/2026
+
+## Mốc0.3.9 — bắt đầu khóa ký cố định
+Đã tạo keystore riêng ngoài git, alias tht-split/RSA3072/JKS. Chủ dự án xác nhận
+đã thêm 4 Secrets THT_KEYSTORE_B64/THT_STORE_PASSWORD/THT_KEY_ALIAS/THT_KEY_PASSWORD.
+SHA256 chứng chỉ công khai:
+e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2
+Không có keystore/Base64/mật khẩu trong repository. CI test và release buộc đủ
+Secrets và đúng chứng chỉ trên; thiếu/sai thì dừng, không quay lại runner debug key.
+VersionCode21/0.3.9-test. Runtime/ADB/Bridge/Off/Voice/UI/assets/Worker giữ0.3.8.
+Release tự chạy khi main thay app/build.gradle, lấy tag từ versionName; vẫn cho
+chạy thủ công nhưng tag phải khớp. Bản có hậu tố là prerelease. Build/unit/lint,
+QR ngân hàng/Zalo, Node8 và dry-run phải đạt, xác minh APK signer trước publish.
+Có artifact release + APK/SHA trên Releases để tải và cấu hình Worker thủ công.
+GitHub API tự lấy latest trong Worker chưa được triển khai; chưa deploy Worker.
+Đang chờ CI/release0.3.9. Chưa kiểm trên LDPlayer9/xe, chưa xác nhận hết lỗi ADB.
+Bản debug cũ khác signer không cài đè. Người dùng sao lưu cấu hình cần giữ trước
+khi tự chuyển một lần; app không tự gỡ bản cũ. Giữ khóa này cho mọi bản sau.
 
 ## Quy tắc đã lưu theo yêu cầu chủ dự án —06/10 13:48
 Đã đưa bài học startup Bridge vào AGENTS.md, REQUIREMENTS và NEXT_AGENT_PROMPT

@@ -18,6 +18,9 @@ Bridge đã sẵn sàng vẫn trả ngay. Xem HANDOFF/DEVICE_TEST trước tối
 chạy trên LDPlayer/xe. Không biến giả thuyết race nohup/PTY thành nguyên nhân đã chứng minh.
 Commit backup sau mỗi mốc hoàn chỉnh; cập nhật HANDOFF trong cùng commit.
 Không ghi token bridge/Voice, khóa ký hoặc thông tin đăng nhập tài khoản vào git.
+Từ0.3.9 dùng khóa ký cố định tht-split, chứng chỉ SHA256 công khai trong HANDOFF.
+Giữ cùng khóa cho mọi bản; CI thiếu/sai Secrets phải dừng, không fallback debug
+runner và không xoay chứng chỉ để sửa lỗi cập nhật. SHA chứng chỉ khác SHA APK.
 STK và QR ủng hộ công khai được nhúng trong APK khi chủ dự án đã yêu cầu rõ ràng.
 Không gọi bản chạy trên xe thành công nếu chỉ build hoặc chạy unit test.
 Không xóa dữ liệu/force-stop app bên thứ ba để chia màn hình.

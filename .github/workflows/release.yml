@@ -1,5 +1,8 @@
 name: Phát hành APK cùng khóa ký
 on:
+  push:
+    branches: [main]
+    paths: [app/build.gradle]
   workflow_dispatch:
     inputs:
       tag:
@@ -7,6 +10,9 @@ on:
         required: true
 permissions:
   contents: read
+concurrency:
+  group: tht-split-release-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -14,6 +20,25 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Xác định tag theo đúng phiên bản app
+        id: version
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re
+          source = pathlib.Path('app/build.gradle').read_text()
+          version = re.search(r"versionName '([^']+)'", source).group(1)
+          tag = 'v' + version
+          if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?', tag):
+              raise SystemExit('Tên phiên bản không hợp lệ')
+          requested = os.environ.get('REQUESTED_TAG', '')
+          if requested and requested != tag:
+              raise SystemExit('Tag phải khớp versionName: ' + tag)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('tag=' + tag + '\n')
+              output.write('prerelease=' + ('true' if '-' in version else 'false') + '\n')
+          PY
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -33,6 +58,7 @@ jobs:
         run: |
           python3 -m pip install 'Pillow>=10,<13' 'zxing-cpp==3.0.0'
           python3 server/verify-donation.py
+          python3 server/verify-contact.py
       - name: Kiểm tra gói Worker không triển khai
         working-directory: server
         run: npx --yes wrangler@4 deploy --dry-run --outdir "$RUNNER_TEMP/worker-check"
@@ -42,11 +68,14 @@ jobs:
           THT_STORE_PASSWORD: ${{ secrets.THT_STORE_PASSWORD }}
           THT_KEY_ALIAS: ${{ secrets.THT_KEY_ALIAS }}
           THT_KEY_PASSWORD: ${{ secrets.THT_KEY_PASSWORD }}
+          EXPECTED_CERT_SHA256: e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2
           THT_CONTROL_URL: ${{ vars.THT_CONTROL_URL || 'https://chiamanhinh.mavoice.workers.dev' }}
         run: |
           test -n "$KEYSTORE_B64" && test -n "$THT_STORE_PASSWORD" && test -n "$THT_KEY_ALIAS" && test -n "$THT_KEY_PASSWORD" && test -n "$THT_CONTROL_URL"
           printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/tht-signing.jks"
           chmod 600 "$RUNNER_TEMP/tht-signing.jks"
+          actual_cert=$(keytool -exportcert -keystore "$RUNNER_TEMP/tht-signing.jks" -alias "$THT_KEY_ALIAS" -storepass:env THT_STORE_PASSWORD | sha256sum | cut -d ' ' -f 1)
+          test "$actual_cert" = "$EXPECTED_CERT_SHA256" || { echo 'Sai chứng chỉ ký THT Split'; exit 1; }
           echo "THT_KEYSTORE_PATH=$RUNNER_TEMP/tht-signing.jks" >> "$GITHUB_ENV"
       - run: chmod +x gradlew && ./gradlew :app:testReleaseUnitTest :app:lintRelease :app:assembleRelease
         env:
@@ -54,12 +83,30 @@ jobs:
           THT_STORE_PASSWORD: ${{ secrets.THT_STORE_PASSWORD }}
           THT_KEY_ALIAS: ${{ secrets.THT_KEY_ALIAS }}
           THT_KEY_PASSWORD: ${{ secrets.THT_KEY_PASSWORD }}
+      - name: Xác minh chữ ký APK trước khi phát hành
+        env:
+          EXPECTED_CERT_SHA256: e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk > "$RUNNER_TEMP/apk-signature.txt"
+          grep -Fx "Signer #1 certificate SHA-256 digest: $EXPECTED_CERT_SHA256" "$RUNNER_TEMP/apk-signature.txt"
+      - name: Chuẩn bị APK và checksum
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk THT-Split.apk
+          sha256sum THT-Split.apk > THT-Split.apk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: THT-Split-release-apk
+          path: |
+            THT-Split.apk
+            THT-Split.apk.sha256
+          retention-days: 7
       - name: Đính kèm APK và checksum vào Releases
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          PRERELEASE: ${{ steps.version.outputs.prerelease }}
         run: |
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]]
-          cp app/build/outputs/apk/release/app-release.apk THT-Split.apk
-          sha256sum THT-Split.apk > THT-Split.apk.sha256
-          gh release create "$RELEASE_TAG" THT-Split.apk THT-Split.apk.sha256 --target "$GITHUB_SHA" --title "THT Split $RELEASE_TAG" --generate-notes
+          prerelease_flags=()
+          if [ "$PRERELEASE" = true ]; then prerelease_flags+=(--prerelease --latest=false); fi
+          gh release create "$RELEASE_TAG" THT-Split.apk THT-Split.apk.sha256 --target "$GITHUB_SHA" --title "THT Split $RELEASE_TAG" --generate-notes "${prerelease_flags[@]}"

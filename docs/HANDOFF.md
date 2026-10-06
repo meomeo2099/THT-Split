@@ -14,7 +14,18 @@ cần nhận prerelease và Kiểm tra GitHub ngay để bỏ cache5 phút. Gi�
 hoặc thấp hơn khi thử cập nhật tự nguyện; không buộc22 trước khi test thành công.
 Bước thử: cài0.3.9 đúng signer → lưu preset/cài đặt → Worker nhận0.3.10/code22 →
 trong app Kiểm tra/Tải và cài → xác nhận0.3.10, preset/cài đặt còn và chia/ADB.
-Hiện mới chuẩn bị version/docs; sẽ bổ sung CI, release và hash sau build.
+Code1bfbc994a3242cf6f4fa80c549adce3b48e24de3. Release CI37457248132/
+job112247751402 completed/success: Node24 tests, QR, dry-run, unitRelease,
+lintRelease, signer, metadata và publish đạt. Debug37457248053/job112247750859
+completed/success: unitDebug/lintDebug/build/signer và kiểm tra kèm theo đạt.
+Release404636315/v0.3.10-test prerelease=true/draft=false, đủ APK615337000/
+checksum615337001/manifest615337005. Artifact11410125645 đã tải; APK thực
+com.tht.split/code22/0.3.10-test/min26/target32, kích thước252701 bytes.
+SHA371ac9ffb73ae2fb4a5fee48fec24414c367cec87ca3e2ecc3d6b518d679d32d
+khớp checksum/manifest/GitHub digest. apksigner verify hai APK0.3.9 và0.3.10
+cùng cert e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2.
+Toàn bộ assets byte-identical0.3.9; chưa thử cập nhật cài đè Android/LDPlayer/xe,
+chưa xác minh Worker thật đã nhận bản mới. Bản sẵn sàng cho chủ dự án thử.
 
 
 ## Worker mật khẩu ngắn hơn — chốt14:43

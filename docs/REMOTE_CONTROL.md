@@ -1,5 +1,25 @@
 # THT Split dùng ngay, cập nhật và khóa chung — 0.3.6
 
+## Cập nhật GitHub tự động06/10 — thay phần nhập tay bên dưới khi chọn GitHub
+Server đã hỗ trợ GitHub API repo private meomeo2099/THT-Split. Đặt GITHUB_TOKEN
+là Secret riêng Contents: Read, GITHUB_REPO và RELEASE_CERT_SHA256 là Variables;
+wrangler.jsonc có repo/pin mặc định. GITHUB_INCLUDE_PRERELEASE=true cho0.3.9-test.
+ADMIN_PASSWORD alias ADMIN_TOKEN được hỗ trợ, chỉ dùng một mật khẩu≥32 ký tự.
+Các biến license/VIN ở ảnh THTVoice không cần cho Split.
+
+Workflow upload THT-Split.apk, checksum và update.json (metadata từ APK thực),
+draft trước rồi publish. Worker chọn release đã publish, kiểm manifest/cert/
+package/tag/size/SHA và dùng URL Worker /api/apk/<id> cho app; không đưa GitHub
+token/link cần đăng nhập/signed CDN URL vào config hay APK. Cache5m/bản tốt giữ
+khi lỗi; admin Kiểm tra GitHub ngay bỏ cache. Trạng thái khóa/minimum độc lập,
+không bị một refresh GitHub ghi đè. 5 APK duyệt gần nhất được proxy; khác pin/
+repo/channel hoặc ID tùy ý bị từ chối. App vẫn kiểm chứng chỉ binary trước cài.
+
+Nguồn GitHub tự điền phiên bản/URL/SHA, source Manual còn dùng được. Không tăng
+mandatory cho debug cũ khác signer. Xem server/README.md để deploy/bảng cấu hình
+và phân biệt SHA chứng chỉ với SHA APK. Token ở Worker không sửa lỗi GitHub
+THT_KEY_PASSWORD;0.3.9 vẫn phải build thành công mới có manifest để lấy.
+
 ## Quyết định mới06/10/2026
 Bỏ đăng ký thiết bị để ai cài cũng sử dụng ngay. Không nhập key, không duyệt,
 không sinh/gửi mã Android ID, model hay credential đăng ký. Bản mới chạy được
@@ -81,7 +101,8 @@ cần đăng nhập cho cập nhật.
 Release tự chạy khi main sửa app/build.gradle; tag bằng v + versionName. Thủ
 công qua Actions → Phát hành APK cùng khóa ký vẫn được, tag phải đúng app.
 Bản hậu tố -test là prerelease, không xuất hiện ở API GitHub releases/latest.
-Worker hiện chưa tự đồng bộ GitHub Releases; nhập metadata thủ công qua admin.
+Mốc cũ trước GitHub integration chưa tự đồng bộ; hiện chọn GitHub để tự lấy
+hoặc Manual để nhập tay. Repo private cần GITHUB_TOKEN ở Worker, không trong app.
 Khi chuyển từ debug cũ sang khóa cố định cần sao lưu cấu hình rồi người dùng
 gỡ/cài lại một lần. Không bật mandatory cho các bản debug có chữ ký khác.
 

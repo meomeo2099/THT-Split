@@ -1,5 +1,16 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Worker GitHub API06/10
+22 Node tests local:14 mới +8 cũ. Bao gồm token API không sang CDN/client,
+manifest/tag/package/pin/checksum/digest/size, draft/prerelease, unknown asset,
+stream thiếu/thừa bytes, cache qua instance mới/single-flight và giữ policy
+khi refresh trùng admin lock hoặc GitHub403/mất credential. Manual source và
+ADMIN_PASSWORD alias vẫn có auth. YAML/Bash parse và bundle node --check đạt.
+Generator đã kiểm với APK0.3.8 thật ký khóa cố định (bản sao ngoài git): lấy
+đúng package/version/SHA/size/cert, từ chối pin sai. Không phát hành bản sao đó.
+Chờ CI Worker dry-run/ZIP; chưa deploy CF/chưa có token GitHub server thật để
+kiểm end-to-end private Releases; chưa thử cập nhật trên LDPlayer/xe.
+
 ## 0.3.9-test/code21 — khóa ký cố định, đang vướng Secret
 Code05e7ffe8ec6cc43779fcf6bd96f23c85fcac704a. Thay version/workflow/docs, không
 đổi app/src hoặc server so2264b4b. YAML parse, bash -n toàn bộ run steps, tag

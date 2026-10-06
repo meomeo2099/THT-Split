@@ -1,5 +1,30 @@
 # Bàn giao THT Split — 0.3.9-test, 06/10/2026
 
+## Worker GitHub API — chốt14:17
+Đã bổ sung server/github.mjs, cache Durable Object riêng và proxy /api/apk/<id>.
+Vars GITHUB_REPO/GITHUB_INCLUDE_PRERELEASE/RELEASE_CERT_SHA256; Secret GITHUB_TOKEN
+Contents: Read đúng repo private. ADMIN_TOKEN vẫn giữ, ADMIN_PASSWORD hỗ trợ alias.
+Pin cert cố định tht-split; nhận dạng hex hoa/dấu : hoặc thường. Không có khóa/PAT
+trong git hoặc APK. update.json được workflow tạo từ APK/signature thực cùng
+checksum và upload 3 assets vào draft trước publish; Worker đọc Releases list
+để chọn cả prerelease khi bật, bỏ draft và bản legacy thiếu manifest.
+Metadata/cache không ghi đè global lock/minimum; refresh xong đọc lại policy.
+Cache5 phút/persistent + single flight; lỗi GitHub giữ bản tốt. Endpoint APK chỉ
+cho 5 assets được duyệt trong đúng repo/cert/channel; API auth không chuyển sang
+CDN, không trả redirect/signed URL/header token, stream≤64MB/đúng kích thước.
+Worker kiểm cert manifest từ CI, app kiểm cert APK thật; không gọi pin metadata
+là xác minh binary chứng chỉ phía Worker. Manual source còn dùng được; admin
+có chọn GitHub/nhận -test/kiểm ngay/mandatory. Không đăng ký hoặc license/VIN.
+Worker tương thích app≥0.3.6; không đổi app/src, Bridge sleep1/12poll/UI/Off/Voice.
+CI Worker riêng để Node tests/dry-run/ZIP không phụ thuộc lỗi ký Android.
+22 Node tests local đạt (14 GitHub/security/cache/race/stream mới +8 cũ).
+release-metadata.py đã thử bằng bản sao APK0.3.8 ký khóa tht-split thật: package/
+code20/name/SHA/size/cert đúng, pin sai bị từ chối. APK ký thử xóa sau kiểm tra,
+không phải một bản phát hành0.3.9 hoặc thử cập nhật Android trên thiết bị.
+Đang chờ CI Worker; chưa deploy Cloudflare vì chưa có credential ở phiên làm việc.
+APK0.3.9 vẫn chờ chủ dự án sửa THT_KEY_PASSWORD. Khi đã sửa chạy release ở HEAD
+hiện tại để có update.json; rerun snapshot05e7ffe cũ không tạo manifest mới.
+
 ## Mốc0.3.9 — bắt đầu khóa ký cố định
 Đã tạo keystore riêng ngoài git, alias tht-split/RSA3072/JKS. Chủ dự án xác nhận
 đã thêm 4 Secrets THT_KEYSTORE_B64/THT_STORE_PASSWORD/THT_KEY_ALIAS/THT_KEY_PASSWORD.
@@ -12,7 +37,7 @@ Release tự chạy khi main thay app/build.gradle, lấy tag từ versionName; 
 chạy thủ công nhưng tag phải khớp. Bản có hậu tố là prerelease. Build/unit/lint,
 QR ngân hàng/Zalo, Node8 và dry-run phải đạt, xác minh APK signer trước publish.
 Có artifact release + APK/SHA trên Releases để tải và cấu hình Worker thủ công.
-GitHub API tự lấy latest trong Worker chưa được triển khai; chưa deploy Worker.
+Ở mốc05e7ffe, Worker chưa tự lấy GitHub; đã được thay bởi mốc Worker GitHub phía trên.
 Code05e7ffe8ec6cc43779fcf6bd96f23c85fcac704a. Release run37428056253 /
 job112152153719: Node8, QR ngân hàng/Zalo, dry-run, pin chứng chỉ, unitRelease và
 lintRelease đạt; packageRelease thất bại "Cannot recover key". Debug run37428056259 /
@@ -21,8 +46,8 @@ job112152153353 cũng thất bại packageDebug. Keystore/store password/alias �
 Gói tạo ban đầu đã giải mã/ký thử/verify bằng apksigner thành công ngoài git.
 Cần chủ dự án cập nhật THT_KEY_PASSWORD bằng nội dung đúng tệp cùng tên trong
 gói đã nhận, không thay keystore hay dùng store password cho key password.
-Chưa tạo APK0.3.9 hoặc Release. Khi chủ dự án sửa xong, dùng rerun failed jobs
-cho cả hai run này; không cần bump code/tag hoặc sửa runtime để sửa Secret.
+Chưa tạo APK0.3.9 hoặc Release. Khi sửa Secret dùng workflow ở HEAD mới để có
+metadata GitHub. Không cần bump code/tag hoặc sửa runtime để sửa Secret.
 Chưa kiểm trên LDPlayer9/xe, chưa xác nhận hết lỗi ADB.
 Bản debug cũ khác signer không cài đè. Người dùng sao lưu cấu hình cần giữ trước
 khi tự chuyển một lần; app không tự gỡ bản cũ. Giữ khóa này cho mọi bản sau.

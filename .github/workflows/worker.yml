@@ -1,0 +1,33 @@
+name: Kiểm tra và đóng gói Worker
+on:
+  push:
+    branches: [main]
+    paths: [server/**, .github/workflows/worker.yml]
+  pull_request:
+    paths: [server/**, .github/workflows/worker.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test server/*.test.mjs
+      - name: Kiểm tra triển khai Worker
+        working-directory: server
+        run: npx --yes wrangler@4 deploy --dry-run --outdir "$RUNNER_TEMP/worker-check"
+      - name: Đóng gói mã Worker và hướng dẫn
+        run: |
+          node server/pack.mjs
+          node --check server/build/distribution/worker.mjs
+          cd server/build/distribution
+          zip -q "$GITHUB_WORKSPACE/THT-Split-Worker.zip" worker.mjs wrangler.jsonc README.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: THT-Split-Worker
+          path: THT-Split-Worker.zip
+          retention-days: 7

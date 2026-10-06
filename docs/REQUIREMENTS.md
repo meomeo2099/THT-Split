@@ -1,5 +1,12 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt06/10 14:17 — Worker tự cập nhật qua GitHub
+- Làm theo cơ chế biến GITHUB_REPO/GITHUB_TOKEN/RELEASE_CERT_SHA256 như ảnh Voice.
+- Dùng repo THT-Split riêng; token chỉ ở Worker, đọc repo private và proxy APK.
+- Tự lấy metadata/SHA file APK; giữ khóa/mở chung, mandatory và dùng ngay.
+- SHA cert Split cố định khác cert Voice, không xoay key cho giống ảnh.
+- Không thêm đăng ký thiết bị/VIN/license; giữ toàn bộ chia/UI/ADB0.3.8.
+
 ## Chốt lưu quy tắc06/10 — không lặp lại hồi quy Bridge
 - Giữ khoảng 1 giây ngay trong phiên shell ADB trước bootstrap marker như0.3.4/0.3.8.
 - Không coi chờ/poll phía app sau khi shell đóng là tương đương; không bỏ để tối ưu

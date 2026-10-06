@@ -2,6 +2,11 @@
   "name": "chiamanhinh",
   "main": "worker.mjs",
   "compatibility_date": "2026-10-05",
+  "vars": {
+    "GITHUB_REPO": "meomeo2099/THT-Split",
+    "GITHUB_INCLUDE_PRERELEASE": "true",
+    "RELEASE_CERT_SHA256": "e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2"
+  },
   "durable_objects": { "bindings": [{ "name": "CONTROL", "class_name": "Control" }] },
   "exports": { "Control": { "type": "durable-object", "storage": "sqlite" } }
 }

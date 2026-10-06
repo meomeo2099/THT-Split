@@ -1,5 +1,15 @@
 # Nguồn tham khảo và giới hạn
 
+## GitHub private Releases và Worker06/10
+API Releases/asset hỗ trợ token Contents: Read; download asset trả200 hoặc302,
+không chuyển Authorization sang CDN. releases/latest bỏ prerelease nên dùng
+danh sách releases và lọc channel rõ ràng. Worker Secret khác Variable và chỉ
+được đọc ở runtime env, không nhúng trong client.
+https://docs.github.com/en/rest/releases/releases
+https://docs.github.com/en/rest/releases/assets
+https://developers.cloudflare.com/workers/configuration/secrets/
+https://developers.cloudflare.com/workers/runtime-apis/fetch/
+
 ## Vòng đời shell Android9 và rollback0.3.8
 AOSP classic shell không shell-protocol dùng PTY dù yêu cầu raw; đóng master
 PTY gửi SIGHUP. nohup cần được thực thi trước khi shell đóng; vì vậy sleep giữ

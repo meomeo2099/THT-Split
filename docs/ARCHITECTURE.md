@@ -1,5 +1,16 @@
 # Kiến trúc THT Split 0.2
 
+## Worker GitHub API06/10
+GitHub PAT chỉ ở Worker. CONTROL lưu global config/update-settings và cache
+GitHub độc lập; metadata refresh không ghi global policy, đọc lại sau network
+để không trả enabled cũ khi admin đã khóa. Cache5m/single flight/persistent,
+lỗi giữ snapshot tốt; repo/cert/channel đổi vô hiệu approval cũ. Chỉ 5 APK duyệt
+được proxy; ID tùy ý không gọi API. GET APK stream cap64MB/kích thước, không
+forward auth qua redirectCDN và không trả signed URL. CI tạo manifest từ APK
+đã kiểm signer; Worker pin manifest, app verify SHA và signer binary thật.
+API config shape vẫn tương thích0.3.6+, source manual giữ được. Admin mật khẩu
+có ADMIN_PASSWORD alias nhưng không cần license/VIN/key nhập trong app.
+
 ## Startup0.3.8 — ưu tiên hơn tối ưu0.3.5 bên dưới
 Khôi phục grace1s trong remote shell trước bootstrap marker; ADB shell được giữ
 mở trong khoảng này. Sau shellCLSE/ADBclose:12 poll250ms. PING đầu vẫn nhanh

@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test server/worker.test.mjs
+      - run: node --test server/*.test.mjs
       - name: Đóng gói Worker cho chủ dự án
         run: |
           node server/pack.mjs

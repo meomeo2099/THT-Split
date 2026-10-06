@@ -2,7 +2,7 @@ name: Phát hành APK cùng khóa ký
 on:
   push:
     branches: [main]
-    paths: [app/build.gradle]
+    paths: [app/build.gradle, .github/workflows/release.yml, server/release-metadata.py]
   workflow_dispatch:
     inputs:
       tag:
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test server/worker.test.mjs
+      - run: node --test server/*.test.mjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -89,16 +89,20 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk > "$RUNNER_TEMP/apk-signature.txt"
           grep -Fx "Signer #1 certificate SHA-256 digest: $EXPECTED_CERT_SHA256" "$RUNNER_TEMP/apk-signature.txt"
-      - name: Chuẩn bị APK và checksum
+      - name: Chuẩn bị APK, checksum và metadata cập nhật tự động
+        env:
+          EXPECTED_CERT_SHA256: e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: |
           cp app/build/outputs/apk/release/app-release.apk THT-Split.apk
-          sha256sum THT-Split.apk > THT-Split.apk.sha256
+          python3 server/release-metadata.py THT-Split.apk --tag "$RELEASE_TAG"
       - uses: actions/upload-artifact@v4
         with:
           name: THT-Split-release-apk
           path: |
             THT-Split.apk
             THT-Split.apk.sha256
+            update.json
           retention-days: 7
       - name: Đính kèm APK và checksum vào Releases
         env:
@@ -109,4 +113,5 @@ jobs:
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]]
           prerelease_flags=()
           if [ "$PRERELEASE" = true ]; then prerelease_flags+=(--prerelease --latest=false); fi
-          gh release create "$RELEASE_TAG" THT-Split.apk THT-Split.apk.sha256 --target "$GITHUB_SHA" --title "THT Split $RELEASE_TAG" --generate-notes "${prerelease_flags[@]}"
+          gh release create "$RELEASE_TAG" THT-Split.apk THT-Split.apk.sha256 update.json --draft --target "$GITHUB_SHA" --title "THT Split $RELEASE_TAG" --generate-notes "${prerelease_flags[@]}"
+          gh release edit "$RELEASE_TAG" --draft=false

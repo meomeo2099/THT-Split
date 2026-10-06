@@ -13,9 +13,22 @@ chạy thủ công nhưng tag phải khớp. Bản có hậu tố là prerelease
 QR ngân hàng/Zalo, Node8 và dry-run phải đạt, xác minh APK signer trước publish.
 Có artifact release + APK/SHA trên Releases để tải và cấu hình Worker thủ công.
 GitHub API tự lấy latest trong Worker chưa được triển khai; chưa deploy Worker.
-Đang chờ CI/release0.3.9. Chưa kiểm trên LDPlayer9/xe, chưa xác nhận hết lỗi ADB.
+Code05e7ffe8ec6cc43779fcf6bd96f23c85fcac704a. Release run37428056253 /
+job112152153719: Node8, QR ngân hàng/Zalo, dry-run, pin chứng chỉ, unitRelease và
+lintRelease đạt; packageRelease thất bại "Cannot recover key". Debug run37428056259 /
+job112152153353 cũng thất bại packageDebug. Keystore/store password/alias đã mở
+được và export đúng cert; key password trên GitHub không mở được PrivateKeyEntry.
+Gói tạo ban đầu đã giải mã/ký thử/verify bằng apksigner thành công ngoài git.
+Cần chủ dự án cập nhật THT_KEY_PASSWORD bằng nội dung đúng tệp cùng tên trong
+gói đã nhận, không thay keystore hay dùng store password cho key password.
+Chưa tạo APK0.3.9 hoặc Release. Khi chủ dự án sửa xong, dùng rerun failed jobs
+cho cả hai run này; không cần bump code/tag hoặc sửa runtime để sửa Secret.
+Chưa kiểm trên LDPlayer9/xe, chưa xác nhận hết lỗi ADB.
 Bản debug cũ khác signer không cài đè. Người dùng sao lưu cấu hình cần giữ trước
 khi tự chuyển một lần; app không tự gỡ bản cũ. Giữ khóa này cho mọi bản sau.
+Repo hiện private (đã kiểm metadata06/10); browser_download_url của Releases
+không dùng trực tiếp làm apkUrl cho khách. Worker GitHub API/proxy cần triển khai
+riêng với credential chỉ ở Worker. Không nhúng PAT trong app hoặc đổi repo public.
 
 ## Quy tắc đã lưu theo yêu cầu chủ dự án —06/10 13:48
 Đã đưa bài học startup Bridge vào AGENTS.md, REQUIREMENTS và NEXT_AGENT_PROMPT

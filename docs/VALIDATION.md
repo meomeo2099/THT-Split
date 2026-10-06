@@ -1,5 +1,19 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## 0.3.9-test/code21 — khóa ký cố định, đang vướng Secret
+Code05e7ffe8ec6cc43779fcf6bd96f23c85fcac704a. Thay version/workflow/docs, không
+đổi app/src hoặc server so2264b4b. YAML parse, bash -n toàn bộ run steps, tag
+tự lấy v0.3.9-test và từ chối tag thủ công sai; Node8 tests local đạt.
+Run release37428056253/job112152153719: Node8, QR ngân hàng/contact, Wrangler
+dry-run, mở keystore/export pin cert, unitRelease/lintRelease đạt. PackageRelease
+thất bại Cannot recover key. Debug37428056259/job112152153353 packageDebug cùng lỗi.
+Đây là lỗi đọc khóa riêng tại signing, không phải lỗi chia/ADB. Mật khẩu key
+khác mật khẩu store trong gói gốc; cần cập nhật đúng THT_KEY_PASSWORD rồi rerun
+failed jobs. Không có APK/release0.3.9, không có SHA file APK mới để công bố.
+Cert dự kiến cố định e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2.
+Gói keystore ngoài git đã ký/verify APK thử thành công; không lưu password/key
+vào tài liệu hay log. Chưa thử LDPlayer/xe; giữ giới hạn xác minh0.3.8.
+
 ## 0.3.8-test — khôi phục startup0.3.4 ngày06/10
 Code9c2f57f40b5d1a373036fa607b460e2c4acee9a1; versionCode20.
 CI37425327271/job112143569608 completed/success:

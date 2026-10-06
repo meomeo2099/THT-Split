@@ -28,8 +28,13 @@ màn đổi hoặc trạng thái khác vẫn render đầy đủ. Bỏ resolve c
 SplitEngine và render UI hai lần lúc mở MainActivity. Không sửa luồng task,
 mode/bounds/verified/Off policies; chưa đo độ mượt hoặc thử LDPlayer/xe.
 
-Node9 tests local đạt, thêm3 Java tests quyền cache cần CI. Chờ CI build/unit/lint,
-QR/Wrangler dry-run/APK checksum; ghi kết quả thật vào VALIDATION sau build.
+Node9 tests local/CI đạt, thêm3 Java tests quyền cache cùng bộ unit/lint/build
+Android đạt. CI: https://github.com/meomeo2099/THT-Split/actions/runs/37420223825
+Code4f1b98dac048e9a5e6bbbed5f292a639935ba699, code17. QR/Worker dry-run đạt;
+đã kiểm APK signer/package/code17/Worker origin trong toàn bộ dex/icon resources
+và QR bytes. Signer test khác0.3.4, không cài đè bản đó. Xem VALIDATION.
+Bootstrap vẫn có khoảng4s chờ PING như trước, trả ngay nếu bridge sẵn sàng;
+không có sleep1s cố định. Chưa có benchmark/LDPlayer/xe hay deploy Cloudflare.
 
 ## Mốc sửa nền hộp thoại và chữ cài đặt
 Ảnh phản hồi cuối05/10: hộp Bật freeform có chữ lẫn trang phía sau, thiếu nền

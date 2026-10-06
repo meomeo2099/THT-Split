@@ -1,5 +1,33 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## 0.3.5-test — Worker thật / icon / giảm chờ06/10
+Code4f1b98dac048e9a5e6bbbed5f292a639935ba699; versionCode17.
+CI37420223825/job112127693172 completed/success:
+https://github.com/meomeo2099/THT-Split/actions/runs/37420223825
+Android testDebugUnitTest/lintDebug/assembleDebug đạt; Node9 tests đạt (local/CI),
+QR/profile/CRC và Wrangler deploy --dry-run đạt, không deploy tài khoản thật.
+Tests cache: cache hợp lệ không gọi mạng; unknown/hết lease chỉ chạy sau refresh;
+lỗi mạng không bỏ khóa/min version/unknown/hết hạn; Stop/Home/Hide vẫn thoát.
+Worker health không lộ secret, thiếu admin/storage503; module đóng gói giữ lock.
+
+APK SHA256: 1f76a4c28fc68a491df246dd2ce9153e9566e6cb0ce7689d2e383e0587510598
+Cert SHA256: 024e0a7c6d349cf251d11f92cb9fe566c6fe829bf0f948ef0638d50ccb794249
+apksigner verify đạt; aapt package com.tht.split/code17/0.3.5-test/min26/target32.
+Quét toàn bộ6 dex tìm đúng origin chiamanhinh.mavoice.workers.dev; resource
+adaptive trỏ launcher_background/foreground mới, bytes QR giữ nguyên repo.
+Đã xem vector preview mặt vuông/tròn theo mẫu THT; chưa xem launcher Android.
+Worker ZIP SHA256: 2fcd101f4629b5bb31246453de1c121daf4c824dcff7c1bc0b6e67c749d22859
+Gói3 tệp worker.mjs/wrangler.jsonc/README, không có admin/signing/CF credentials.
+
+Static scope: ShellServer v6/ShellClient/LocalAdb/PairController/DirectWindows/
+TransportPolicy/Store/VoiceReceiver/DonationProfile/QR/Ui giữ nguyên0.3.4.
+Bỏ1s chờ cố định, giữ≈4s PING budget; executor network riêng, ratio giữ overlay
+window, bỏ UI render/component lookup dư. Chưa đo benchmark hoặc thử LDPlayer/xe;
+unit/layout check không chứng minh surface app đã vẽ xong hay mượt hơn thực tế.
+Worker live hiện GET / và POST /api/device {} trả200 Hello World text/plain;
+chưa deploy mã quản trị. Bản mới cần Worker đúng để đăng ký lần đầu. CI signer
+khác0.3.4 nên không cài đè bản đó; chưa có chuỗi cập nhật cùng signer ổn định.
+
 ## Mốc0.3.4 — nền hộp thoại và chữ cài đặt,06/10/2026
 Code27bbd74229c75ee42393c519a493c1fcf1fab77d; CI hoàn tất success:
 https://github.com/meomeo2099/THT-Split/actions/runs/37345958636.

@@ -7,7 +7,13 @@ Không đổi CONTROL binding/class/namespace/wrangler vars hoặc schema/key/de
 không migration/reset/delete data; thay code trong Worker chiamanhinh hiện tại.
 State/minimum/source/cache/records cũ/Secrets được giữ. Không đổi APK/code21,
 keystore/ADB/Bridge/Voice/UI Android. README có cách nâng cùng Worker và giữ binding.
-Đang kiểm local/CI Worker; chưa deploy vào tài khoản CF của chủ dự án.
+Code0bf463983c357e6145208faa77b81e5ba4a66338.24 Node tests local và Worker CI
+37431737965/job112163937103 completed/success, dry-run/bundle đạt.
+Artifact11397351102 khớp3 tệp bundle nguồn; CONTROL/config byte-identical bản
+trước. Đã kiểm cận7/8/32/256/257, mật khẩu sai bị401, alias8 ký tự và snapshot
+config khóa/min/source/cache/legacy records không bị ghi/đổi khi đăng nhập.
+Chưa deploy vào tài khoản CF của chủ dự án; không khẳng định dữ liệu tài khoản
+thật đã kiểm. Hướng dẫn nâng đúng Worker/binding/namespace trong ZIP.
 
 ## Worker GitHub API — chốt14:17
 Đã bổ sung server/github.mjs, cache Durable Object riêng và proxy /api/apk/<id>.

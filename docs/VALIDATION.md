@@ -1,5 +1,16 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Worker admin8 ngày06/10
+Code0bf463983c357e6145208faa77b81e5ba4a66338.24 Node tests local/CI đạt;
+CI37431737965/job112163937103 completed/success, Wrangler dry-run/bundle/ZIP.
+2 tests mới: gate8..256/health/auth/mật khẩu cũ và sai; đăng nhập alias8 ký tự
+giữ configlocked/min21/source/cache/legacy records, không phát sinh storage write.
+Artifact11397351102 có đúng worker.mjs/wrangler.jsonc/README.md khớp bundlelocal.
+ConfigCONTROL/class/namespace byte-identical trước sửa, không migration/reset.
+Chỉ Worker auth/UI hint/docs đổi, không app/src/GradleAPK/keystore/task/Bridge.
+Chưa deploy CF hay kiểm storage tài khoản thật; cần giữ Worker/binding/Secrets
+hiện tại khi thay mã như README. APK dùng tiếp0.3.9-test đã phát hành.
+
 ## Worker GitHub API06/10
 22 Node tests local:14 mới +8 cũ. Bao gồm token API không sang CDN/client,
 manifest/tag/package/pin/checksum/digest/size, draft/prerelease, unknown asset,

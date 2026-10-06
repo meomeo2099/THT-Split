@@ -109,3 +109,11 @@ Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đ�
 - Sửa hộp xác nhận không có nền rõ, chữ lẫn trang phía sau; rà và sửa tất cả
   phần chọn/nhập/xác nhận/thông báo có cùng vấn đề trong cài đặt.
 - Giữ validation, xác nhận trước thao tác và toàn bộ chức năng kết nối/chia.
+
+## Chốt tối ưu06/10/2026 — sau xác nhận cập nhật OK
+- Thực hiện cả5 phần: picker/icon nền, tiến trình tải APK, sao lưu/khôi phục
+  cấu hình, tái dùng overlay và thời gian thao tác cục bộ.
+- Giữ khóa ký cố định, bootstrap ADB ổn định, backend/Voice/Off và giao diện chia.
+- Sao lưu chỉ cài đặt/cặp, không credential/policy/session; khôi phục có xác
+  nhận và chỉ khi đã tắt chia. Không tự gỡ/cài app hoặc bỏ kiểm signer.
+- Không gọi tối ưu là đã mượt trên xe khi mới có build/unit test.

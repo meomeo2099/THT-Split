@@ -1,5 +1,23 @@
 # Cài và kiểm thử 0.2.9-test trên EX2
 
+## Kiểm0.3.11 — không thay phép thử Bridge sau reboot
+- Cập nhật từ0.3.10 cùng signer: còn cặp/cài đặt/token, chia và kết nối bình thường.
+- Picker mở/tìm/cuộn/đóng nhanh nhiều lần; cài/gỡ app rồi mở lại thấy danh sách
+  mới, không hiện icon của hàng khác hoặc cập nhật dialog đã đóng.
+- Tải APK có % khi biết tổng; không biết tổng thì hiện dung lượng đã tải. Ẩn/
+  Xem tiến trình vẫn cùng lượt tải. Mạng lỗi/hash/signer sai phải chặn cài.
+- Sao lưu JSON rồi đổi cặp/ratio và khôi phục: xem trước, Hủy không đổi gì;
+  xác nhận thay cài đặt/cặp đúng. Đang chia/đang thao tác không được khôi phục.
+  Token Voice/Bridge, RSA, remote policy, rollback không nằm trong file và không
+  bị thay. App thiếu không tự cài. File sai/secret/UTF-8 lỗi/>1MB/lồng sâu bị chặn.
+- Lặp ratio/ẩn-hiện/full-restore/swap, kéo grip sau đổi tỷ lệ và ẩn-hiện: toolbar
+  không nhấp nháy bất thường, bounds không cũ. Đổi hướng/size/side/opacity/vùng
+  trên-dưới cập nhật đúng. X dọn hết overlay, Off vẫn khóa nút không hỗ trợ.
+- Xem thời gian trong Kết nối/Xuất log: tối đa20 mẫu, không token/command. So
+  0.3.10 và0.3.11 cùng máy/cặp/cấu hình, kể cả reboot; ghi độ trễ thực tế riêng.
+  Thời gian xử lý không phải FPS. Chưa thực hiện các bước trên trên xe.
+
+
 ## Kiểm0.3.8 — so với0.3.4 trên LDPlayer9
 - Chủ dự án báo0.3.4 hoạt động,0.3.7 marker thành công nhưng Bridge39871 refused.
 - Reboot LDPlayer9 để Bridge cũ không còn, giữ ADB nội bộ5555 đã hoạt động.

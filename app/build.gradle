@@ -6,7 +6,7 @@ android {
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
-        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 22; versionName '0.3.10-test'
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 23; versionName '0.3.11-test'
         def controlUrl = providers.environmentVariable('THT_CONTROL_URL').getOrElse('').trim()
         if (!controlUrl) controlUrl = 'https://chiamanhinh.mavoice.workers.dev'
         if (controlUrl && !(controlUrl ==~ /https:\/\/[a-zA-Z0-9.-]+/)) throw new GradleException('THT_CONTROL_URL phải là HTTPS origin')
@@ -28,7 +28,7 @@ android {
         release { minifyEnabled false; if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
     }
 }
-dependencies { testImplementation 'junit:junit:4.13.2' }
+dependencies { testImplementation 'junit:junit:4.13.2'; testImplementation 'org.json:json:20240303' }
 
 // Compile-only API signatures; the real Unsafe is supplied by Android's boot classloader.
 tasks.register('compileHiddenApiStubs', JavaCompile) {

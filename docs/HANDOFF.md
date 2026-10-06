@@ -1,4 +1,25 @@
-# Bàn giao THT Split — 0.3.10-test, 06/10/2026
+# Bàn giao THT Split — 0.3.11-test, 06/10/2026
+
+## Tối ưu và sao lưu — bản 0.3.11-test/code23
+Chủ dự án xác nhận cập nhật đã OK, yêu cầu làm cả 5 phần tối ưu đã đề xuất.
+Picker đọc danh sách/icon ở worker, tái dùng hàng và cache icon có giới hạn;
+mỗi lần mở vẫn đọc danh sách mới. Tải APK có tiến trình/%/dung lượng/giai đoạn,
+cho ẩn và mở lại; giữ nguyên kiểm SHA, package, phiên bản và cùng signer.
+Cài đặt > Sao lưu xuất/nhập JSON schema1, tối đa1MB/100 cặp, có xem trước và
+xác nhận. Chỉ thay allowlist cài đặt/cặp; không xuất/ghi token, RSA, policy,
+session hoặc dữ liệu rollback freeform. Khôi phục yêu cầu đã tắt chia, dùng
+một commit và chặn lệnh mở chia trong lúc ghi; không tự cài app còn thiếu.
+Overlay tái dùng toolbar/mini/grip khi cấu hình không đổi, cập nhật geometry
+và trạng thái nút; đổi density/kích thước/vùng sử dụng/side/opacity thì dựng lại.
+Ghi tối đa20 thời gian thao tác cục bộ, xem trong Kết nối và Xuất log; không
+ghi lệnh/token hoặc tự gửi lên mạng. Đây là thời gian xử lý, không phải FPS.
+Không đổi PairController/SplitEngine, Off, Voice API, icon/QR, Worker, keystore
+hoặc bootstrap shell: giữ sleep1/echo và12 PING250ms đúng quy tắc ổn định.
+Local: toàn bộ41 Java nguồn biên dịch với Android35 và58 kiểm thử lõi đạt;
+git diff --check đạt. Gradle offline thiếu AGP8.7.3, chưa chạy được full build
+tại máy. Thêm4 kiểm thử đọc JSON thực với org.json chỉ trong test dependency;
+đợi CI unit/lint/APK ký trước khi bàn giao. Chưa benchmark LDPlayer/xe.
+
 
 ## Bản thử cập nhật cùng khóa — chốt18:32
 Tăng versionCode21→22, versionName0.3.9-test→0.3.10-test để chủ dự án thử

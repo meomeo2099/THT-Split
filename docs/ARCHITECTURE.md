@@ -1,5 +1,23 @@
 # Kiến trúc THT Split 0.2
 
+## Tối ưu0.3.11
+AppPicker dùng pool2 luồng để đọc launcher/label/icon, hàng ListView tái dùng,
+LruCache64 ConstantState theo package+lastUpdateTime và bỏ kết quả khi dialog
+đóng. Không cache danh sách ứng dụng giữa các lần mở.
+DownloadStream lõi kiểm cap64MB/độ dài/SHA/interruption; ApkUpdates phát tiến
+trình giai đoạn. MainActivity cập nhật UI mỗi300ms, Ẩn không hủy tải. Xác minh
+APK thật và PackageInstaller vẫn giữ; org.json mới chỉ là dependency kiểm thử.
+SettingsSnapshot là allowlist portable immutable; SettingsBackup JSON schema1
+kiểm UTF-8/1MB/độ sâu16/100 cặp trước khi ghi một SharedPreferences commit.
+Không clear kho preferences; không đụng credential/policy/session/rollback.
+RESTORING giữ trong lúc ghi, SplitService chặn lệnh mới trừ các lệnh kết thúc.
+Overlay fingerprint theo geometry/density/options; detach/attach các view được
+cache, đổi cấu hình thì clear. Grip đọc LayoutParams hiện tại mỗi lần kéo.
+PerformanceLog dùng monotonic clock, namespace riêng,20 mẫu cục bộ; chỉ tên
+thao tác/backend/thời gian/thành công, không command hoặc credential. Thời gian
+kết thúc worker không chứng minh UI frame đã vẽ hoặc animation mượt.
+
+
 ## Worker GitHub API06/10
 GitHub PAT chỉ ở Worker. CONTROL lưu global config/update-settings và cache
 GitHub độc lập; metadata refresh không ghi global policy, đọc lại sau network

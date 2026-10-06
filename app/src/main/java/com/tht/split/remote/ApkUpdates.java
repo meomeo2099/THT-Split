@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import com.tht.split.*;
+import com.tht.split.core.DownloadStream;
 import java.io.*;
 import java.net.*;
 import java.security.MessageDigest;
@@ -15,12 +16,18 @@ import org.json.JSONObject;
 
 public final class ApkUpdates {
     private ApkUpdates() {}
+    public interface Observer {void update(Progress progress);}
+    public static final class Progress {
+        public final String stage;public final long received,total;
+        public Progress(String stage,long received,long total){this.stage=stage;this.received=received;this.total=total;}
+    }
+    public static File download(Context c,JSONObject latest)throws Exception{return download(c,latest,p->{});}
     /** Download never receives the device/admin credential, including after redirects. */
-    public static synchronized File download(Context c,JSONObject latest)throws Exception{
+    public static synchronized File download(Context c,JSONObject latest,Observer observer)throws Exception{
         File file=new File(c.getCacheDir(),"verified-update.apk"),part=new File(c.getCacheDir(),"update.part");
         int expected=latest.getInt("versionCode");if(expected<=BuildConfig.VERSION_CODE)throw new IOException("Đã dùng bản mới nhất");
         String url=latest.getString("apkUrl"),hash=latest.getString("sha256");if(!hash.matches("[a-fA-F0-9]{64}"))throw new IOException("Thiếu checksum");
-        MessageDigest digest=MessageDigest.getInstance("SHA-256");long size=0;
+        observer.update(new Progress("Đang kết nối tải APK…",0,-1));
         try{
             HttpURLConnection con=null;
             for(int redirects=0;redirects<=5;redirects++){
@@ -30,14 +37,16 @@ public final class ApkUpdates {
                 if(code!=200){con.disconnect();throw new IOException("Tải APK lỗi HTTP "+code);}break;
             }
             if(con==null)throw new IOException("Không có kết nối");
+            String actual;
             try(InputStream in=con.getInputStream();FileOutputStream out=new FileOutputStream(part)){
-                byte[] buf=new byte[32768];int n;while((n=in.read(buf))!=-1){size+=n;if(size>67108864)throw new IOException("APK vượt 64MB");out.write(buf,0,n);digest.update(buf,0,n);}out.getFD().sync();
+                actual=DownloadStream.copy(in,out,con.getContentLengthLong(),67108864,(size,total)->observer.update(new Progress("Đang tải APK",size,total)));out.getFD().sync();
             }finally{con.disconnect();}
-            StringBuilder actual=new StringBuilder();for(byte b:digest.digest())actual.append(String.format(Locale.US,"%02x",b&255));
-            if(!hash.equalsIgnoreCase(actual.toString()))throw new IOException("Checksum APK không khớp");
+            observer.update(new Progress("Đang kiểm tra checksum…",0,-1));
+            if(!hash.equalsIgnoreCase(actual))throw new IOException("Checksum APK không khớp. Tệp tải không hợp lệ; hãy kiểm tra nguồn cập nhật rồi thử lại");
+            observer.update(new Progress("Đang kiểm tra phiên bản và chữ ký…",0,-1));
             verify(c,part,expected);
             if(file.exists()&&!file.delete())throw new IOException("Không thay được tệp cập nhật");if(!part.renameTo(file))throw new IOException("Không lưu được APK");
-            new Store(c,"tht_remote").set("download_version",expected);return file;
+            new Store(c,"tht_remote").set("download_version",expected);observer.update(new Progress("APK hợp lệ, sẵn sàng cài đặt",0,-1));return file;
         }finally{if(part.exists())part.delete();}
     }
     @SuppressWarnings("deprecation") private static void verify(Context c,File f,int expected)throws Exception{
@@ -45,7 +54,7 @@ public final class ApkUpdates {
         PackageInfo current=pm.getPackageInfo(c.getPackageName(),PackageManager.GET_SIGNATURES);
         if(next==null||!c.getPackageName().equals(next.packageName)||next.versionCode!=expected||expected<=current.versionCode)throw new IOException("Sai package hoặc phiên bản APK");
         if(next.applicationInfo==null||next.applicationInfo.minSdkVersion>Build.VERSION.SDK_INT)throw new IOException("APK không hỗ trợ phiên bản Android trên máy này");
-        if(next.signatures==null||current.signatures==null||next.signatures.length==0||current.signatures.length==0||!new HashSet<>(Arrays.asList(next.signatures)).equals(new HashSet<>(Arrays.asList(current.signatures))))throw new IOException("APK khác chữ ký. Cần bản phát hành cùng khóa ký; không gỡ app tự động");
+        if(next.signatures==null||current.signatures==null||next.signatures.length==0||current.signatures.length==0||!new HashSet<>(Arrays.asList(next.signatures)).equals(new HashSet<>(Arrays.asList(current.signatures))))throw new IOException("APK khác chữ ký với bản đang cài. Bản cập nhật phải dùng cùng keystore của bản hiện tại. Đổi SHA trên Worker không sửa được chữ ký APK. Nếu chuyển từ bản test cũ, hãy sao lưu cấu hình trước khi tự gỡ/cài lại một lần; app không tự gỡ và không bỏ kiểm tra chữ ký.");
     }
     public static synchronized boolean install(Activity a)throws Exception{
         if(!a.getPackageManager().canRequestPackageInstalls()){a.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+a.getPackageName())));return false;}

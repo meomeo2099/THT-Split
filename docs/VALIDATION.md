@@ -1,5 +1,15 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Tối ưu0.3.11 — kiểm tại máy06/10
+41 nguồn Java biên dịch --release8 với android35.jar/R hiện tại/hidden stubs;
+JUnitCore58 kiểm thử lõi đạt, gồm6 SettingsSnapshot và5 DownloadStream mới.
+Kiểm allowlist không đổi credential/policy/rollback, validation kiểu/cận/cặp,
+cap/length/hash/progress/interruption download. Thêm4 SettingsBackupFileTest
+đọc JSON thực; cần CI có test-only org.json. git diff --check sạch.
+Gradle offline thiếu plugin AGP8.7.3, không coi đó là full unit/lint/build đạt.
+Chưa thử UI/restore qua document picker/overlay thực hoặc đo độ mượt trên xe.
+
+
 ## Worker admin8 ngày06/10
 Code0bf463983c357e6145208faa77b81e5ba4a66338.24 Node tests local/CI đạt;
 CI37431737965/job112163937103 completed/success, Wrangler dry-run/bundle/ZIP.

@@ -1,5 +1,13 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt06/10/2026
+- Gắn Worker của chủ dự án: https://chiamanhinh.mavoice.workers.dev cho khóa/mở
+  và cập nhật. Worker hiện Hello World phải được thay bằng mã quản trị có CONTROL.
+- Thay launcher icon theo mẫu đã chọn: THT + vạch giữa, khung cyan/nền xanh đêm.
+- Tối ưu độ trễ: bỏ chờ bootstrap dư, policy mạng chạy riêng khi cache còn quyền,
+  giữ window overlay khi đổi tỷ lệ; giữ kiểm UID/version/bounds và gate bảo mật.
+- Chỉ gọi đo mượt/chạy xe thành công sau quan sát trên thiết bị, không từ CI.
+
 - App độc lập: THT Split (`com.tht.split`). Có bộ điều khiển chia màn riêng, không gọi app chia màn bên ngoài.
 - EX2 IHU629G MT8788, Android 9, 6 GB RAM, 1920×1080/160dpi là đích kiểm thử đầu tiên.
 - UI tiếng Việt, navy/cyan; icon chữ THT có vạch chia giữa. Thanh icon nhỏ, cùng kích thước/nét.

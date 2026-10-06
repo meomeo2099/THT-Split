@@ -19,7 +19,7 @@ public final class SplitEngine {
     private void call(JSONObject q)throws Exception {lastResult=new Backend(context,state.s("transport","adb")).call(q);if(lastResult.has("actualLeftBounds")||lastResult.has("actualFullscreenBounds"))store.set("last_layout",lastResult.toString());}
     public boolean supportsTaskResize(){return !state.s("transport","adb").equals("off");}
     public void status()throws Exception{call(new JSONObject().put("op","PING"));}
-    public void layout(boolean toolbar)throws Exception{JSONObject q=request("LAYOUT",toolbar);q.put("leftComponent",component(q.getString("left"))).put("rightComponent",component(q.getString("right")));call(q);}
+    public void layout(boolean toolbar)throws Exception{call(request("LAYOUT",toolbar));}
     public void resize(boolean toolbar)throws Exception{call(request("RESIZE",toolbar));}
     private JSONObject fullscreenRequest(String op,String side)throws Exception{Point size=new Point();((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealSize(size);return request(op,false).put("side",side).put("fullscreenBounds",new JSONArray(new int[]{0,0,size.x,size.y}));}
     public void fullscreen(String side)throws Exception{call(fullscreenRequest("FULLSCREEN",side));}

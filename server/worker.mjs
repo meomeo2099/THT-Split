@@ -22,12 +22,18 @@ export function validateConfig(input){
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
+    if(url.pathname==='/api/health'&&request.method==='GET')return json({service:'tht-split-control',protocol:1,storage:!!env.CONTROL,adminConfigured:!!env.ADMIN_TOKEN&&env.ADMIN_TOKEN.length>=32});
     if(url.pathname==='/'&&request.method==='GET')return adminPage();
-    if(url.pathname==='/api/device'&&request.method==='POST')return env.CONTROL.get(env.CONTROL.idFromName('control')).fetch(request);
+    if(url.pathname==='/api/device'&&request.method==='POST'){
+      if(!env.CONTROL)return json({error:'Chưa cấu hình kho thiết bị CONTROL'},503);
+      if(!env.ADMIN_TOKEN||env.ADMIN_TOKEN.length<32)return json({error:'Chưa cấu hình mật khẩu quản trị'},503);
+      return env.CONTROL.get(env.CONTROL.idFromName('control')).fetch(request);
+    }
     if(url.pathname.startsWith('/api/admin/')){
       if(!env.ADMIN_TOKEN||env.ADMIN_TOKEN.length<32)return json({error:'Chưa cấu hình ADMIN_TOKEN'},503);
       const token=request.headers.get('Authorization')?.replace(/^Bearer /,'')||'';
       if(token.length>256||!await same(token,env.ADMIN_TOKEN))return json({error:'Không được phép'},401);
+      if(!env.CONTROL)return json({error:'Chưa cấu hình kho thiết bị CONTROL'},503);
       return env.CONTROL.get(env.CONTROL.idFromName('control')).fetch(request);
     }
     return json({error:'Không tìm thấy'},404);

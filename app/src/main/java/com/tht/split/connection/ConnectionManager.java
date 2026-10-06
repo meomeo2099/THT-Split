@@ -17,7 +17,7 @@ public final class ConnectionManager {
             s.set("connection_status","Đang kết nối ADB nội bộ…");
             try(LocalAdb adb=new LocalAdb(c,s.s("adb_host","127.0.0.1"),s.i("adb_port",5555))){
                 // Key and bridge secret never leave this device or appear in an API/log response.
-                String output=adb.bootstrap(shell.startCommand()+" sleep 1; echo THT_BOOTSTRAP_SENT");
+                String output=adb.bootstrap(shell.startCommand()+" echo THT_BOOTSTRAP_SENT");
                 if(!output.contains("THT_BOOTSTRAP_SENT"))throw new IOException("Không gửi được lệnh mở bridge");
             }catch(Exception e){String detail="Không kết nối được ADB nội bộ. "+FailureText.describe(e);s.set("connection_status",detail);s.set("last_error",detail);throw new IOException(detail,e);}
             Exception last=null;for(int i=0;i<12;i++){try{JSONObject p=shell.ping();checkUid(p);checkVersion(p);s.set("connection_status","ADB nội bộ → bridge sẵn sàng");return p;}catch(java.net.ConnectException e){last=e;Thread.sleep(250);}}

@@ -22,7 +22,7 @@ public final class MainActivity extends Activity {
     private final Handler refreshHandler=new Handler(Looper.getMainLooper());
     private boolean refreshing,downloading; private final Runnable refreshTick=new Runnable(){public void run(){refreshRemote(false,false);refreshHandler.postDelayed(this,60000);}};
     private final ExecutorService io=Executors.newSingleThreadExecutor();private String exportedLog;
-    @Override public void onCreate(Bundle saved){super.onCreate(saved);store=new Store(this);if(saved!=null){page=saved.getString("page","home");section=saved.getString("section","layout");}render();}
+    @Override public void onCreate(Bundle saved){super.onCreate(saved);store=new Store(this);if(saved!=null){page=saved.getString("page","home");section=saved.getString("section","layout");}}
     @Override protected void onSaveInstanceState(Bundle b){super.onSaveInstanceState(b);b.putString("page",page);b.putString("section",section);}
     @Override protected void onResume(){super.onResume();if(store!=null){render();refreshRemote(false,false);refreshHandler.postDelayed(refreshTick,60000);}}
     @Override protected void onPause(){refreshHandler.removeCallbacks(refreshTick);super.onPause();}
@@ -95,7 +95,7 @@ public final class MainActivity extends Activity {
         parent.addView(card,landscapeLayout()?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
         TextView heading=AppUi.text(this,label,17,AppUi.TEXT);heading.setTypeface(null,Typeface.BOLD);card.addView(heading);space(card,12);
         String pkg=store.s(side,"");LinearLayout app=AppUi.row(this);ImageView icon=new ImageView(this);
-        try{icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg));}catch(Exception ignored){icon.setImageResource(R.drawable.icon_foreground);}
+        try{icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg));}catch(Exception ignored){icon.setImageResource(R.mipmap.ic_launcher);}
         app.addView(icon,lp(AppUi.dp(this,64),AppUi.dp(this,64)));TextView name=AppUi.text(this,AppPicker.label(this,pkg),20,AppUi.TEXT);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);
         LinearLayout.LayoutParams n=new LinearLayout.LayoutParams(0,-2,1);n.leftMargin=AppUi.dp(this,16);app.addView(name,n);card.addView(app);space(card,12);
         Button change=AppUi.button(this,"Đổi ứng dụng",false);card.addView(change,lp(-1,AppUi.dp(this,48)));change.setOnClickListener(v->AppPicker.show(this,label,false,p->{store.set(side,p);render();}));
@@ -109,7 +109,7 @@ public final class MainActivity extends Activity {
     private void startCurrent(){if(!access()||!overlay())return;Intent i=new Intent(this,SplitService.class).putExtra("command","start").putExtra("left",store.s("left","")).putExtra("right",store.s("right","")).putExtra("ratio",store.i("ratio",50));try{startForegroundService(i);}catch(RuntimeException e){toast(e.getMessage());}}
     private void openPair(JSONObject p){if(!access()||!overlay())return;startForegroundService(new Intent(this,SplitService.class).putExtra("command","preset").putExtra("presetId",p.optString("id")));}
     private void pairApp(LinearLayout row,String pkg){
-        LinearLayout app=AppUi.row(this);ImageView icon=new ImageView(this);try{icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg));}catch(Exception ignored){icon.setImageResource(R.drawable.icon_foreground);}
+        LinearLayout app=AppUi.row(this);ImageView icon=new ImageView(this);try{icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg));}catch(Exception ignored){icon.setImageResource(R.mipmap.ic_launcher);}
         app.addView(icon,lp(AppUi.dp(this,36),AppUi.dp(this,36)));TextView label=AppUi.text(this,AppPicker.label(this,pkg),16,AppUi.TEXT);label.setMaxLines(2);label.setEllipsize(android.text.TextUtils.TruncateAt.END);
         LinearLayout.LayoutParams t=new LinearLayout.LayoutParams(0,-2,1);t.leftMargin=AppUi.dp(this,12);app.addView(label,t);row.addView(app,new LinearLayout.LayoutParams(0,-2,1));
     }

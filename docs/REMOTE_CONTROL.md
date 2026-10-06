@@ -1,4 +1,12 @@
-# Quản lý THT Split không cần nhập key — 0.3.1
+# Quản lý THT Split không cần nhập key — 0.3.5
+
+## Worker chủ dự án đã tạo06/10/2026
+https://chiamanhinh.mavoice.workers.dev đã được đặt mặc định trong APK và
+CI/release. Không phải nhập URL/key ở máy khách. THT_CONTROL_URL chỉ dùng khi
+chủ dự án chủ động override lúc build. Kiểm tra thực tế trước lần sửa này:
+GET / và POST /api/device với {} đều200 text/plain Hello World, chưa có mã Split.
+Chưa đăng nhập/triển khai vào tài khoản Cloudflare của chủ dự án.
+Phải triển khai mã server dưới đây trước khi máy mới đăng ký và chia được.
 
 ## Chức năng đã viết
 - Bỏ ba nút trong app: tài liệu Voice, hướng dẫn kiểm thử và mở trang phát hành.
@@ -20,20 +28,27 @@ và https://developers.cloudflare.com/workers/configuration/secrets/.
 
 ```sh
 cd server
-npx wrangler login
-npx wrangler deploy
-npx wrangler secret put ADMIN_TOKEN
+npx --yes wrangler@4 login
+npx --yes wrangler@4 secret put ADMIN_TOKEN
+npx --yes wrangler@4 deploy
 ```
 Nhập mật khẩu ngẫu nhiên dài ít nhất32 ký tự khi được hỏi. Không gửi mật khẩu này
 cho khách, không cho vào APK/GitHub/source. Mở URL Worker, đăng nhập bằng mật khẩu.
 Worker dùng Durable Object SQLite + transaction: đăng ký/heartbeat không ghi đè
 trạng thái khóa do admin đặt. Không dùng KV eventual consistency cho lệnh khóa.
-URL phải là origin HTTPS, ví dụ `https://tht-split-control.<subdomain>.workers.dev`.
+Wrangler name đã đổi thành `chiamanhinh`; đăng nhập tài khoản có subdomain
+`mavoice` để thay mã Worker Hello World hiện có. CONTROL được tạo/bind bằng
+Durable Object exports SQLite. Không dùng tên khác hoặc xóa namespace cũ.
+`server/pack.mjs`/CI có gói Worker.zip gồm module một tệp, wrangler.jsonc và README.
+Giải nén và chạy ba lệnh trên trong thư mục có wrangler.jsonc cũng được.
+Đừng chỉ dán source trong web editor mà bỏ binding CONTROL.
+Sau deploy `/api/health` phải có service=tht-split-control, protocol=1,
+storage=true, adminConfigured=true; API thiết bị trả503 nếu thiếu storage/admin.
 
 Trong GitHub repository Settings → Secrets and variables → Actions → Variables,
-thêm `THT_CONTROL_URL` bằng URL Worker **không có dấu / cuối**.
-Không có endpoint thật thì APK test hiện rõ “chưa cấu hình”; chưa kích hoạt khóa,
-cập nhật từ xa. Mục ủng hộ vẫn dùng ngay, kể cả offline. Workflow phát hành từ chối thiếu endpoint.
+`THT_CONTROL_URL` chỉ cần nếu đổi origin, **không có dấu / cuối**. Để trống dùng
+chiamanhinh.mavoice.workers.dev. Worker trả Hello World thì app báo chưa chạy API;
+không bỏ chặn đăng ký lần đầu. Mục ủng hộ vẫn dùng ngay, kể cả offline.
 
 ## Khóa ký ổn định và phát hành
 Khóa test của runner cũ thay đổi giữa build, không thể bảo đảm cập nhật đè0.2.9.
@@ -64,8 +79,10 @@ source/asset và phát hành APK. Chỉ thông tin ủng hộ này được ch�
 nhúng; mọi credential đăng nhập/admin/signing vẫn không nằm trong git.
 
 ## Hành vi khóa / ngoại tuyến
-- Khi online, kiểm tra tối đa mỗi5 phút; service/UI gọi tick mỗi phút, lệnh chia cũng
-  kiểm tra nếu đã đến hạn. Không có push nền khi app bị dừng/force-stop.
+- Khi online, kiểm tra tối đa mỗi5 phút; service tick ngay khi tạo và mỗi phút trên
+  executor mạng riêng, UI lúc resume/thủ công. Lệnh chia có cache quyền còn hạn
+  chạy ngay, không đợi request mạng. Thiếu/hết quyền vẫn phải refresh và bị chặn
+  nếu không xác nhận được. Không có push nền khi app bị dừng/force-stop.
 - Thiết bị mới online lần đầu tự đăng ký enabled, không có bước duyệt.
 - Đang mở: ngoại tuyến mặc định7 ngày kể từ lần xác nhận thành công; admin chỉnh
   từ1 giờ đến30 ngày. Hết hạn phải online lại. Lỗi mạng không tự khóa một máy mới
@@ -96,5 +113,5 @@ nhúng; mọi credential đăng nhập/admin/signing vẫn không nằm trong gi
 6. QR/STK đúng, sao chép nguyên STK, QR hiện ngay khi airplane mode/chưa có Worker.
    Migrate pending cũ → enabled; migrate/khôi phục credential không làm mất locked.
 
-Chưa deploy Worker vào tài khoản Cloudflare của chủ dự án. Đã có profile ủng hộ; chưa có URL
-Worker thật và khóa ký ổn định. Unit/build không thay thế các bước thử trên.
+Đã có URL Worker và gắn vào APK; chưa deploy mã quản trị vào tài khoản Cloudflare
+của chủ dự án, chưa có khóa ký ổn định. Unit/build không thay thế các bước thử trên.

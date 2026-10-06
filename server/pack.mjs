@@ -1,0 +1,13 @@
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {join} from 'node:path';
+const root=fileURLToPath(new URL('.',import.meta.url));
+const output=join(root,'build','distribution');
+await mkdir(output,{recursive:true});
+const worker=await readFile(join(root,'worker.mjs'),'utf8');
+const admin=await readFile(join(root,'admin.mjs'),'utf8');
+const importLine="import { adminPage } from './admin.mjs';";
+if(!worker.startsWith(importLine))throw new Error('Import Worker thay đổi, cần rà lại đóng gói');
+await writeFile(join(output,'worker.mjs'),admin+'\n'+worker.slice(importLine.length));
+for(const name of ['wrangler.jsonc','README.md'])await writeFile(join(output,name),await readFile(join(root,name)));
+console.log('Đã đóng gói Worker trong server/build/distribution');

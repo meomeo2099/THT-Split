@@ -1,5 +1,12 @@
 # UI đã chốt
 
+## Launcher icon0.3.5
+Mẫu đã chọn "THT chia đôi trên nền xanh đêm.png": khung cyan bo góc, hai panel
+xanh đậm, chữ THT trắng/H cyan và vạch dọc giữa. Dựng vector adaptive riêng
+launcher_foreground/background, nhãn/package giữ nguyên. Icon toolbar/grip và
+header MainActivity giữ thiết kế riêng hiện có. Ratio không dựng lại overlay
+window khi màn/trạng thái giữ nguyên, nên giảm nháy sau đổi tỷ lệ.
+
 App nội bộ có header THT và menu trái: Chia màn hình / Cặp đã lưu / Cài đặt.
 Trang chính có hai card chọn app trái/phải, nút đổi bên ở giữa, thanh chọn tỷ lệ,
 Lưu cặp và Bắt đầu chia. Trang cặp có tên, hai app, tỷ lệ, Mở cặp và menu ⋮ Sửa/Xóa.

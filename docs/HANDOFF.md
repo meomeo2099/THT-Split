@@ -1,4 +1,35 @@
-# Bàn giao THT Split — 0.3.4-test, 06/10/2026
+# Bàn giao THT Split — 0.3.5-test, 06/10/2026
+
+## Mốc Worker thật, launcher icon và giảm chờ
+Chủ dự án cung cấp https://chiamanhinh.mavoice.workers.dev. GET / và POST
+/api/device với {} kiểm06/10 trả200 text/plain Hello World, chưa phải API Split.
+0.3.5-test/code17 đã đặt origin này làm mặc định Gradle và CI/release; override
+THT_CONTROL_URL vẫn được giữ. Không nhúng admin credential, không bỏ gate để
+chạy khi Worker sai. Máy mới cần online đăng ký; phải deploy mã server trước.
+Wrangler name=chiamanhinh; CONTROL SQLite giữ dữ liệu khóa. Thiếu storage/admin
+secret thì API503; /api/health chỉ báo tình trạng cấu hình, không lộ secret.
+server/pack.mjs tạo module Worker một tệp và gói cùng README/wrangler qua CI.
+Chưa có quyền đăng nhập Cloudflare để deploy; chưa có keystore ổn định.
+
+Launcher mới là vector từ mẫu "THT chia đôi trên nền xanh đêm.png" đã chọn:
+khung bo góc cyan, hai nền xanh đậm, THT trắng/H chuyển cyan, vạch dọc giữa.
+Adaptive foreground/background riêng, nội dung chính trong vùng an toàn;
+đã xem preview mặt vuông/tròn, chưa xem launcher Android thật. Không sửa icon
+toolbar/grip. Notification tiếp tục dùng tài nguyên icon_foreground cũ.
+
+Tối ưu: command dùng policy cache khi còn hợp lệ, không đợi lock/network;
+service kiểm Worker ngay khi tạo và mỗi phút trên executor riêng, request mạng
+vẫn giới hạn5 phút. Unknown/hết lease/locked/min version phải refresh/check và
+vẫn chặn nếu lỗi mạng. Stop/Home/Hide thoát được. Poll không xếp sau lệnh task;
+khóa nhận được dừng overlay. Bỏ sleep1s cố định khi bootstrap; vẫn đợi bridge
+PING + kiểmUID0/2000/version6/token theo timeout cũ. Không đổi mã Bridge v6.
+Đổi ratio giữ window toolbar/mini/grip, cập nhật màu và vị trí; khi kích thước
+màn đổi hoặc trạng thái khác vẫn render đầy đủ. Bỏ resolve component đôi trong
+SplitEngine và render UI hai lần lúc mở MainActivity. Không sửa luồng task,
+mode/bounds/verified/Off policies; chưa đo độ mượt hoặc thử LDPlayer/xe.
+
+Node9 tests local đạt, thêm3 Java tests quyền cache cần CI. Chờ CI build/unit/lint,
+QR/Wrangler dry-run/APK checksum; ghi kết quả thật vào VALIDATION sau build.
 
 ## Mốc sửa nền hộp thoại và chữ cài đặt
 Ảnh phản hồi cuối05/10: hộp Bật freeform có chữ lẫn trang phía sau, thiếu nền

@@ -49,14 +49,20 @@ public final class RemoteControl {
             con.setRequestProperty("Content-Type","application/json");con.setRequestProperty("Accept","application/json");
             try {try(OutputStream out=con.getOutputStream()){out.write(body.toString().getBytes(StandardCharsets.UTF_8));}
                 int code=con.getResponseCode();if(code==403)throw new IOException("Thông tin thiết bị thay đổi; nhờ nhà phát hành khôi phục đăng ký");if(code!=200)throw new IOException("Dịch vụ trả HTTP "+code);
+                String type=con.getContentType();if(type==null||!type.toLowerCase(java.util.Locale.US).contains("application/json"))throw new IOException("Worker chưa chạy API THT Split. Cần triển khai mã quản trị lên địa chỉ đã cấu hình");
                 JSONObject p=new JSONObject(read(con.getInputStream(),65536));validate(p);
                 if(!deviceId().equals(p.getString("deviceId")))throw new IOException("Phản hồi sai thiết bị");
                 if(!store.prefs.edit().putString("policy",p.toString()).putLong("checked_at",System.currentTimeMillis()).putString("error","").commit())throw new IOException("Không lưu được chính sách");
             }finally{con.disconnect();}
         }catch(Exception e){store.set("error",com.tht.split.core.FailureText.describe(e)+". Giữ chính sách đã lưu.");throw e;}
     } }
-    public void require(String command) throws Exception {if(AccessRules.exitCommand(command))return;
-        try{refresh(false);}catch(Exception ignored){}String d=denial();if(!d.isEmpty())throw new AccessDenied(d); }
+    public void require(String command) throws Exception {
+        String d=AccessRules.commandDenial(command,new AccessRules.Policy(){
+            public String denial(){return RemoteControl.this.denial();}
+            public void refresh()throws Exception{RemoteControl.this.refresh(false);}
+        });
+        if(!d.isEmpty())throw new AccessDenied(d);
+    }
     public static void validate(JSONObject p) throws Exception {
         String state=p.getString("state");if(!state.equals("enabled")&&!state.equals("pending")&&!state.equals("locked"))throw new IOException("Trạng thái không hợp lệ");
         int min=p.getInt("minimumVersionCode");long grace=p.getLong("offlineSeconds");if(min<0||grace<3600||grace>2592000)throw new IOException("Chính sách không hợp lệ");

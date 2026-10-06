@@ -23,6 +23,12 @@ jobs:
         with:
           node-version: '22'
       - run: node --test server/worker.test.mjs
+      - name: Đóng gói Worker cho chủ dự án
+        run: |
+          node server/pack.mjs
+          node --check server/build/distribution/worker.mjs
+          cd server/build/distribution
+          zip -q "$GITHUB_WORKSPACE/THT-Split-Worker.zip" worker.mjs wrangler.jsonc README.md
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -44,7 +50,7 @@ jobs:
           fi
       - run: chmod +x gradlew && ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
         env:
-          THT_CONTROL_URL: ${{ vars.THT_CONTROL_URL }}
+          THT_CONTROL_URL: ${{ vars.THT_CONTROL_URL || 'https://chiamanhinh.mavoice.workers.dev' }}
           THT_STORE_PASSWORD: ${{ secrets.THT_STORE_PASSWORD }}
           THT_KEY_ALIAS: ${{ secrets.THT_KEY_ALIAS }}
           THT_KEY_PASSWORD: ${{ secrets.THT_KEY_PASSWORD }}
@@ -52,4 +58,9 @@ jobs:
         with:
           name: THT-Split-test-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: THT-Split-Worker
+          path: THT-Split-Worker.zip
           retention-days: 7

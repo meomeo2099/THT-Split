@@ -1,5 +1,15 @@
 # Nguồn tham khảo và giới hạn
 
+## Launcher/Worker0.3.5
+Mẫu icon đã đọc pixels: "THT chia đôi trên nền xanh đêm.png" (04/10 15:31 UTC)
+và "THT Split ô tô, giao diện gọn.png". Icon mới dựng vector từ mẫu THT/vạch chia,
+không dùng ảnh icon hai ô trống ban đầu. Adaptive icon hai layer108dp, phần
+chính đặt trong vùng an toàn theo Android:
+https://developer.android.com/develop/ui/compose/system/icon_design_adaptive
+Cloudflare Wrangler exports/CONTROL SQLite cho Worker hiện có:
+https://developers.cloudflare.com/workers/wrangler/configuration/
+https://developers.cloudflare.com/durable-objects/get-started/
+
 ## GSplit
 https://github.com/Salat39/GSplit
 Đã đọc nguồn tại commit `b85dacc02103e91fe9d35b77fc1e6ebc9c5a66ec`.

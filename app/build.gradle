@@ -6,8 +6,9 @@ android {
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
-        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 16; versionName '0.3.4-test'
-        def controlUrl = providers.environmentVariable('THT_CONTROL_URL').getOrElse('')
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 17; versionName '0.3.5-test'
+        def controlUrl = providers.environmentVariable('THT_CONTROL_URL').getOrElse('').trim()
+        if (!controlUrl) controlUrl = 'https://chiamanhinh.mavoice.workers.dev'
         if (controlUrl && !(controlUrl ==~ /https:\/\/[a-zA-Z0-9.-]+/)) throw new GradleException('THT_CONTROL_URL phải là HTTPS origin')
         buildConfigField 'String', 'CONTROL_URL', '"' + controlUrl + '"'
     }

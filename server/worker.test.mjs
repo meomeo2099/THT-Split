@@ -5,6 +5,14 @@ import worker,{Control,validateConfig} from './worker.mjs';
 import {adminPage} from './admin.mjs';
 import {Script} from 'node:vm';
 globalThis.crypto??=webcrypto;
+test('health reports configuration without exposing secrets and missing storage fails closed',async()=>{
+ const env={ADMIN_TOKEN:'a'.repeat(32)};
+ const health=await worker.fetch(new Request('https://control.test/api/health'),env);
+ assert.deepEqual(await health.json(),{service:'tht-split-control',protocol:1,storage:false,adminConfigured:true});
+ assert.equal((await worker.fetch(new Request('https://control.test/api/device',{method:'POST',body:'{}'}),env)).status,503);
+ let called=false;const incomplete={CONTROL:{idFromName:()=>'',get:()=>{called=true;return {};}}};
+ assert.equal((await worker.fetch(new Request('https://control.test/api/device',{method:'POST',body:'{}'}),incomplete)).status,503);assert.equal(called,false);
+});
 class Storage {
   data=new Map();tail=Promise.resolve();
   async get(k){return structuredClone(this.data.get(k));}
@@ -17,6 +25,14 @@ const device=(extra={})=>({deviceId:id,credential,model:'LDPlayer',sdk:28,versio
 const request=(path,b)=>new Request('https://control.test'+path,{method:b?'POST':'GET',...(b?{body:JSON.stringify(b)}:{})});
 const config=(extra={})=>({minimumVersionCode:0,offlineSeconds:604800,latest:null,...extra});
 function setup(){return new Control({storage:new Storage()});}
+test('packaged single-module Worker serves health and preserves lock on heartbeat',async()=>{
+ await import('./pack.mjs');const {default:bundle,Control:BundledControl}=await import('./build/distribution/worker.mjs');
+ const c=new BundledControl({storage:new Storage()});const env={CONTROL:{idFromName:()=>'',get:()=>c},ADMIN_TOKEN:'s'.repeat(32)};
+ assert.equal((await (await bundle.fetch(request('/api/health'),env)).json()).storage,true);
+ assert.equal((await (await bundle.fetch(request('/api/device',device()),env)).json()).state,'enabled');
+ const lock=request('/api/admin/device',{id,state:'locked'});lock.headers.set('Authorization','Bearer '+env.ADMIN_TOKEN);assert.equal((await bundle.fetch(lock,env)).status,200);
+ assert.equal((await (await bundle.fetch(request('/api/device',device()),env)).json()).state,'locked');
+});
 test('fresh devices are enabled without approval and wrong credentials cannot replace identity',async()=>{
  const c=setup();const r=await c.fetch(request('/api/device',device()));assert.equal(r.status,200);assert.equal((await r.json()).state,'enabled');
  assert.equal((await c.fetch(request('/api/device',device({credential:'c'.repeat(64)})))).status,403);

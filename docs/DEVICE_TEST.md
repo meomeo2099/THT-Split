@@ -1,5 +1,14 @@
 # Cài và kiểm thử 0.2.9-test trên EX2
 
+## Kiểm thêm0.3.5
+- Deploy Worker gọi health đúng trước cài app mới; Hello World phải báo lỗi đăng ký.
+- Máy mới online được enabled không duyệt. Khóa rồi mất mạng/lệnh Voice/UI vẫn chặn; Stop/Home/Hide thoát được.
+- Cache enabled còn hạn: ratio/swap/start không đợi mạng; hết lease phải online. Khi khóa online, poll executor riêng nhận và dừng overlay.
+- Bootstrap sau reboot: tự mở khi ADB bật, kiểm UID/version6; không cần sleep cố định. Không bỏ xác nhận khóa RSA.
+- Ratio liên tiếp/kéo thả: cửa sổ app đúng bounds, không nháy toolbar/grip, auto-hide đúng; fullscreen/restore/swap/Off như cũ.
+- Đổi hướng/kích thước màn: render đầy đủ, dấu kéo đúng vùng mới. Icon launcher mặt vuông/tròn có THT/vạch, không mất chữ.
+- So với0.3.4 trên cùng thiết bị/cặp/network: ghi thời gian thao tác và video; chưa có benchmark hay xác nhận xe thật.
+
 Chưa test xe thật. Android headunit phải có ADB mở sẵn; app không mở khóa ADB hoặc
 thay firmware/OTA. Quan sát bố cục khi xe đang đỗ.
 

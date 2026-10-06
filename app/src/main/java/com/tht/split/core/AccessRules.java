@@ -3,6 +3,18 @@ package com.tht.split.core;
 /** Policy remains cached across reboot; an offline error never clears a lock. */
 public final class AccessRules {
     private AccessRules() {}
+    public interface Policy {
+        String denial();
+        void refresh() throws Exception;
+    }
+    /** Valid cached leases avoid network waits. Background polling still refreshes policy.
+     * Unknown, expired, locked or mandatory-update policies never gain access on an I/O error. */
+    public static String commandDenial(String action, Policy policy) {
+        if (exitCommand(action)) return "";
+        if (policy.denial().isEmpty()) return "";
+        try { policy.refresh(); } catch (Exception ignored) { /* Keep the saved policy. */ }
+        return policy.denial();
+    }
     public static String denial(boolean configured, boolean known, String state, int minimum,
                                 int installed, long checkedAt, long now, long offlineSeconds) {
         if (!configured) return ""; // Development builds explicitly show remote control as unconfigured.

@@ -42,7 +42,7 @@ jobs:
           THT_STORE_PASSWORD: ${{ secrets.THT_STORE_PASSWORD }}
           THT_KEY_ALIAS: ${{ secrets.THT_KEY_ALIAS }}
           THT_KEY_PASSWORD: ${{ secrets.THT_KEY_PASSWORD }}
-          THT_CONTROL_URL: ${{ vars.THT_CONTROL_URL }}
+          THT_CONTROL_URL: ${{ vars.THT_CONTROL_URL || 'https://chiamanhinh.mavoice.workers.dev' }}
         run: |
           test -n "$KEYSTORE_B64" && test -n "$THT_STORE_PASSWORD" && test -n "$THT_KEY_ALIAS" && test -n "$THT_KEY_PASSWORD" && test -n "$THT_CONTROL_URL"
           printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/tht-signing.jks"
@@ -50,7 +50,7 @@ jobs:
           echo "THT_KEYSTORE_PATH=$RUNNER_TEMP/tht-signing.jks" >> "$GITHUB_ENV"
       - run: chmod +x gradlew && ./gradlew :app:testReleaseUnitTest :app:lintRelease :app:assembleRelease
         env:
-          THT_CONTROL_URL: ${{ vars.THT_CONTROL_URL }}
+          THT_CONTROL_URL: ${{ vars.THT_CONTROL_URL || 'https://chiamanhinh.mavoice.workers.dev' }}
           THT_STORE_PASSWORD: ${{ secrets.THT_STORE_PASSWORD }}
           THT_KEY_ALIAS: ${{ secrets.THT_KEY_ALIAS }}
           THT_KEY_PASSWORD: ${{ secrets.THT_KEY_PASSWORD }}

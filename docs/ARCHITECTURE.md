@@ -1,5 +1,15 @@
 # Kiến trúc THT Split 0.2
 
+## Tối ưu0.3.5
+Origin mặc định là Worker chiamanhinh.mavoice.workers.dev. API phải chạy server
+đúng mã và storage/admin secret; Hello World không đăng ký được máy mới.
+Policy cache hợp lệ cho lệnh chạy ngay. Network refresh chuyển sang executor
+riêng service, tick ngay khi tạo + mỗi60s, throttle5 phút; UI vẫn refresh lúc
+resume/thủ công. Thiếu policy/hết lease/khóa/bắt buộc cập nhật không bypass.
+Ratio cập nhật các view overlay đã gắn thay vì remove/add cả hierarchy; kích
+thước màn thay đổi hoặc trạng thái khác thì render lại. Không đổi thuật toán
+PairController/Bridge v6, xác minh bounds, policy Off hoặc socket/token/RSA.
+
 ## Quản lý từ xa0.3.0
 RemoteControl dùng HTTPS origin cố định trong BuildConfig, id scoped hash + private
 credential tự sinh, cache policy riêng. Worker/admin secret không trong APK.

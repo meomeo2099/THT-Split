@@ -1,5 +1,10 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt06/10 — ADB và liên hệ
+- Báo rõ lỗi ADB và phản hồi ngay khi bấm Kiểm tra, không chờ cập nhật qua mạng.
+- Thêm QR Zalo đúng ảnh chủ dự án gửi và Facebook100004637940665 trong Ủng hộ.
+- Giữ STK/QR ngân hàng và cơ chế dùng ngay không đăng ký.
+
 ## Chốt mới06/10 — ưu tiên hơn yêu cầu đăng ký cũ
 - Bỏ đăng ký thiết bị để ai cài cũng sử dụng ngay, kể cả cài lần đầu offline.
 - Bỏ mã thiết bị, private credential đăng ký, duyệt/heartbeat/lease và khóa từng máy.

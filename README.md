@@ -1,9 +1,9 @@
 # THT Split
 
-App chia màn hình độc lập cho Geely EX2, package `com.tht.split`, bản `0.3.6-test`.
+App chia màn hình độc lập cho Geely EX2, package `com.tht.split`, bản `0.3.7-test`.
 Chọn hai app, lưu/sửa/xóa cặp, chọn tỷ lệ, đổi app/đổi bên, fullscreen/restore,
 Home/X và thanh điều khiển ẩn/hiện. Popup thuộc THT Voice.
-Mục ủng hộ có STK và QR nhúng sẵn, dùng offline. Ai cài cũng dùng ngay, không
+Mục ủng hộ có STK, QR ngân hàng và QR Zalo nhúng sẵn, dùng offline; có nút mở/sao chép Facebook. Ai cài cũng dùng ngay, không
 đăng ký thiết bị/key/lease, kể cả lần đầu offline. Worker chỉ cập nhật và khóa/mở
 chung toàn app; mặc định mở, cấu hình đã nhận được giữ khi lỗi mạng.
 
@@ -16,6 +16,8 @@ chung toàn app; mặc định mở, cấu hình đã nhận được giữ khi 
 
 Không cần cài app hỗ trợ bên ngoài. Không Telnet/Shizuku. Không tự bật adbd/root/flash OTA.
 ADB mặc định127.0.0.1:5555; cổng chỉnh được. Đổi Wi-Fi không đổi loopback.
+Kiểm tra hiện tiến trình ngay, không chờ cập nhật qua mạng. Lỗi có giai đoạn và
+địa chỉ/cổng; cổng ADB từ máy tính có thể khác cổng nội bộ trên màn.
 Lần đầu có thể cần xác nhận khóa ADB của app trên màn xe. ADB TLS pairing chưa hỗ trợ.
 
 ## Tích hợp THT Voice

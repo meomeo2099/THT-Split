@@ -5,6 +5,7 @@ import android.util.AtomicFile;
 import android.util.Base64;
 import com.tht.split.core.AdbWire;
 import com.tht.split.core.AdbRsa;
+import com.tht.split.core.ConnectionFailure;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +21,13 @@ public final class LocalAdb implements AutoCloseable {
         if(port<1||port>65535)throw new IOException("Cổng ADB từ 1 đến 65535");
         InetAddress address=InetAddress.getByName(host);
         if(!address.isLoopbackAddress()&&NetworkInterface.getByInetAddress(address)==null)throw new IOException("Chỉ cho phép địa chỉ của chính màn xe");
-        key=loadKey(c);try{socket.connect(new InetSocketAddress(address,port),3500);socket.setSoTimeout(12000);in=socket.getInputStream();out=socket.getOutputStream();connect();}catch(Exception e){close();throw e;}
+        key=loadKey(c);String endpoint=host+":"+port;
+        try{
+            try{socket.connect(new InetSocketAddress(address,port),3500);}
+            catch(IOException e){throw new ConnectionFailure("Không kết nối được cổng ADB "+endpoint+". Bật ADB TCP trên màn/LDPlayer và chọn đúng cổng nội bộ; cổng máy tính có thể khác.",e);}
+            socket.setSoTimeout(12000);in=socket.getInputStream();out=socket.getOutputStream();
+            try{connect();}catch(Exception e){throw new ConnectionFailure("Đã tới cổng "+endpoint+" nhưng chưa xác thực ADB. Kiểm tra hộp thoại cho phép khóa THT Split; chỉ hỗ trợ ADB TCP RSA, không TLS.",e);}
+        }catch(Exception e){close();throw e;}
     }
     private static synchronized PrivateKey loadKey(Context c)throws Exception {
         AtomicFile file=new AtomicFile(new File(c.getNoBackupFilesDir(),"adb-private.pk8"));byte[] encoded;

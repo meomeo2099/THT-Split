@@ -1,5 +1,16 @@
 # Cài và kiểm thử 0.2.9-test trên EX2
 
+## Kiểm thêm0.3.7 — lỗi ADB và liên hệ
+- Worker chậm/offline: bấm Kiểm tra thấy tiến trình ngay, ADB không xếp sau HTTP.
+- Tắt ADB/cổng sai: lỗi phải có host:port và hướng bật TCP/cổng nội bộ; không
+  làm mất context khi Android bọc ECONNREFUSED. Bật đúng cổng rồi thử lại.
+- ADB xác thực: lần đầu xác nhận khóa; timeout báo giai đoạn xác thực. Token
+  bridge sai/version cũ phải vẫn báo lỗi, không tự khởi động server mới/đổi khóa.
+- Bấm kiểm tra nhiều lần chỉ một job; Ẩn không hủy, rời app/destroy không crash.
+- Ủng hộ: QR Zalo offline rõ, quét bằng Zalo; FB mở đúng profile, copy đúng link;
+  máy không có browser/app xử lý link phải báo hướng sao chép. MB QR giữ nguyên.
+Chưa kiểm các thao tác này trên thiết bị thật.
+
 ## Kiểm mới0.3.6 — thay yêu cầu đăng ký của0.3.5
 Cài mới offline/Worker Hello World vẫn dùng ngay; không có mã đăng ký/lease.
 Legacy per-device lock không chặn cache chung mới; token/RSA/preset giữ khi cùng

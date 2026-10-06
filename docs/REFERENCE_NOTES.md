@@ -1,5 +1,12 @@
 # Nguồn tham khảo và giới hạn
 
+## Chẩn đoán socket0.3.7
+AOSP IoBridge isConnected đọc SO_ERROR, ECONNREFUSED được bọc ConnectException;
+FailureText trước chỉ hiện ErrnoException sâu nhất nên mất endpoint/giai đoạn.
+https://android.googlesource.com/platform/libcore/+/master/luni/src/main/java/libcore/io/IoBridge.java
+Không suy ra cổng ADB đang mở chỉ vì ADB máy tính kết nối được; giữ endpoint
+nội bộ chỉnh được và không dò các host/cổng khác.
+
 ## Launcher/Worker0.3.5
 Mẫu icon đã đọc pixels: "THT chia đôi trên nền xanh đêm.png" (04/10 15:31 UTC)
 và "THT Split ô tô, giao diện gọn.png". Icon mới dựng vector từ mẫu THT/vạch chia,

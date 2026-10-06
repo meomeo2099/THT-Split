@@ -1,4 +1,24 @@
-# Bàn giao THT Split — 0.3.6-test, 06/10/2026
+# Bàn giao THT Split — 0.3.7-test, 06/10/2026
+
+## Mốc mới0.3.7 — phản hồi ADB chậm và liên hệ
+Ảnh06/10 báo ErrnoException/isConnected ECONNREFUSED; ảnh không cho biết
+endpoint. Không khẳng định lỗi thiếu ADB hay token chỉ từ ảnh. AOSP IoBridge
+bọc errno bằng ConnectException, đường bootstrap hiện tại đã xử lý dạng này.
+Lỗi trước bị FailureText unwrap mất giai đoạn/cổng. ConnectionFailure giữ context
+kết nối TCP, xác thực và bootstrap; root cause vẫn giữ và secrets được redacted.
+LocalAdb báo đúng host:port + hướng bật ADB TCP/cổng nội bộ khác cổng máy tính.
+Không tự bật adbd, dò cổng, đổi token/RSA hoặc bootstrap khi lỗi token/version.
+MainActivity tách networkIo cho refresh/tải cập nhật khỏi executor kết nối;
+kiểm tra hiện dialog tiến trình ngay, cập nhật stage500ms, chặn bấm lặp và đổi
+endpoint/method trong lúc kiểm tra. Nút Ẩn chỉ giấu dialog, không hủy xác thực.
+Giữ timeout TCP3,5s/auth20s/read12s/bootstrap20s/PING~4s, cho phép RSA lần đầu.
+Không thay Bridge v6/engine/overlay/Off/Voice/Worker/policy dùng ngay0.3.6.
+Ủng hộ thêm Liên hệ THT: QR Zalo PNG gốc do chủ dự án gửi, không sửa/crop;
+FB đúng https://www.facebook.com/100004637940665, mở/copy khi người dùng bấm.
+QR offline/nền trắng/FIT_CENTER; màn rộng hai card, hẹp xếp dọc/cuộn.
+VersionCode19/0.3.7-test. Chờ CI unit/lint/build và kiểm bytes QR trong APK;
+chưa test bản sửa trên LDPlayer/xe, không khẳng định cổng ADB thật đã hoạt động.
+
 ## Mốc mới — bỏ đăng ký để ai cài cũng dùng ngay
 Chốt mới của chủ dự án bỏ đăng ký từng thiết bị.0.3.6/code18 dùng GET /api/config
 công khai; không đọc Android ID/model hay sinh/gửi credential. Không có mã thiết

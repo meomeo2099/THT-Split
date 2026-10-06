@@ -1,5 +1,12 @@
 # Kiến trúc THT Split 0.2
 
+## Kết nối/UI0.3.7
+MainActivity có executor mạng riêng cho Worker/APK, executor thao tác cục bộ
+cho ADB/freeform. Dialog tiến trình500ms lấy connection_status; một check mỗi
+lần, khóa đổi method/endpoint cho tới kết quả. ConnectionFailure đánh dấu lỗi
+có context an toàn; FailureText giữ giai đoạn/cổng và cause, redact cả hai.
+ContactProfile chứa link công khai/asset Zalo, không thêm API mạng tự động.
+
 ## Chính sách công khai0.3.6 — thay cơ chế đăng ký dưới đây
 RemoteControl GET /api/config không body/identifier/auth. Không enrollment/lease;
 cache tht_public_policy tách cache per-device cũ. Thiếu cấu hình cho dùng ngay.

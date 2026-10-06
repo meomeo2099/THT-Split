@@ -22,6 +22,9 @@ public final class MainActivity extends Activity {
     private final Handler refreshHandler=new Handler(Looper.getMainLooper());
     private boolean refreshing,downloading; private final Runnable refreshTick=new Runnable(){public void run(){refreshRemote(false,false);refreshHandler.postDelayed(this,60000);}};
     private final ExecutorService io=Executors.newSingleThreadExecutor();private String exportedLog;
+    private final ExecutorService networkIo=Executors.newSingleThreadExecutor();
+    private boolean connectionChecking;private AlertDialog connectionDialog;
+    private final Runnable connectionTick=new Runnable(){public void run(){if(!connectionChecking)return;if(connectionDialog!=null&&connectionDialog.isShowing())connectionDialog.setMessage(store.s("connection_status","Đang kiểm tra kết nối…"));refreshHandler.postDelayed(this,500);}};
     @Override public void onCreate(Bundle saved){super.onCreate(saved);store=new Store(this);if(saved!=null){page=saved.getString("page","home");section=saved.getString("section","layout");}}
     @Override protected void onSaveInstanceState(Bundle b){super.onSaveInstanceState(b);b.putString("page",page);b.putString("section",section);}
     @Override protected void onResume(){super.onResume();if(store!=null){render();refreshRemote(false,false);refreshHandler.postDelayed(refreshTick,60000);}}
@@ -208,6 +211,7 @@ public final class MainActivity extends Activity {
     }
     private String methodLabel(String m){return m.equals("off")?"Off — mở trực tiếp":m.equals("system")?"Quyền hệ thống":"ADB nội bộ";}
     private void chooseTransport(){
+        if(connectionChecking){toast("Đang kiểm tra kết nối, vui lòng đợi kết quả");return;}
         if(store.b("session_active",false)||store.b("session_busy",false)){toast("Tắt chia màn hiện tại trước khi chuyển phương thức");return;}
         String[] values={"adb","off","system"};AppUi.dialog(this).setTitle("Phương thức điều khiển").setItems(new String[]{"ADB nội bộ (mặc định)","Off — mở trực tiếp","Quyền hệ thống"},(d,n)->{
             if(values[n].equals("system")&&!Backend.systemGranted(this)){toast("Bản APK này chưa được cấp quyền hệ thống");return;}
@@ -215,12 +219,25 @@ public final class MainActivity extends Activity {
         }).setNegativeButton("Hủy",null).show();
     }
     private void adbEndpoint(){
+        if(connectionChecking){toast("Đang kiểm tra kết nối, vui lòng đợi kết quả");return;}
         if(store.b("session_active",false)||store.b("session_busy",false)){toast("Tắt chia trước khi đổi kết nối");return;}
         LinearLayout form=AppUi.column(this);AppUi.pad(form,16);EditText host=AppUi.input(this);host.setSingleLine(true);host.setHint("Địa chỉ chính màn xe");host.setText(store.s("adb_host","127.0.0.1"));form.addView(host);EditText port=AppUi.input(this);port.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);port.setText(String.valueOf(store.i("adb_port",5555)));form.addView(port);
         AlertDialog dialog=AppUi.dialog(this).setTitle("ADB nội bộ").setView(form).setPositiveButton("Lưu",null).setNegativeButton("Hủy",null).create();dialog.setOnShowListener(x->dialog.getButton(-1).setOnClickListener(v->{try{int n=Integer.parseInt(port.getText().toString());String h=host.getText().toString().trim();if(n<1||n>65535||h.isEmpty()||h.length()>64)throw new IllegalArgumentException();store.set("adb_host",h);store.set("adb_port",n);store.set("connection_status","Đã lưu địa chỉ; chưa kiểm tra");dialog.dismiss();render();}catch(IllegalArgumentException e){toast("Nhập địa chỉ hợp lệ và cổng 1–65535");}}));dialog.show();
     }
     private void runIo(Callable<String> task){io.execute(()->{String result;try{result=task.call();}catch(Exception e){result="Không thành công: "+com.tht.split.core.FailureText.describe(e);store.set("last_error",result);android.util.Log.e("THTSplit",result);}final String msg=result;runOnUiThread(()->{if(!isFinishing()&&!isDestroyed())AppUi.dialog(this).setTitle("THT Split").setMessage(msg).setPositiveButton("Đóng",null).show();});});}
-    private void checkConnection(){runIo(()->{JSONObject p=new Backend(this,store.s("transport","adb")).ping();String text=methodLabel(store.s("transport","adb"))+" sẵn sàng • UID "+p.getInt("uid")+" • API "+p.getInt("sdk")+(p.has("bridgeVersion")?" • bridge v"+p.getInt("bridgeVersion"):"")+"\nChưa chứng minh bố cục hiển thị đúng; hãy thử hai app trên xe.";store.set("connection_status",text);return text;});}
+    private void checkConnection(){
+        if(connectionChecking){toast("Đang kiểm tra kết nối; không cần bấm lại");return;}
+        connectionChecking=true;final String method=store.s("transport","adb");
+        store.set("connection_status","Đang kiểm tra "+methodLabel(method)+"…");
+        connectionDialog=AppUi.dialog(this).setTitle("Kiểm tra kết nối").setMessage(store.s("connection_status","")).setPositiveButton("Ẩn",null).create();connectionDialog.show();
+        refreshHandler.post(connectionTick);
+        io.execute(()->{String result;try{
+            JSONObject p=new Backend(this,method).ping();result=methodLabel(method)+" sẵn sàng • UID "+p.getInt("uid")+" • API "+p.getInt("sdk")+(p.has("bridgeVersion")?" • bridge v"+p.getInt("bridgeVersion"):"")+"\nHãy mở cặp app để kiểm tra bố cục trên màn.";
+        }catch(Exception e){result="Không thành công: "+com.tht.split.core.FailureText.describe(e);store.set("last_error",result);android.util.Log.e("THTSplit",result);}
+            store.set("connection_status",result);final String message=result;
+            runOnUiThread(()->{connectionChecking=false;refreshHandler.removeCallbacks(connectionTick);if(connectionDialog!=null){connectionDialog.dismiss();connectionDialog=null;}if(isFinishing()||isDestroyed())return;render();AppUi.dialog(this).setTitle("Kết quả kết nối").setMessage(message).setPositiveButton("Đóng",null).show();});
+        });
+    }
     private void freeform(boolean enable){runIo(()->{if(!enable&&!store.b("freeform_backup",false))return "Chưa có bản lưu tùy chọn cũ; không thay đổi.";JSONObject q=new JSONObject().put("op",enable?"FREEFORM_ENABLE":"FREEFORM_RESTORE");if(!enable)for(String key:new String[]{"enable_freeform_support","force_resizable_activities"})q.put(key,store.s("old_"+key,"null"));JSONObject out=new Backend(this,store.s("transport","adb")).call(q);if(enable&&!store.b("freeform_backup",false)){for(String key:new String[]{"enable_freeform_support","force_resizable_activities"})store.set("old_"+key,out.getString(key));store.set("freeform_backup",true);}if(!enable)store.set("freeform_backup",false);return enable?"Đã bật hỗ trợ freeform. Có thể cần reboot; ADB nội bộ tự thử kết nối lại khi dùng.":"Đã khôi phục tùy chọn cũ.";});}
     private void updateSettings(){
         body.addView(title("Phiên bản & cập nhật"));note("THT Split "+BuildConfig.VERSION_NAME);
@@ -235,10 +252,10 @@ public final class MainActivity extends Activity {
     }
     private void refreshRemote(boolean force,boolean show){
         RemoteControl remote=new RemoteControl(this);if(!remote.configured()){if(show)toast(remote.status());return;}if(refreshing)return;refreshing=true;final String before=remote.policy().toString()+remote.status()+remote.lastError();
-        io.execute(()->{String result;try{remote.refresh(force);result=remote.status();}catch(Exception e){result=remote.lastError()+"\n"+remote.status();}final String message=result;
+        networkIo.execute(()->{String result;try{remote.refresh(force);result=remote.status();}catch(Exception e){result=remote.lastError()+"\n"+remote.status();}final String message=result;
             runOnUiThread(()->{refreshing=false;if(isFinishing()||isDestroyed())return;if(show||!before.equals(remote.policy().toString()+remote.status()+remote.lastError()))render();if(show)AppUi.dialog(this).setTitle("Cập nhật ứng dụng").setMessage(message).setPositiveButton("Đóng",null).show();});});
     }
-    private void downloadUpdate(){if(downloading){toast("Đang tải, vui lòng đợi");return;}downloading=true;toast("Đang tải APK…");io.execute(()->{try{
+    private void downloadUpdate(){if(downloading){toast("Đang tải, vui lòng đợi");return;}downloading=true;toast("Đang tải APK…");networkIo.execute(()->{try{
         RemoteControl r=new RemoteControl(this);r.refresh(true);JSONObject latest=r.policy().getJSONObject("latest");ApkUpdates.download(this,latest);
         runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()){render();AppUi.dialog(this).setTitle("Đã kiểm tra APK").setMessage("Cài bản cập nhật "+latest.optString("versionName")+"?").setPositiveButton("Cài đặt",(d,n)->installDownloaded()).setNegativeButton("Để sau",null).show();}});
         }catch(Exception e){String msg=com.tht.split.core.FailureText.describe(e);runOnUiThread(()->{if(!isDestroyed())AppUi.dialog(this).setTitle("Không tải được cập nhật").setMessage(msg).setPositiveButton("Đóng",null).show();});}finally{runOnUiThread(()->downloading=false);}});
@@ -270,8 +287,23 @@ public final class MainActivity extends Activity {
         try(InputStream in=getAssets().open(DonationProfile.QR_ASSET)){android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeStream(in);if(bmp==null)throw new IOException("Không đọc được QR");image.setImageBitmap(bmp);}
         catch(IOException e){image.setVisibility(View.GONE);qr.addView(AppUi.text(this,"Không đọc được QR. Hãy sao chép số tài khoản.",15,AppUi.MUTED));}
         space(qr,12);TextView hint=AppUi.text(this,"Mở ứng dụng ngân hàng trên điện thoại\nđể quét mã QR.",14,AppUi.MUTED);hint.setGravity(Gravity.CENTER);qr.addView(hint);
+        contacts();
+    }
+    private void contacts(){
+        space(body,28);body.addView(title("Liên hệ THT"));space(body,12);
+        boolean wide=landscapeLayout();LinearLayout content=wide?AppUi.row(this):AppUi.column(this);content.setGravity(Gravity.TOP);body.addView(content,lp(-1,-2));
+        LinearLayout facebook=AppUi.column(this);AppUi.pad(facebook,24);facebook.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,16)));content.addView(facebook,wide?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
+        facebook.addView(title("Facebook"));space(facebook,8);facebook.addView(AppUi.text(this,"Trao đổi và gửi phản hồi cho THT.",16,AppUi.MUTED));space(facebook,16);
+        button(facebook,"Mở Facebook",true,()->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(ContactProfile.FACEBOOK_URL)));}catch(ActivityNotFoundException e){toast("Máy chưa có ứng dụng mở liên kết. Hãy sao chép link Facebook.");}});
+        button(facebook,"Sao chép link Facebook",false,()->copy(ContactProfile.FACEBOOK_URL));
+        if(wide)content.addView(new View(this),lp(AppUi.dp(this,24),1));else space(content,20);
+        LinearLayout zalo=AppUi.column(this);AppUi.pad(zalo,24);zalo.setGravity(Gravity.CENTER_HORIZONTAL);zalo.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,16)));content.addView(zalo,wide?lp(AppUi.dp(this,348),-2):lp(-1,-2));
+        TextView label=AppUi.text(this,"Kết nối qua Zalo",19,AppUi.TEXT);label.setTypeface(null,Typeface.BOLD);zalo.addView(label);space(zalo,16);
+        int size=wide?280:Math.min(280,Math.max(160,screenWidth-96));ImageView qr=new ImageView(this);qr.setContentDescription("QR Zalo liên hệ THT");qr.setBackgroundColor(android.graphics.Color.WHITE);qr.setScaleType(ImageView.ScaleType.FIT_CENTER);qr.setPadding(AppUi.dp(this,12),AppUi.dp(this,12),AppUi.dp(this,12),AppUi.dp(this,12));zalo.addView(qr,lp(AppUi.dp(this,size),AppUi.dp(this,size)));
+        try(InputStream in=getAssets().open(ContactProfile.ZALO_QR_ASSET)){android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeStream(in);if(bmp==null)throw new IOException("Không đọc được QR Zalo");qr.setImageBitmap(bmp);}catch(IOException e){qr.setVisibility(View.GONE);zalo.addView(AppUi.text(this,"Không đọc được QR Zalo. Bạn có thể liên hệ qua Facebook.",15,AppUi.MUTED));}
+        space(zalo,12);TextView hint=AppUi.text(this,"Mở Zalo trên điện thoại để quét mã.",14,AppUi.MUTED);hint.setGravity(Gravity.CENTER);zalo.addView(hint);
     }
     private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
     @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request==31&&result==RESULT_OK&&data!=null&&data.getData()!=null&&exportedLog!=null)try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out==null)throw new IOException("Không mở được tệp");out.write(exportedLog.getBytes("UTF-8"));toast("Đã xuất log");}catch(Exception e){toast("Không lưu được log: "+e.getMessage());}}
-    @Override protected void onDestroy(){refreshHandler.removeCallbacksAndMessages(null);io.shutdownNow();super.onDestroy();}
+    @Override protected void onDestroy(){refreshHandler.removeCallbacksAndMessages(null);if(connectionDialog!=null){connectionDialog.dismiss();connectionDialog=null;}io.shutdownNow();networkIo.shutdownNow();super.onDestroy();}
 }

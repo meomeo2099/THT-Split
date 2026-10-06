@@ -20,7 +20,8 @@ public final class ConnectionManager {
                 String output=adb.bootstrap(shell.startCommand()+" echo THT_BOOTSTRAP_SENT");
                 if(!output.contains("THT_BOOTSTRAP_SENT"))throw new IOException("Không gửi được lệnh mở bridge");
             }catch(Exception e){String detail="Không kết nối được ADB nội bộ. "+FailureText.describe(e);s.set("connection_status",detail);s.set("last_error",detail);throw new IOException(detail,e);}
-            Exception last=null;for(int i=0;i<12;i++){try{JSONObject p=shell.ping();checkUid(p);checkVersion(p);s.set("connection_status","ADB nội bộ → bridge sẵn sàng");return p;}catch(java.net.ConnectException e){last=e;Thread.sleep(250);}}
+            // Preserve the old ~4s startup budget without paying a fixed 1s delay.
+            Exception last=null;for(int i=0;i<16;i++){try{JSONObject p=shell.ping();checkUid(p);checkVersion(p);s.set("connection_status","ADB nội bộ → bridge sẵn sàng");return p;}catch(java.net.ConnectException e){last=e;Thread.sleep(250);}}
             throw new IOException("Bridge chưa chạy. Xem log hỗ trợ hoặc dùng lệnh ADB thủ công.",last);
         }
     }

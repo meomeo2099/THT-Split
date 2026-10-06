@@ -1,4 +1,23 @@
-# Bàn giao THT Split — 0.3.7-test, 06/10/2026
+# Bàn giao THT Split — 0.3.8-test, 06/10/2026
+
+## Mốc0.3.8 — khôi phục khởi động Bridge theo0.3.4
+Chủ dự án xác nhận0.3.4 chạy bình thường trên LDPlayer9, bản mới tự mở Bridge
+thất bại. Ảnh0.3.7: ADB đã nhận bootstrap marker nhưng listener39871 refused;
+log Bridge người dùng nói trống. tht-adb-log.txt gửi lại là log05/10 14:48 của
+lỗi CRT đã sửa0.2.9, không dùng làm nguyên nhân lỗi0.3.7.
+Đối chiếu GitHub code27bbd74229c75ee42393c519a493c1fcf1fab77d: ShellClient,
+ShellServer6/transport/RSA không có thay đổi chức năng. Khác biệt đáng chú ý:
+0.3.4 dùng "sleep 1; echo THT_BOOTSTRAP_SENT" bên trong remote shell.0.3.5 bỏ
+sleep,0.3.5 bổ sung16 poll sau shell đóng để giữ tổng~4s. Hai cách không tương
+đương về vòng đời shell/PTY, dù tổng thời gian gần nhau. AOSP Android9 classic
+shell không protocol dùng PTY, master đóng gửi SIGHUP. Race trước khi nohup
+ổn định là giả thuyết hợp lý, chưa được xác minh trên LDPlayer9.
+0.3.8/code20 khôi phục đúng sleep1 bên trong shell và12×250ms PING như0.3.4;
+không tự mở lặp/kill tiến trình/đổi token/RSA/bỏUID/version/checksum. Bridge đã
+sẵn sàng vẫn trả ngay qua PING đầu. Không đổi UI0.3.7, liên hệ, donation/icon,
+Worker/public policy/Voice/Off/task engine/overlay; giữ progress và networkIo.
+Chờ CI unit/lint/build/QR; cần thử LDPlayer9 sau reboot mà không mở bridge thủ
+công, so cùng cấu hình0.3.4. Không khẳng định mọi lỗi Bridge đã hết từ diff/build.
 
 ## Mốc mới0.3.7 — phản hồi ADB chậm và liên hệ
 Ảnh06/10 báo ErrnoException/isConnected ECONNREFUSED; ảnh không cho biết

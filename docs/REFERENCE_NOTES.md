@@ -1,5 +1,13 @@
 # Nguồn tham khảo và giới hạn
 
+## Vòng đời shell Android9 và rollback0.3.8
+AOSP classic shell không shell-protocol dùng PTY dù yêu cầu raw; đóng master
+PTY gửi SIGHUP. nohup cần được thực thi trước khi shell đóng; vì vậy sleep giữ
+remote shell mở khác với polling ở app sau close. Race cụ thể trên LDPlayer9
+là suy luận từ nguồn và regression báo bởi người dùng, chưa có log chứng minh.
+https://android.googlesource.com/platform/system/core/+/refs/tags/android-9.0.0_r1/adb/shell_service.cpp
+Nguồn0.3.4 đối chiếu: commit27bbd74229c75ee42393c519a493c1fcf1fab77d.
+
 ## Chẩn đoán socket0.3.7
 AOSP IoBridge isConnected đọc SO_ERROR, ECONNREFUSED được bọc ConnectException;
 FailureText trước chỉ hiện ErrnoException sâu nhất nên mất endpoint/giai đoạn.

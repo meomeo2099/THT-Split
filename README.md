@@ -1,6 +1,6 @@
 # THT Split
 
-App chia màn hình độc lập cho Geely EX2, package `com.tht.split`, bản `0.3.7-test`.
+App chia màn hình độc lập cho Geely EX2, package `com.tht.split`, bản `0.3.8-test`.
 Chọn hai app, lưu/sửa/xóa cặp, chọn tỷ lệ, đổi app/đổi bên, fullscreen/restore,
 Home/X và thanh điều khiển ẩn/hiện. Popup thuộc THT Voice.
 Mục ủng hộ có STK, QR ngân hàng và QR Zalo nhúng sẵn, dùng offline; có nút mở/sao chép Facebook. Ai cài cũng dùng ngay, không

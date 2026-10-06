@@ -1,5 +1,15 @@
 # Cài và kiểm thử 0.2.9-test trên EX2
 
+## Kiểm0.3.8 — so với0.3.4 trên LDPlayer9
+- Chủ dự án báo0.3.4 hoạt động,0.3.7 marker thành công nhưng Bridge39871 refused.
+- Reboot LDPlayer9 để Bridge cũ không còn, giữ ADB nội bộ5555 đã hoạt động.
+- Mở0.3.8, cấp overlay, kiểm tra tự mở; không dán lệnh bridge dự phòng trước test.
+- Kiểm UID0/2000/version6 rồi mở cặp, ratio/fullscreen/restore/stop.
+- Khi Bridge đã chạy, bấm kiểm tra phải trả nhanh; khi chưa chạy có grace1s trong
+  remote shell +~3s poll. Giữ progress dialog không xếp sau Worker HTTP.
+- Nếu vẫn lỗi: ghi kết quả mới/log khởi động từ đúng instance. Log CRT05/10 cũ
+  không đại diện cho0.3.7/0.3.8. Chưa thử bản rollback trên thiết bị.
+
 ## Kiểm thêm0.3.7 — lỗi ADB và liên hệ
 - Worker chậm/offline: bấm Kiểm tra thấy tiến trình ngay, ADB không xếp sau HTTP.
 - Tắt ADB/cổng sai: lỗi phải có host:port và hướng bật TCP/cổng nội bộ; không

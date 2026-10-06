@@ -1,5 +1,9 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Phản hồi06/10 — hồi quy ADB trên LDPlayer9
+- Chủ dự án xác nhận0.3.4 hoạt động bình thường, nâng bản mới Bridge không chạy.
+- Ưu tiên đối chiếu và khôi phục luồng hoạt động cũ, giữ UI/liên hệ/cập nhật mới.
+
 ## Chốt06/10 — ADB và liên hệ
 - Báo rõ lỗi ADB và phản hồi ngay khi bấm Kiểm tra, không chờ cập nhật qua mạng.
 - Thêm QR Zalo đúng ảnh chủ dự án gửi và Facebook100004637940665 trong Ủng hộ.

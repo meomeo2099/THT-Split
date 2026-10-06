@@ -1,5 +1,10 @@
 # Kiến trúc THT Split 0.2
 
+## Startup0.3.8 — ưu tiên hơn tối ưu0.3.5 bên dưới
+Khôi phục grace1s trong remote shell trước bootstrap marker; ADB shell được giữ
+mở trong khoảng này. Sau shellCLSE/ADBclose:12 poll250ms. PING đầu vẫn nhanh
+khi Bridge sẵn sàng. Không thay grace bằng chờ ở app sau khi shell đã đóng.
+
 ## Kết nối/UI0.3.7
 MainActivity có executor mạng riêng cho Worker/APK, executor thao tác cục bộ
 cho ADB/freeform. Dialog tiến trình500ms lấy connection_status; một check mỗi

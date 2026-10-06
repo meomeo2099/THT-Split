@@ -18,12 +18,14 @@ public final class ConnectionManager {
             s.set("connection_status","Đang kết nối ADB "+s.s("adb_host","127.0.0.1")+":"+s.i("adb_port",5555)+"; xác nhận khóa trên màn nếu được hỏi…");
             try(LocalAdb adb=new LocalAdb(c,s.s("adb_host","127.0.0.1"),s.i("adb_port",5555))){
                 // Key and bridge secret never leave this device or appear in an API/log response.
-                String output=adb.bootstrap(shell.startCommand()+" echo THT_BOOTSTRAP_SENT");
+                // Keep the remote shell alive while nohup/app_process starts, as in 0.3.4.
+                // Polling after this shell closes does not provide the same startup grace.
+                String output=adb.bootstrap(shell.startCommand()+" sleep 1; echo THT_BOOTSTRAP_SENT");
                 if(!output.contains("THT_BOOTSTRAP_SENT"))throw new IOException("Không gửi được lệnh mở bridge");
             }catch(Exception e){Exception failure=e instanceof ConnectionFailure?e:new ConnectionFailure("Không mở được bridge qua ADB "+s.s("adb_host","127.0.0.1")+":"+s.i("adb_port",5555)+".",e);String detail=FailureText.describe(failure);s.set("connection_status",detail);s.set("last_error",detail);throw failure;}
             s.set("connection_status","Đã gửi lệnh ADB; đang chờ bridge khởi động…");
-            // Preserve the old ~4s startup budget without paying a fixed 1s delay.
-            Exception last=null;for(int i=0;i<16;i++){try{JSONObject p=shell.ping();checkUid(p);checkVersion(p);s.set("connection_status","ADB nội bộ → bridge sẵn sàng");return p;}catch(java.net.ConnectException e){last=e;Thread.sleep(250);}}
+            // Restore the 0.3.4 sequence: 1s inside the shell, then ~3s of PING retries.
+            Exception last=null;for(int i=0;i<12;i++){try{JSONObject p=shell.ping();checkUid(p);checkVersion(p);s.set("connection_status","ADB nội bộ → bridge sẵn sàng");return p;}catch(java.net.ConnectException e){last=e;Thread.sleep(250);}}
             throw new ConnectionFailure("ADB đã nhận lệnh nhưng bridge chưa chạy ở 127.0.0.1:"+ShellClient.PORT+". Xem log hỗ trợ hoặc dùng lệnh bridge dự phòng.",last);
         }
     }

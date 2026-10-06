@@ -9,6 +9,15 @@ cap/length/hash/progress/interruption download. Thêm4 SettingsBackupFileTest
 Gradle offline thiếu plugin AGP8.7.3, không coi đó là full unit/lint/build đạt.
 Chưa thử UI/restore qua document picker/overlay thực hoặc đo độ mượt trên xe.
 
+CI0.3.11: release37462993653/job112266943255 completed/success, unitRelease/
+lintRelease/build, Node24, QR, Worker dry-run, signer, metadata/publish đạt.
+Debug37462993629/job112266942634 completed/success: unitDebug/lintDebug/build/signer.
+Artifact11413716018 thực kiểm package/version23/name/min26/target32,264609 bytes,
+apksigner v2 cùng cert e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2.
+SHA03b1014c5e6fff2689dabc589a647afb93ea4cee07f183c48fbe7fe5d8328aa6 khớp
+checksum/update.json/GitHub digest, assets giữ byte-identical0.3.10.
+62 test methods trong nguồn, cả unitRelease/unitDebug đạt; chưa có device UI test.
+
 
 ## Worker admin8 ngày06/10
 Code0bf463983c357e6145208faa77b81e5ba4a66338.24 Node tests local/CI đạt;

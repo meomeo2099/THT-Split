@@ -18,7 +18,18 @@ hoặc bootstrap shell: giữ sleep1/echo và12 PING250ms đúng quy tắc ổn 
 Local: toàn bộ41 Java nguồn biên dịch với Android35 và58 kiểm thử lõi đạt;
 git diff --check đạt. Gradle offline thiếu AGP8.7.3, chưa chạy được full build
 tại máy. Thêm4 kiểm thử đọc JSON thực với org.json chỉ trong test dependency;
-đợi CI unit/lint/APK ký trước khi bàn giao. Chưa benchmark LDPlayer/xe.
+CI đã chạy thành công unitRelease/lintRelease/assembleRelease và unitDebug/
+lintDebug/assembleDebug, cả4 JSON tests mới không còn bị chặn dependency.
+Codecad1cb502bdb2766e5b88a0b162b5914217ed0ee; release37462993653/
+job112266943255 completed/success; debug37462993629/job112266942634
+completed/success, unit/lint/build/signer và post-job đạt.
+Release404678577/v0.3.11-test prerelease=true/draft=false, APK615451040/
+checksum615451042/manifest615451043. Artifact11413716018 tải và kiểm APK thực:
+com.tht.split/code23/0.3.11-test/min26/target32,264609 bytes; SHA
+03b1014c5e6fff2689dabc589a647afb93ea4cee07f183c48fbe7fe5d8328aa6 khớp
+checksum/manifest/GitHub digest; apksigner v2 đạt cùng cert tht-split đã pin.
+Assets byte-identical0.3.10, không đổi Worker/icon/QR. Chưa thử cập nhật
+0.3.10→0.3.11 hoặc benchmark UI/LDPlayer/xe; cần DEVICE_TEST.
 
 
 ## Bản thử cập nhật cùng khóa — chốt18:32

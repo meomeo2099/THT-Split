@@ -1,5 +1,29 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## 0.3.7-test — ADB phản hồi ngay và liên hệ06/10
+Code fe384fcf725e0ff722708c53e619d0de5af97903; versionCode19.
+CI37423152988/job112136801691 completed/success:
+https://github.com/meomeo2099/THT-Split/actions/runs/37423152988
+Android unit/lint/assemble đạt; Node8 tests, QR ngân hàng/contact và Wrangler
+ dry-run đạt. Hai regression tests mới: context/endpoint còn khi cause lồng
+ECONNREFUSED; secret trong cả context/cause được ẩn. QR Zalo decode gốc và
+kích thước nhỏ136px cùng payload; không sửa QR hoặc dùng URL QR để gửi mạng.
+
+APK SHA256: 34f391be0151730973566cfea121842c926480b84928b332883a7fb955b6735e
+Cert SHA256: 0a7da9cdbb44034105fdff4c19ff6ed585d4deb253785acfd92f48321aa3f9b9
+apksigner đạt; aapt package com.tht.split/code19/0.3.7-test/min26/target32.
+Asset contact-zalo.png byte-identical ảnh chủ dự án gửi, SHA256:
+2e7c31d9cecc61f05bc7ef5aaece643121bcd21a062ad5897146603379a025a6
+QR MB và launcher foreground/background APK byte-identical0.3.6. Quét toàn bộ
+dex có FB/contact asset/networkIo/ConnectionFailure/Worker origin/api/config;
+không api/device/android_id/deviceId/offlineSeconds. Worker/policy không đổi.
+Signer CI khác0.3.6 nên không cài đè bản đó. Không tự gỡ app để giữ dữ liệu.
+
+Không thử UI/ADB trên LDPlayer/xe: không khẳng định ECONNREFUSED trên máy người
+dùng đã hết. Kết nối TCP/RSA/timeouts, bootstrap chỉ khi ConnectException,
+Bridge6/UID/token/Off/session/task/Voice giữ nguyên; chỉ tách hàng chờ mạng,
+phản hồi tiến trình/dedup và giữ context lỗi. Cổng thực tế vẫn cần bật/chọn đúng.
+
 ## 0.3.6-test — bỏ đăng ký, dùng ngay06/10
 Code c36f6f0341c7339b5b408cd2f3ebd26cdd2bc25c; versionCode18.
 CI37421410376/job112131367276 completed/success:

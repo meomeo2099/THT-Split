@@ -16,8 +16,11 @@ Không thay Bridge v6/engine/overlay/Off/Voice/Worker/policy dùng ngay0.3.6.
 Ủng hộ thêm Liên hệ THT: QR Zalo PNG gốc do chủ dự án gửi, không sửa/crop;
 FB đúng https://www.facebook.com/100004637940665, mở/copy khi người dùng bấm.
 QR offline/nền trắng/FIT_CENTER; màn rộng hai card, hẹp xếp dọc/cuộn.
-VersionCode19/0.3.7-test. Chờ CI unit/lint/build và kiểm bytes QR trong APK;
-chưa test bản sửa trên LDPlayer/xe, không khẳng định cổng ADB thật đã hoạt động.
+VersionCode19/0.3.7-test/code fe384fcf725e0ff722708c53e619d0de5af97903.
+CI37423152988 unit/lint/build/Node8/QR/dry-run đạt; APK/cert/code kiểm xong,
+Zalo asset nguyên bytes, đọc được136px; QR MB/icon giữ nguyên0.3.6.
+Chưa test LDPlayer/xe, không khẳng định cổng ADB thật đã hoạt động.
+Signer khác0.3.6, không cài đè. Xem VALIDATION và DEVICE_TEST.
 
 ## Mốc mới — bỏ đăng ký để ai cài cũng dùng ngay
 Chốt mới của chủ dự án bỏ đăng ký từng thiết bị.0.3.6/code18 dùng GET /api/config

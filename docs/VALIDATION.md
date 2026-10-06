@@ -1,5 +1,31 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## 0.3.6-test — bỏ đăng ký, dùng ngay06/10
+Code c36f6f0341c7339b5b408cd2f3ebd26cdd2bc25c; versionCode18.
+CI37421410376/job112131367276 completed/success:
+https://github.com/meomeo2099/THT-Split/actions/runs/37421410376
+Android unit/lint/assemble đạt; Node8 tests local/CI, QR và Wrangler dry-run đạt.
+Public GET không auth/body, không ghi/sinh records. APIs enrollment/admin-device/
+reenroll cũ410. Admin secret vẫn chặn sửa config, public GET không bỏ khóa chung.
+Legacy device records không dùng và không xóa; lease/autoApprove không vào response.
+Java4 regression tests: dùng ngay thiếu config/Worker, không lease/đăng ký, global
+lock/minversion đã nhận vẫn chặn và Stop/Home/Hide luôn thoát được.
+
+APK SHA256: c953819ff31dd6af1298500e4bc59ff99df5014897fc1bfce19eaab7ed40f344
+Cert SHA256: 2dc79be82a285e6181f93aa3ad3fa8f172e2c9f00335064640aa9af827ff4e36
+apksigner verify đạt; aapt com.tht.split/code18/0.3.6-test/min26/target32.
+Quét toàn bộ dex: origin đúng/GET api/config, không api/device/android_id/deviceId/
+offlineSeconds/commandDenial. Icon foreground/background và QR APK byte-identical
+0.3.5. Worker ZIP SHA256: 2b552e3e1c50507a8f8d44592fd5f931a99b77ec99e1eeb0c5d34cc46475cc06
+Gói Worker có README/config/module, không có key/admin/signing credentials.
+
+Static scope: backend/Bridge6/RSA/Voice/Store/SplitService/SplitEngine/overlay/Ui/
+AppUi/icon/QR và ApkUpdates kiểm APK giữ nguyên0.3.5. RemoteControl namespace mới
+tht_public_policy không đọc khóa/lease per-device cũ và require không gọi mạng.
+Chưa chạy APK trên LDPlayer/xe hoặc deploy Cloudflare; các kết quả trên không
+chứng minh trạng thái surface, quyền firmware hay layout thực trên xe.
+Signer test khác0.3.5, không cài đè được bản đó. Keystore ổn định vẫn chưa cấu hình.
+
 ## 0.3.5-test — Worker thật / icon / giảm chờ06/10
 Code4f1b98dac048e9a5e6bbbed5f292a639935ba699; versionCode17.
 CI37420223825/job112127693172 completed/success:

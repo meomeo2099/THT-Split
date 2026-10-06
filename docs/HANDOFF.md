@@ -11,8 +11,12 @@ enabled/min0. Config đã nhận locked/min vẫn giữ khi lỗi mạng; Stop/H
 thoát được. GET config không ghi storage; admin writes có secret. CONTROL/name
 chiamanhinh giữ namespace, health protocol2/registrationfalse. README/REMOTE_CONTROL
 đã viết lại cho cơ chế dùng ngay. Các mốc đăng ký bên dưới là lịch sử đã bỏ.
-Node8 tests local đạt; chờ CI Java4 tests/public policy/lint/build, QR/Wrangler
-dry-run. Chưa deploy CF/test xe; icon0.3.5, chia/backend/overlay không đổi.
+Node8 tests local/CI đạt; Java4 tests public policy cùng unit/lint/build Android
+đạt. CI: https://github.com/meomeo2099/THT-Split/actions/runs/37421410376
+Code c36f6f0341c7339b5b408cd2f3ebd26cdd2bc25c/code18; QR/Wrangler dry-run đạt.
+APK đã kiểm package/version/cert, origin/API công khai, không còn id/đăng ký/lease
+trong toàn bộ dex; icon/QR bytes giữ nguyên0.3.5. Signer test khác0.3.5, không cài
+đè bản đó. Xem VALIDATION. Chưa deploy CF/test xe; chia/backend/overlay không đổi.
 
 
 ## Mốc Worker thật, launcher icon và giảm chờ

@@ -24,7 +24,8 @@ export default {
   async fetch(request,env){
     const url=new URL(request.url);
     const adminToken=env.ADMIN_TOKEN||env.ADMIN_PASSWORD;
-    if(url.pathname==='/api/health'&&request.method==='GET')return json({service:'tht-split-control',protocol:2,registration:false,storage:!!env.CONTROL,adminConfigured:!!adminToken&&adminToken.length>=32});
+    const adminConfigured=typeof adminToken==='string'&&adminToken.length>=8&&adminToken.length<=256;
+    if(url.pathname==='/api/health'&&request.method==='GET')return json({service:'tht-split-control',protocol:2,registration:false,storage:!!env.CONTROL,adminConfigured});
     if(url.pathname==='/'&&request.method==='GET')return adminPage();
     if(['/api/device','/api/admin/device','/api/admin/reenroll'].includes(url.pathname))return json({error:'Đã bỏ quản lý và đăng ký từng thiết bị'},410);
     if((url.pathname==='/api/config'||/^\/api\/apk\/[1-9][0-9]*$/.test(url.pathname))&&request.method==='GET'){
@@ -32,7 +33,7 @@ export default {
       return env.CONTROL.get(env.CONTROL.idFromName('control')).fetch(request);
     }
     if(url.pathname.startsWith('/api/admin/')){
-      if(!adminToken||adminToken.length<32)return json({error:'Chưa cấu hình ADMIN_TOKEN hoặc ADMIN_PASSWORD ít nhất 32 ký tự'},503);
+      if(!adminConfigured)return json({error:'ADMIN_TOKEN hoặc ADMIN_PASSWORD phải dài từ 8 đến 256 ký tự'},503);
       const token=request.headers.get('Authorization')?.replace(/^Bearer /,'')||'';
       if(token.length>256||!await same(token,adminToken))return json({error:'Không được phép'},401);
       if(!env.CONTROL)return json({error:'Chưa cấu hình kho cập nhật CONTROL'},503);

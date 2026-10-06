@@ -55,6 +55,27 @@ test('health exposes protocol2/no registration and missing storage returns updat
  const r=await worker.fetch(request('/api/health'),{});assert.deepEqual(await r.json(),{service:'tht-split-control',protocol:2,registration:false,storage:false,adminConfigured:false});
  assert.equal((await worker.fetch(request('/api/config'),{})).status,503);
 });
+test('admin password accepts 8..256 characters, keeps old passwords and rejects wrong credentials',async()=>{
+ for(const [length,valid] of [[7,false],[8,true],[32,true],[256,true],[257,false]]){
+   const {env}=setup();env.ADMIN_TOKEN='x'.repeat(length);
+   const health=await (await worker.fetch(request('/api/health'),env)).json();assert.equal(health.adminConfigured,valid);
+   const response=await worker.fetch(authorized('/api/admin/state',null,env),env);assert.equal(response.status,valid?200:503);
+   if(valid){const wrong=request('/api/admin/state');wrong.headers.set('Authorization','Bearer '+'y'.repeat(length));assert.equal((await worker.fetch(wrong,env)).status,401);}
+ }
+});
+test('short ADMIN_PASSWORD login preserves stored lock, mandatory, source, cache and legacy records',async()=>{
+ const {c,env}=setup();env.ADMIN_PASSWORD='test1234';delete env.ADMIN_TOKEN;
+ await c.storage.put('config',config({state:'locked',reason:'Giữ trạng thái',minimumVersionCode:21,
+   latest:{versionCode:21,versionName:'0.3.9-test',apkUrl:'https://download.test/app.apk',sha256:'a'.repeat(64),notes:''}}));
+ await c.storage.put('update-settings',{source:'manual',includePrerelease:true});
+ await c.storage.put('github-cache',{checkedAt:123,snapshot:{assetId:11}});
+ await c.storage.put('device:old',{state:'locked',note:'Giữ hồ sơ cũ'});
+ const before=structuredClone([...c.storage.data]),writes=c.storage.writes;
+ const login=request('/api/admin/state');login.headers.set('Authorization','Bearer '+env.ADMIN_PASSWORD);
+ assert.equal((await worker.fetch(login,env)).status,200);
+ assert.equal((await (await worker.fetch(request('/api/config'),env)).json()).state,'locked');
+ assert.deepEqual([...c.storage.data],before);assert.equal(c.storage.writes,writes);
+});
 test('admin screen has shared lock/update controls with no device list or offline lease',async()=>{
  const html=await adminPage().text();assert.ok(html.includes('Mở cho mọi người'));assert.ok(html.includes('Tạm khóa toàn ứng dụng'));
  assert.ok(!html.includes('id="devices"'));assert.ok(!html.includes('id="offline"'));assert.ok(!html.includes('reenroll'));

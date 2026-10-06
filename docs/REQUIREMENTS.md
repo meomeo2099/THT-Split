@@ -1,5 +1,10 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt06/10 14:43 — mật khẩu quản trị ngắn hơn, giữ dữ liệu Worker
+- Cho phép ADMIN_TOKEN/ADMIN_PASSWORD từ8 đến256 ký tự; giữ mật khẩu cũ hợp lệ.
+- Gửi gói Worker cập nhật, giữ CONTROL/class/namespace và toàn bộ config/cache.
+- Không đổi APK/keystore/Bridge hoặc xóa dữ liệu khi nâng Worker.
+
 ## Chốt06/10 14:17 — Worker tự cập nhật qua GitHub
 - Làm theo cơ chế biến GITHUB_REPO/GITHUB_TOKEN/RELEASE_CERT_SHA256 như ảnh Voice.
 - Dùng repo THT-Split riêng; token chỉ ở Worker, đọc repo private và proxy APK.

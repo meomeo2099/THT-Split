@@ -4,7 +4,7 @@
 Server đã hỗ trợ GitHub API repo private meomeo2099/THT-Split. Đặt GITHUB_TOKEN
 là Secret riêng Contents: Read, GITHUB_REPO và RELEASE_CERT_SHA256 là Variables;
 wrangler.jsonc có repo/pin mặc định. GITHUB_INCLUDE_PRERELEASE=true cho0.3.9-test.
-ADMIN_PASSWORD alias ADMIN_TOKEN được hỗ trợ, chỉ dùng một mật khẩu≥32 ký tự.
+ADMIN_PASSWORD alias ADMIN_TOKEN được hỗ trợ, chỉ dùng một mật khẩu từ8 đến256 ký tự.
 Các biến license/VIN ở ảnh THTVoice không cần cho Split.
 
 Workflow upload THT-Split.apk, checksum và update.json (metadata từ APK thực),
@@ -70,7 +70,7 @@ npx --yes wrangler@4 secret put ADMIN_TOKEN
 npx --yes wrangler@4 deploy
 ```
 
-Đăng nhập đúng tài khoản subdomain mavoice. Nhập mật khẩu ngẫu nhiên ít nhất32 ký
+Đăng nhập đúng tài khoản subdomain mavoice. Nhập mật khẩu riêng ít nhất8 ký
 tự khi secret put hỏi; không gửi cho khách/đưa vào APK/source/GitHub. Wrangler
 name=chiamanhinh thay mã Worker hiện có, CONTROL SQLite được tạo/bind qua exports.
 Giữ tên class/namespace khi nâng, không dùng tên mới hoặc xóa dữ liệu.

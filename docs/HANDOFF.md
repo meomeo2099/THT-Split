@@ -1,5 +1,14 @@
 # Bàn giao THT Split — 0.3.9-test, 06/10/2026
 
+## Worker mật khẩu ngắn hơn — chốt14:43
+ADMIN_TOKEN/ADMIN_PASSWORD chấp nhận8..256 ký tự, health/admin gate cùng kiểm;
+8 ký tự dùng được,7 và257 bị từ chối. UI ghi rõ8..256. Mật khẩu cũ≥32 vẫn dùng.
+Không đổi CONTROL binding/class/namespace/wrangler vars hoặc schema/key/defaults,
+không migration/reset/delete data; thay code trong Worker chiamanhinh hiện tại.
+State/minimum/source/cache/records cũ/Secrets được giữ. Không đổi APK/code21,
+keystore/ADB/Bridge/Voice/UI Android. README có cách nâng cùng Worker và giữ binding.
+Đang kiểm local/CI Worker; chưa deploy vào tài khoản CF của chủ dự án.
+
 ## Worker GitHub API — chốt14:17
 Đã bổ sung server/github.mjs, cache Durable Object riêng và proxy /api/apk/<id>.
 Vars GITHUB_REPO/GITHUB_INCLUDE_PRERELEASE/RELEASE_CERT_SHA256; Secret GITHUB_TOKEN

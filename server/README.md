@@ -14,7 +14,7 @@ GitHub cho app. Source repo không được công khai; chỉ APK đã duyệt m
 | Variable | GITHUB_INCLUDE_PRERELEASE | true (nhận bản -test; false chỉ nhận bản chính thức) |
 | Variable | RELEASE_CERT_SHA256 | e7874ffe498bfc9badbb0880194efdb5b1f14093c6a9e37ee536027378c3c5d2 |
 | Secret | GITHUB_TOKEN | Fine-grained PAT chỉ chọn repo THT-Split, Contents: Read |
-| Secret | ADMIN_TOKEN | Mật khẩu quản trị riêng, từ 32 đến 256 ký tự |
+| Secret | ADMIN_TOKEN | Mật khẩu quản trị riêng, từ 8 đến 256 ký tự |
 
 GITHUB_REPO/RELEASE_CERT_SHA256/GITHUB_INCLUDE_PRERELEASE đã có trong wrangler.jsonc.
 ADMIN_PASSWORD được hỗ trợ làm tên thay thế ADMIN_TOKEN như mẫu THTVoice.
@@ -39,6 +39,19 @@ mật khẩu hợp lệ. CONTROL SQLite/class/namespace giữ nguyên khi nâng,
 dữ liệu hoặc tạo Worker tên khác. Nếu copy mã trong editor web, cần thay bằng
 worker.mjs đã đóng gói VÀ giữ binding CONTROL, thêm Variables/Secrets như bảng.
 Chỉ copy mã mà thiếu CONTROL chưa đủ. Gói không chứa token hay keystore.
+
+## Nâng cấp giữ dữ liệu
+
+Bản này chấp nhận mật khẩu ngắn hơn (tối thiểu 8 ký tự). Mật khẩu cũ dài hơn
+vẫn dùng được, không bắt buộc đổi. Muốn dùng mật khẩu ngắn, sửa Value của Secret
+ADMIN_TOKEN hoặc ADMIN_PASSWORD trên Worker đang dùng, rồi Deploy.
+
+Trên dashboard: mở Worker chiamanhinh hiện tại → Edit code → thay nội dung
+bằng worker.mjs trong gói → Deploy. Giữ nguyên CONTROL binding, class Control,
+namespace đang có và mọi Variables/Secrets. Không tạo Worker/namespace mới,
+không xóa kho dữ liệu. Gói không có migration/reset và không ghi đè cấu hình
+đã lưu: trạng thái khóa/mở, mandatory, nguồn cập nhật và cache vẫn giữ nguyên.
+GITHUB_TOKEN và mật khẩu admin là Secrets của Cloudflare, không nằm trong ZIP.
 
 ## Kiểm tra
 

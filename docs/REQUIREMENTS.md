@@ -1,5 +1,13 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt lưu quy tắc06/10 — không lặp lại hồi quy Bridge
+- Giữ khoảng 1 giây ngay trong phiên shell ADB trước bootstrap marker như0.3.4/0.3.8.
+- Không coi chờ/poll phía app sau khi shell đóng là tương đương; không bỏ để tối ưu
+  nếu chưa có phép thử LDPlayer9 sau reboot, tự mở Bridge không dùng lệnh dự phòng.
+- Đối chiếu cùng cấu hình/bản cũ và giữ kiểm UID/version/token. Build đạt chưa đủ.
+- Ghi tách dữ kiện:0.3.4 được người dùng xác nhận;0.3.8 cần thử; race là giả thuyết.
+- Quy tắc này ưu tiên hơn yêu cầu bỏ chờ bootstrap ở các mốc tối ưu cũ bên dưới.
+
 ## Phản hồi06/10 — hồi quy ADB trên LDPlayer9
 - Chủ dự án xác nhận0.3.4 hoạt động bình thường, nâng bản mới Bridge không chạy.
 - Ưu tiên đối chiếu và khôi phục luồng hoạt động cũ, giữ UI/liên hệ/cập nhật mới.

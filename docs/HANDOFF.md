@@ -1,5 +1,14 @@
 # Bàn giao THT Split — 0.3.8-test, 06/10/2026
 
+## Quy tắc đã lưu theo yêu cầu chủ dự án —06/10 13:48
+Đã đưa bài học startup Bridge vào AGENTS.md, REQUIREMENTS và NEXT_AGENT_PROMPT
+để các lượt tiếp theo đọc trước khi sửa. Giữ sleep1 trong remote shell +12 poll,
+không thay bằng chờ phía app sau close. Mọi tối ưu thay chuỗi này cần phép thử
+LDPlayer9 sau reboot mà không mở Bridge thủ công, so cùng cấu hình/bản cũ;
+CI không chứng minh tương thích thiết bị.0.3.8 vẫn chưa được người dùng xác nhận
+hoạt động; không ghi race nohup/PTY là nguyên nhân chắc chắn. Mốc này chỉ tài
+liệu, không thay code/version/APK hay chạy lại CI.
+
 ## Mốc0.3.8 — khôi phục khởi động Bridge theo0.3.4
 Chủ dự án xác nhận0.3.4 chạy bình thường trên LDPlayer9, bản mới tự mở Bridge
 thất bại. Ảnh0.3.7: ADB đã nhận bootstrap marker nhưng listener39871 refused;

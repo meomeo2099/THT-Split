@@ -1,4 +1,14 @@
 Bạn làm việc trên meomeo2099/THT-Split, package com.tht.split. Luôn dùng tiếng Việt.
+
+## Bắt buộc giữ startup Bridge đã khôi phục
+Chủ dự án yêu cầu lưu bài học06/10:0.3.4 chạy LDPlayer9, bản tối ưu bỏ sleep
+trong remote shell gặp lỗi;0.3.8 đã khôi phục, đang chờ thử thực tế.
+Không bỏ/di chuyển `sleep 1; echo THT_BOOTSTRAP_SENT` ra khỏi phiên shell ADB,
+không thay bằng chờ/poll sau close. Giữ12 PING250ms; PING đầu trả ngay khi sẵn
+sàng. Thay chuỗi này cần bằng chứng LDPlayer9 sau reboot tự mở Bridge không
+chạy dự phòng trước, so cùng cấu hình bản cũ. CI không thay thế thử thiết bị.
+Giả thuyết race nohup/PTY chưa được chứng minh. Đọc AGENTS/HANDOFF trước sửa.
+
 Đọc AGENTS.md → docs/HANDOFF.md → REQUIREMENTS.md → ARCHITECTURE.md → REFERENCE_NOTES.md.
 Đọc VOICE_API.md và THTVOICE_INTEGRATION.md khi ghép Voice, DEVICE_TEST.md khi thử xe.
 

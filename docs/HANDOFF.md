@@ -16,8 +16,11 @@ shell không protocol dùng PTY, master đóng gửi SIGHUP. Race trước khi n
 không tự mở lặp/kill tiến trình/đổi token/RSA/bỏUID/version/checksum. Bridge đã
 sẵn sàng vẫn trả ngay qua PING đầu. Không đổi UI0.3.7, liên hệ, donation/icon,
 Worker/public policy/Voice/Off/task engine/overlay; giữ progress và networkIo.
-Chờ CI unit/lint/build/QR; cần thử LDPlayer9 sau reboot mà không mở bridge thủ
-công, so cùng cấu hình0.3.4. Không khẳng định mọi lỗi Bridge đã hết từ diff/build.
+CI37425327271 unit/lint/build/Node8/QR/dry-run đạt; code9c2f57f40b5d1a373036fa607b460e2c4acee9a1.
+APK/code20/cert kiểm xong, remote grace có trong dex; QR/icon giữ nguyên0.3.7.
+Signer khác0.3.7 nên không cài đè, xem VALIDATION. Cần thử LDPlayer9 sau reboot
+mà không mở bridge thủ công, so cùng cấu hình0.3.4. Không khẳng định mọi lỗi
+Bridge đã hết từ diff/build.
 
 ## Mốc mới0.3.7 — phản hồi ADB chậm và liên hệ
 Ảnh06/10 báo ErrnoException/isConnected ECONNREFUSED; ảnh không cho biết

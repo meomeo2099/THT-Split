@@ -1,5 +1,29 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## 0.3.8-test — khôi phục startup0.3.4 ngày06/10
+Code9c2f57f40b5d1a373036fa607b460e2c4acee9a1; versionCode20.
+CI37425327271/job112143569608 completed/success:
+https://github.com/meomeo2099/THT-Split/actions/runs/37425327271
+Android unit/lint/assemble, Node8 tests, QR ngân hàng/contact và Wrangler dry-run
+đạt. Không thêm test mô phỏng vòng đời adbd/PTY để tránh coi unit JVM là xe thật.
+Đối chiếu source GitHub0.3.4/code27bbd74229c75ee42393c519a493c1fcf1fab77d:
+bootstrap command và12 PING attempts khớp; ShellClient/ShellServer source giữ
+nguyên (bỏ qua newline cuối). Giữ RSA/auth/checksum/UID/version6/token.
+
+APK SHA256: 373d4b48360cd084ae790a1ac4150190aea7524201f52e99341bd0bc6d0b4d45
+Cert SHA256: 8e202f09872c215aea8dc03eafc33014a9a52f320a24a2da77c11c83d46d99d5
+apksigner đạt; aapt package com.tht.split/code20/0.3.8-test/min26/target32.
+Quét toàn bộ dex có " sleep 1; echo THT_BOOTSTRAP_SENT", networkIo,
+ConnectionFailure, FB đúng và/api/config. QR ngân hàng/Zalo và launcherforeground/
+background byte-identical0.3.7. Giữ UI/policy/Worker/Voice/Off/task engine/overlay.
+Signer khác0.3.7 nên không cài đè; không tự gỡ app hoặc hứa giữ dữ liệu khi gỡ.
+
+Chủ dự án báo0.3.4 bình thường trên LDPlayer9,0.3.7 marker thành công nhưng
+39871 refused, log Bridge trống. Log gửi tht-adb-log.txt thực là lỗi CRT05/10,
+đã sửa0.2.9, không chứng minh nguyên nhân mới. Nohup/PTY startup race sau bỏ
+remote grace là giả thuyết; khôi phục thứ tự cũ để kiểm tương thích. Chưa test
+0.3.8 trên LDPlayer9/xe, không khẳng định đã hết mọi lỗi Bridge hay đo độ mượt.
+
 ## 0.3.7-test — ADB phản hồi ngay và liên hệ06/10
 Code fe384fcf725e0ff722708c53e619d0de5af97903; versionCode19.
 CI37423152988/job112136801691 completed/success:

@@ -14,7 +14,14 @@ tap không resize, busy bỏ gesture; read LayoutParams hiện tại khi MOVE.
 Off/fullscreen không hiện divider; hide/show cập nhật chiều cao; X/Home dọn.
 Giữ key/backend/PairController/Bridge sleep1+12poll/Worker/Voice/QR/icon và
 trang0.3.12; chưa làm3 app.43 Java nguồn compile đạt, diff --check sạch;
-đợi CI/APK. Chưa quan sát animation/touch thực trên LDPlayer/xe.
+release37568347356/job112621121563 và debug37568347320/job112621121154
+completed/success, unit/lint/build/QR/Node/dry-run/signer/metadata đạt.
+Code109d266f0208863428a901081140ab63af85943d; release405356429/v0.3.13-test
+prerelease=true/draft=false. APK617481831/checksum617481836/manifest617481830.
+Artifact11459209371 đã kiểm APK thực267093 bytes/com.tht.split/code25/min26/
+target32; SHA11651116e9dbd52769836eb0da64b283cb5aa4dc9f7fdbbf7d6deb56d5c89192
+khớp checksum/manifest/GitHub digest, signer v2 cùng cert tht-split. Assets
+nguyên bytes0.3.12. Chưa quan sát animation/touch thực trên LDPlayer/xe.
 
 
 ## Ủng hộ và liên hệ gọn hơn — 0.3.12-test/code24

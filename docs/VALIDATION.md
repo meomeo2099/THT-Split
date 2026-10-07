@@ -1,5 +1,15 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Màn chờ/thanh kéo0.3.13 —07/10
+43 Java nguồn compile local đạt, diff --check sạch. Release37568347356/
+job112621121563 và Debug37568347320/job112621121154 completed/success:
+unit/lint/build/QR/Node/dry-run/signer/metadata đạt. Artifact11459209371 thực
+com.tht.split/code25/0.3.13-test/min26/target32,267093 bytes; SHA11651116e9dbd52769836eb0da64b283cb5aa4dc9f7fdbbf7d6deb56d5c89192
+khớp checksum/update.json/GitHub digest, apksigner v2 cert cố định. Assets
+nguyên0.3.12. Chưa thử touch/animation/cancel/full/hide/X trên thiết bị thật;
+các bước đầu/giữa/cuối thanh và khoảng chừa có trong DEVICE_TEST.
+
+
 ## Giao diện ủng hộ/liên hệ0.3.12 —07/10
 Chỉ MainActivity donation/contacts/helpers + version24 đổi. Profile/QR/icon và
 backend/Voice/overlay/Worker không đổi. Java compile và diff --check local đạt.

@@ -1,4 +1,21 @@
-# Bàn giao THT Split — 0.3.12-test, 07/10/2026
+# Bàn giao THT Split — 0.3.13-test, 07/10/2026
+
+## Màn chờ và thanh kéo toàn chiều cao — 0.3.13-test/code25
+Đã đọc ảnh image(20261007-034042).png thực: vòng tải giữa màn, chữ lệch trái.
+Chủ dự án yêu cầu màn chờ đẹp hơn và kéo từ bất kỳ điểm trên thanh dọc.
+SplitLoadingView gom badge/logo chia/title/progress cyan trong thẻ giữa, nền
+gradient navy; vùng thấp<240dp dùng bản gọn. Thanh tải indeterminate, không
+phần trăm giả/khẳng định app khác đã vẽ xong; thời gian/backend vẫn giữ.
+SplitDividerView vạch cyan mảnh/tay nắm nhỏ, mũi tên ngang; touch strip48dp
+trải từ g.left.top tới bottom, không chạm toolbar/điều hòa/khoảng chừa. Chạm ở
+mọi độ cao, kéo ngang preview/tỷ lệ, thả tay gửi một resize như cơ chế cũ.
+Không resize backend từng MOVE. Multi-touch/cancel trả view về geometry thật,
+tap không resize, busy bỏ gesture; read LayoutParams hiện tại khi MOVE.
+Off/fullscreen không hiện divider; hide/show cập nhật chiều cao; X/Home dọn.
+Giữ key/backend/PairController/Bridge sleep1+12poll/Worker/Voice/QR/icon và
+trang0.3.12; chưa làm3 app.43 Java nguồn compile đạt, diff --check sạch;
+đợi CI/APK. Chưa quan sát animation/touch thực trên LDPlayer/xe.
+
 
 ## Ủng hộ và liên hệ gọn hơn — 0.3.12-test/code24
 Chủ dự án yêu cầu thiết kế lại trang ủng hộ/liên hệ gọn gàng hơn. Gom thành hai

@@ -1,5 +1,18 @@
 # Cài và kiểm thử 0.2.9-test trên EX2
 
+## Kiểm0.3.13 — màn chờ và touch strip
+- Mở cặp/restore/swap/replace: chữ và thanh tiến trình giữa thẻ, không lệch như
+  ảnh. Vùng thấp dùng bản gọn; không che điều hòa/khoảng chừa đã chọn.
+- ADB/system: kéo ở đầu/giữa/cuối thanh dọc, sang trái/phải tới30/70, thả tay
+  hai app nhận tỷ lệ. View preview khi kéo không chứng minh task đã resize.
+- Tap, kéo rồi quay lại tỷ lệ cũ, CANCEL/thêm ngón tay: không gửi resize thừa,
+  thanh trở lại vị trí thực. Bận xử lý không nhận resize mới.
+- Ẩn/hiện toolbar: thanh kéo đổi chiều cao theo vùng app. Fullscreen/Off không
+  có thanh kéo; restore/X/Home đúng, không còn touch strip chặn app sau dừng.
+- Bấm điều khiển app gần mép thanh, vùng trên/dưới và điều hòa vẫn dùng được;
+  thử font lớn/density/đổi hướng. Chưa thực hiện trên thiết bị thật.
+
+
 ## Kiểm0.3.11 — không thay phép thử Bridge sau reboot
 - Cập nhật từ0.3.10 cùng signer: còn cặp/cài đặt/token, chia và kết nối bình thường.
 - Picker mở/tìm/cuộn/đóng nhanh nhiều lần; cài/gỡ app rồi mở lại thấy danh sách

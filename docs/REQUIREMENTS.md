@@ -1,5 +1,11 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt07/10 — màn chờ và thanh kéo
+- Thiết kế lại phần load khi mở hai ứng dụng theo màu THT Split, gom giữa màn.
+- Làm thanh kéo đẹp hơn và kéo được ở bất kỳ điểm trên hàng dọc vùng chia.
+- Giữ backend ổn định/giới hạn Off/khoảng chừa xe; chưa triển khai3 ứng dụng.
+
+
 ## Chốt07/10 — ủng hộ/liên hệ
 - Làm trang ủng hộ và liên hệ gọn gàng hơn; giữ QR ngân hàng/Zalo, STK/chủ tài
   khoản và Facebook đã cung cấp. Nút sao chép/mở liên hệ vẫn dễ bấm.

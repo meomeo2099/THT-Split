@@ -98,9 +98,7 @@ public final class SplitService extends Service {
         clear();Point size=new Point();wm.getDefaultDisplay().getRealSize(size);
         int top=session.i("top_px",72),bottom=session.i("bottom_px",112);
         if(size.y-top-bottom<160)throw new IllegalArgumentException("Khoảng chừa quá lớn");
-        LinearLayout panel=Ui.column(this);panel.setGravity(Gravity.CENTER);panel.setBackgroundColor(Ui.BG);
-        panel.addView(new ProgressBar(this));TextView text=Ui.text(this,"Đang mở hai ứng dụng…",20,Ui.TEXT);Ui.pad(text,16);panel.addView(text);
-        panel.setOnTouchListener((v,e)->true);loading=panel;
+        SplitLoadingView panel=new SplitLoadingView(this,size.x,size.y-top-bottom);loading=panel;
         WindowManager.LayoutParams p=params(size.x,size.y-top-bottom,0,top);p.alpha=1f;wm.addView(panel,p);
     }
     private Ui.Icon icon(LinearLayout row,String kind,int color,String label,Runnable click){Ui.Icon v=new Ui.Icon(this,kind,color);v.setContentDescription(label);int s=engine.toolbarPx()-Ui.dp(this,8);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(s,s);p.setMargins(Ui.dp(this,3),0,Ui.dp(this,3),0);row.addView(v,p);v.setOnClickListener(w->{scheduleHide();click.run();});return v;}
@@ -140,22 +138,25 @@ public final class SplitService extends Service {
             if(pos.equals("left"))x=Ui.dp(this,8);if(pos.equals("right"))x=size.x-w-Ui.dp(this,8);attach(mini,params(w,h,x,session.i("top_px",72)));
         }
         if(!full&&controls){
-            int w=Ui.dp(this,48),h=Ui.dp(this,80);WindowManager.LayoutParams p=params(w,h,g.splitX-w/2,(g.left.top+g.left.bottom)/2-h/2);
+            int w=Ui.dp(this,48),h=g.left.height();WindowManager.LayoutParams p=params(w,h,g.splitX-w/2,g.left.top);
             if(divider==null){
-                Ui.Icon grip=new Ui.Icon(this,"grip",Ui.TEXT);grip.setContentDescription("Kéo để đổi tỷ lệ");divider=grip;
+                SplitDividerView grip=new SplitDividerView(this);divider=grip;
                 grip.setOnTouchListener(new View.OnTouchListener(){
-                    int startRatio,ratio;float downX;boolean dragging;
+                    int startRatio,ratio;float downX;boolean dragging,touching;
                     public boolean onTouch(View v,MotionEvent event){switch(event.getActionMasked()){
                         case MotionEvent.ACTION_DOWN:
-                            if(busy.get())return false;main.removeCallbacks(autoHide);downX=event.getRawX();startRatio=session.i("ratio",50);ratio=startRatio;dragging=false;return true;
+                            if(busy.get())return false;main.removeCallbacks(autoHide);downX=event.getRawX();startRatio=session.i("ratio",50);ratio=startRatio;dragging=false;touching=true;grip.feedback(true,ratio,event.getY());return true;
                         case MotionEvent.ACTION_MOVE:
+                            if(!touching)return true;if(busy.get()||v.getParent()==null){touching=false;grip.feedback(false,ratio,0);return true;}
                             float delta=event.getRawX()-downX;if(!dragging&&Math.abs(delta)<ViewConfiguration.get(SplitService.this).getScaledTouchSlop())return true;
                             dragging=true;ratio=LayoutMath.clamp(startRatio+Math.round(delta*100/size.x));WindowManager.LayoutParams current=(WindowManager.LayoutParams)v.getLayoutParams();
-                            current.x=size.x*ratio/100-w/2;wm.updateViewLayout(v,current);return true;
+                            current.x=size.x*ratio/100-w/2;wm.updateViewLayout(v,current);grip.feedback(true,ratio,event.getY());return true;
                         case MotionEvent.ACTION_UP:
-                            if(dragging&&ratio!=startRatio)startForegroundService(new Intent(SplitService.this,SplitService.class).putExtra("command","ratio").putExtra("ratio",ratio));
-                            else{v.performClick();scheduleHide();}return true;
-                        case MotionEvent.ACTION_CANCEL:render();scheduleHide();return true;
+                            if(!touching)return true;touching=false;grip.feedback(false,ratio,0);
+                            if(!busy.get()&&dragging&&ratio!=startRatio)startForegroundService(new Intent(SplitService.this,SplitService.class).putExtra("command","ratio").putExtra("ratio",ratio));
+                            else{v.performClick();if(!busy.get()){render();scheduleHide();}}return true;
+                        case MotionEvent.ACTION_POINTER_DOWN:
+                        case MotionEvent.ACTION_CANCEL:touching=false;grip.feedback(false,ratio,0);if(!busy.get()){render();scheduleHide();}return true;
                     }return false;}
                 });
             }

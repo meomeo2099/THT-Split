@@ -1,5 +1,20 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Ghép tay nắm với divider hệ thống0.3.15 —07/10
+44 Java nguồn compile local đạt;10 tests DividerPlacement/LayoutMath đạt,
+gồm4 mới kiểm native tâm display, actual seam, bounds sai và clamp insets.
+diff --check sạch. Release37570002943/job112626257925 và debug37570002893/
+job112626257422 completed/success: unit/lint/build/signer/QR/Node/dry-run/
+metadata đạt. Codecefc660f0438d43fe65c0df0c7df6919122475bb; release405369307
+v0.3.15-test prerelease=true/draft=false. Artifact11460222912 thực267413 bytes,
+com.tht.split/code27/min26/target32; SHA021dec9caf0fc17bba33f6f30401024d9f96941abec01456ebb17e22214be230
+khớp checksum/update.json/GitHub digest; apksigner v2 cert cố định. Assets
+nguyên0.3.14. Overlay pill6×72dp thay rail riêng, native giữ vị trí thật lúc
+MOVE rồi căn read-back sau UP; không đổi SystemUI. AOSP9 tham chiếu không
+chứng minh OEM cùng vị trí; chưa có UI QA LDPlayer/xe. Cần thử toolbar ẩn/hiện,
+30/50/70, kéo từ đầu/giữa/cuối, cancel, native/freeform/Off/fullscreen.
+
+
 ## Tay nắm trắng0.3.14 —07/10
 Đổi màu/chiều dài SplitDividerView, không đổi gesture/geometry/backend.
 Java compile/diff --check local đạt; release37568930544/job112622945467 và

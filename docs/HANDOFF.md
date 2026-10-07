@@ -15,7 +15,14 @@ vùng app, cancel/busy/Off/full/X giữ quy tắc cũ; mode vào overlay fingerp
 Không thay backend/Bridge/Voice/Worker/signer/QR/icon hoặc thêm quyền/root.
 44 Java nguồn compile local đạt;10 tests DividerPlacement/LayoutMath đạt
 (4 mới: native center không đổi theo toolbar, read-back seam, dữ liệu sai,
-insets lớn). diff --check sạch. Đợi CI/APK; chưa kiểm vị trí/gesture OEM thực.
+insets lớn). diff --check sạch. Release37570002943/job112626257925 và debug
+37570002893/job112626257422 completed/success: unit/lint/build/signer/QR/Node/
+dry-run/metadata đạt. Codecefc660f0438d43fe65c0df0c7df6919122475bb;
+release405369307/v0.3.15-test prerelease=true/draft=false, APK617522634/
+checksum617522639/manifest617522636. Artifact11460222912 kiểm APK thực
+267413 bytes/com.tht.split/code27/min26/target32; SHA021dec9caf0fc17bba33f6f30401024d9f96941abec01456ebb17e22214be230
+khớp checksum/manifest/GitHub digest, apksigner v2 cùng cert cố định. Assets
+nguyên0.3.14. Chưa kiểm vị trí/gesture OEM thực; cần thử LDPlayer/xe theo DEVICE_TEST.
 
 
 ## Tay nắm trắng dài hơn — 0.3.14-test/code26

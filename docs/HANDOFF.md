@@ -8,7 +8,17 @@ dung dọc tránh ép STK/nút; có cuộn. QR chạm mở dialog ảnh lớn th
 FIT_CENTER giữ toàn ảnh/nền trắng; lỗi đọc vẫn còn thông tin/nút liên hệ.
 Giữ nguyên profile/STK/link/bytes QR, icon app, backend/overlay/ADB/Worker/Voice
 và khóa ký. Không làm chế độ3 app: chủ dự án muốn test chia đôi trước.
-Chờ CI và APK ký; chưa có ảnh kiểm UI thật LDPlayer/xe.
+Java compile tại máy và git diff --check đạt. Release37567753293/
+job112619263096 và Debug37567753325/job112619262891 completed/success:
+unit/lint/build/QR/Node/Worker dry-run/signer đều đạt. Local QR script thiếu
+zxingcpp, đã được CI chạy đạt; không gọi lỗi dependency là lỗi QR.
+Code d662fa963b4a13eba2f06a67d29823ff1584c041. Release405352571/v0.3.12-test
+prerelease=true/draft=false, APK617468897/checksum617468896/manifest617468898.
+Artifact11458969014 kiểm APK thực com.tht.split/code24/min26/target32,
+264845 bytes, SHA b769fd4591b9aeacc21ebcba0d221cdccdae80087c88c309b43b6eb8391361ca
+khớp checksum/manifest/GitHub digest. apksigner v2 cùng cert tht-split đã pin;
+assets nguyên bytes0.3.11. Chưa có ảnh kiểm UI thật LDPlayer/xe: cần xem card
+trên màn rộng/hẹp, quét QR160 và popup lớn, bấm copy STK/link và mở Facebook.
 
 
 ## Tối ưu và sao lưu — bản 0.3.11-test/code23

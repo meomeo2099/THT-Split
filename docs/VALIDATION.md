@@ -1,5 +1,17 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Giao diện ủng hộ/liên hệ0.3.12 —07/10
+Chỉ MainActivity donation/contacts/helpers + version24 đổi. Profile/QR/icon và
+backend/Voice/overlay/Worker không đổi. Java compile và diff --check local đạt.
+Release37567753293/job112619263096 và Debug37567753325/job112619262891
+completed/success, unit/lint/build/QR/signer/metadata đạt. Artifact11458969014
+APK264845 bytes/com.tht.split/code24/0.3.12-test/min26/target32; hash khớp
+checksum/update.json/GitHub digest, apksigner v2 cùng cert cố định. Assets
+byte-identical0.3.11. Không thêm test mirror UI; chưa có emulator/device QA.
+Cần xem bố cục hai thẻ ở màn rộng, một cột ở màn hẹp, chạm QR mở/đóng, quét QR,
+sao chép STK/FB và mở FB; không coi compile/CI là bằng chứng giao diện đã đẹp.
+
+
 ## Tối ưu0.3.11 — kiểm tại máy06/10
 41 nguồn Java biên dịch --release8 với android35.jar/R hiện tại/hidden stubs;
 JUnitCore58 kiểm thử lõi đạt, gồm6 SettingsSnapshot và5 DownloadStream mới.

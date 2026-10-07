@@ -17,13 +17,12 @@ public final class SplitDividerView extends View {
         super.onDraw(canvas);float x=getWidth()/2f,h=getHeight(),cy=h/2f;
         paint.setStyle(Paint.Style.FILL);paint.setColor(dragging?0xCC112B3C:0x99112233);
         canvas.drawRoundRect(x-dp(5),0,x+dp(5),h,dp(5),dp(5),paint);
-        paint.setColor(dragging?Ui.CYAN:0xAA10CBE5);float half=dp(dragging?2:1);
+        paint.setColor(dragging?Ui.TEXT:0x99EEF5FA);float half=dp(dragging?2:1);
         canvas.drawRoundRect(x-half,dp(4),x+half,h-dp(4),half,half,paint);
-        paint.setColor(dragging?Ui.CYAN:Ui.CARD);canvas.drawRoundRect(x-dp(9),cy-dp(26),x+dp(9),cy+dp(26),dp(9),dp(9),paint);
-        paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(dp(1));paint.setColor(dragging?Ui.BG:Ui.CYAN);
-        canvas.drawRoundRect(x-dp(9),cy-dp(26),x+dp(9),cy+dp(26),dp(9),dp(9),paint);
-        paint.setStyle(Paint.Style.FILL);for(int y:DOTS)canvas.drawCircle(x,cy+dp(y),dp(1.4f),paint);
-        paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(dp(1.5f));paint.setStrokeCap(Paint.Cap.ROUND);paint.setStrokeJoin(Paint.Join.ROUND);
+        // White handle and its touch strip share the same center; keep white while dragging.
+        paint.setColor(Ui.TEXT);canvas.drawRoundRect(x-dp(5),cy-dp(36),x+dp(5),cy+dp(36),dp(5),dp(5),paint);
+        paint.setColor(Ui.BG);for(int y:DOTS)canvas.drawCircle(x,cy+dp(y),dp(1.2f),paint);
+        paint.setColor(dragging?Ui.TEXT:Ui.MUTED);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(dp(1.5f));paint.setStrokeCap(Paint.Cap.ROUND);paint.setStrokeJoin(Paint.Join.ROUND);
         arrows.reset();arrows.moveTo(x-dp(14),cy-dp(4));arrows.lineTo(x-dp(18),cy);arrows.lineTo(x-dp(14),cy+dp(4));
         arrows.moveTo(x+dp(14),cy-dp(4));arrows.lineTo(x+dp(18),cy);arrows.lineTo(x+dp(14),cy+dp(4));canvas.drawPath(arrows,paint);
         if(dragging){

@@ -1,5 +1,10 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt07/10 — thanh trắng
+- Đồng màu thanh kéo với vạch trắng giữa hai app; tay nắm trắng dài thêm chút.
+- Giữ vùng kéo toàn chiều cao, cùng tâm đường chia; thả tay áp dụng tỷ lệ.
+
+
 ## Chốt07/10 — màn chờ và thanh kéo
 - Thiết kế lại phần load khi mở hai ứng dụng theo màu THT Split, gom giữa màn.
 - Làm thanh kéo đẹp hơn và kéo được ở bất kỳ điểm trên hàng dọc vùng chia.

@@ -1,4 +1,14 @@
-# Bàn giao THT Split — 0.3.13-test, 07/10/2026
+# Bàn giao THT Split — 0.3.14-test, 07/10/2026
+
+## Tay nắm trắng dài hơn — 0.3.14-test/code26
+Chủ dự án yêu cầu phần kéo đồng bộ với thanh trắng giữa hai app, dài hơn một
+chút. Tay nắm overlay trắng52→72dp cao,10dp rộng, vạch dọc đổi trắng đồng màu;
+không chuyển cyan khi chạm, giữ badge tỷ lệ cyan. Vùng kéo48dp toàn chiều cao
+và tay nắm cùng tâm g.splitX; preview/cancel/restore cập nhật cùng view như0.3.13.
+Chỉ SplitDividerView và version đổi; không sửa thanh phân cách do Android/OEM
+vẽ, backend/resize/Bridge/timing hoặc layout loading. Giữ signer/QR/icon/Worker.
+Đợi CI/APK; chưa xác minh vị trí divider thật trên LDPlayer/xe.
+
 
 ## Màn chờ và thanh kéo toàn chiều cao — 0.3.13-test/code25
 Đã đọc ảnh image(20261007-034042).png thực: vòng tải giữa màn, chữ lệch trái.

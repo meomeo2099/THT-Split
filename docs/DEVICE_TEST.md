@@ -1,5 +1,16 @@
 # Cài và kiểm thử 0.2.9-test trên EX2
 
+## Kiểm0.3.15 — gộp tay nắm trắng native
+- So ảnh040145: chỉ một pill trắng dài hơn, không rail/dots/arrows riêng.
+- Native ratio30/50/70: pill trùng seam Android. Ẩn/hiện toolbar không lệch
+  dọc khỏi tay nắm hệ thống. Task bounds không hợp lệ giữ fallback an toàn.
+- Kéo đầu/giữa/cuối: tỷ lệ hiện khi kéo; native pill ở seam thật tới UP rồi
+  cập nhật cùng cửa sổ, không hứa live resize. CANCEL không đổi cửa sổ.
+- Freeform: pill giữa vùng app, preview khi kéo, UP áp dụng như trước.
+- Thử mode native↔freeform, fullscreen/restore/Off/X, khoảng chừa lớn và cảm
+  ứng sát seam. AOSP center không chứng minh SystemUI OEM đã giữ cùng vị trí.
+
+
 ## Kiểm0.3.13 — màn chờ và touch strip
 - Mở cặp/restore/swap/replace: chữ và thanh tiến trình giữa thẻ, không lệch như
   ảnh. Vùng thấp dùng bản gọn; không che điều hòa/khoảng chừa đã chọn.

@@ -8,6 +8,7 @@ import android.provider.Settings;
 import android.view.*;
 import android.widget.*;
 import com.tht.split.core.LayoutMath;
+import com.tht.split.core.DividerPlacement;
 import com.tht.split.core.TransportPolicy;
 import org.json.*;
 import java.util.concurrent.*;
@@ -105,9 +106,13 @@ public final class SplitService extends Service {
     private void attach(View view,WindowManager.LayoutParams params){
         if(view.getParent()==null)wm.addView(view,params);else wm.updateViewLayout(view,params);
     }
+    private LayoutMath.Box observedBox(String key){
+        JSONArray bounds=engine.lastResult.optJSONArray(key);if(bounds==null||bounds.length()!=4)return null;
+        return new LayoutMath.Box(bounds.optInt(0,-1),bounds.optInt(1,-1),bounds.optInt(2,-1),bounds.optInt(3,-1));
+    }
     private void render(){
         if(!active){clear();return;}Point size=new Point();wm.getDefaultDisplay().getRealSize(size);
-        String key=size.x+":"+size.y+":"+getResources().getDisplayMetrics().density+":"+engine.toolbarPx()+":"+engine.supportsTaskResize()+":"+session.i("top_px",72)+":"+session.i("bottom_px",112)+":"+store.s("toolbar_side","right")+":"+store.s("mini_position","center")+":"+store.i("opacity",90);
+        String key=size.x+":"+size.y+":"+getResources().getDisplayMetrics().density+":"+engine.toolbarPx()+":"+engine.supportsTaskResize()+":"+session.s("mode","native")+":"+session.i("top_px",72)+":"+session.i("bottom_px",112)+":"+store.s("toolbar_side","right")+":"+store.s("mini_position","center")+":"+store.i("opacity",90);
         if(!key.equals(overlayKey)||loading!=null){clear();overlayKey=key;}
         LayoutMath g=engine.geometry(visible&&!full);boolean controls=engine.supportsTaskResize();
         if(visible&&!full){
@@ -138,7 +143,9 @@ public final class SplitService extends Service {
             if(pos.equals("left"))x=Ui.dp(this,8);if(pos.equals("right"))x=size.x-w-Ui.dp(this,8);attach(mini,params(w,h,x,session.i("top_px",72)));
         }
         if(!full&&controls){
-            int w=Ui.dp(this,48),h=g.left.height();WindowManager.LayoutParams p=params(w,h,g.splitX-w/2,g.left.top);
+            boolean nativeHandle=session.s("mode","native").equals("native");
+            int seam=nativeHandle?DividerPlacement.centerX(g.splitX,size.x,Ui.dp(this,40),observedBox("actualLeftBounds"),observedBox("actualRightBounds")):g.splitX;
+            int w=Ui.dp(this,48),h=g.left.height();WindowManager.LayoutParams p=params(w,h,seam-w/2,g.left.top);
             if(divider==null){
                 SplitDividerView grip=new SplitDividerView(this);divider=grip;
                 grip.setOnTouchListener(new View.OnTouchListener(){
@@ -150,7 +157,9 @@ public final class SplitService extends Service {
                             if(!touching)return true;if(busy.get()||v.getParent()==null){touching=false;grip.feedback(false,ratio,0);return true;}
                             float delta=event.getRawX()-downX;if(!dragging&&Math.abs(delta)<ViewConfiguration.get(SplitService.this).getScaledTouchSlop())return true;
                             dragging=true;ratio=LayoutMath.clamp(startRatio+Math.round(delta*100/size.x));WindowManager.LayoutParams current=(WindowManager.LayoutParams)v.getLayoutParams();
-                            current.x=size.x*ratio/100-w/2;wm.updateViewLayout(v,current);grip.feedback(true,ratio,event.getY());return true;
+                            // Native handle stays on the real seam until release applies resize.
+                            // Moving just our pill would expose the original system pill beside it.
+                            if(!nativeHandle){current.x=size.x*ratio/100-w/2;wm.updateViewLayout(v,current);}grip.feedback(true,ratio,event.getY());return true;
                         case MotionEvent.ACTION_UP:
                             if(!touching)return true;touching=false;grip.feedback(false,ratio,0);
                             if(!busy.get()&&dragging&&ratio!=startRatio)startForegroundService(new Intent(SplitService.this,SplitService.class).putExtra("command","ratio").putExtra("ratio",ratio));
@@ -160,6 +169,7 @@ public final class SplitService extends Service {
                     }return false;}
                 });
             }
+            ((SplitDividerView)divider).handleAt(DividerPlacement.centerY(size.y,g.left.top,g.left.bottom,nativeHandle)-g.left.top);
             attach(divider,p);
         }else remove(divider);
     }

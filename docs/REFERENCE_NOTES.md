@@ -1,5 +1,18 @@
 # Nguồn tham khảo và giới hạn
 
+## Tay nắm native Android9 —07/10
+Đã đọc AOSP mirror tag android-9.0.0_r54: docked_stack_divider.xml khai báo
+DividerHandleView, landscape DockedDividerHandle gravity=center_vertical;
+onDraw vẽ pill ở giữa view. DividerWindowManager dùng TYPE_DOCK_DIVIDER riêng,
+WindowManagerPolicy đặt nó ở APPLICATION_LAYER trong AOSP9. Overlay không
+thay đổi resource/view SystemUI; đây là cách ghép hình và giữ điều khiển THT.
+https://github.com/aosp-mirror/platform_frameworks_base/blob/android-9.0.0_r54/packages/SystemUI/res/values-land/styles.xml
+https://github.com/aosp-mirror/platform_frameworks_base/blob/android-9.0.0_r54/packages/SystemUI/src/com/android/systemui/stackdivider/DividerHandleView.java
+https://github.com/aosp-mirror/platform_frameworks_base/blob/android-9.0.0_r54/packages/SystemUI/src/com/android/systemui/stackdivider/DividerWindowManager.java
+OEM/Android khác có thể đổi tâm/layer; cần so ảnh/bounds thật, không hứa
+trùng tuyệt đối hoặc thay SystemUI chỉ bằng quyền shell.
+
+
 ## GitHub private Releases và Worker06/10
 API Releases/asset hỗ trợ token Contents: Read; download asset trả200 hoặc302,
 không chuyển Authorization sang CDN. releases/latest bỏ prerelease nên dùng

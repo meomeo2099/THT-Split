@@ -1,4 +1,22 @@
-# Bàn giao THT Split — 0.3.14-test, 07/10/2026
+# Bàn giao THT Split — 0.3.15-test, 07/10/2026
+
+## Gộp hình tay nắm với thanh hệ thống — 0.3.15-test/code27
+Đã đọc ảnh image(20261007-040145).png: chủ dự án chỉ tay nắm trắng nhỏ trên
+divider đen của Android, không phải grip THT;0.3.14 trước đó hiểu nhầm.
+Bỏ rail/mũi tên/dots riêng, chỉ pill trắng6×72dp. Native dùng tâm ngang từ
+actualLeftBounds/actualRightBounds khi hợp lệ, fallback geometry nếu thiếu/
+overlap/gap>40dp. Tâm dọc native là giữa display như layout AOSP landscape;
+ẩn/hiện toolbar không làm pill lệch dọc. Freeform giữ tâm vùng app.
+Native MOVE chỉ hiện tỷ lệ, không di chuyển pill khỏi thanh hệ thống hiện
+tại để tránh hai pill; UP áp dụng resize rồi căn theo read-back. Freeform
+vẫn preview MOVE vì không có thanh hệ thống. Touch strip48dp toàn chiều cao
+vùng app, cancel/busy/Off/full/X giữ quy tắc cũ; mode vào overlay fingerprint.
+Đây là ghép bằng overlay, không sửa/hook SystemUI hay đổi resource hệ thống.
+Không thay backend/Bridge/Voice/Worker/signer/QR/icon hoặc thêm quyền/root.
+44 Java nguồn compile local đạt;10 tests DividerPlacement/LayoutMath đạt
+(4 mới: native center không đổi theo toolbar, read-back seam, dữ liệu sai,
+insets lớn). diff --check sạch. Đợi CI/APK; chưa kiểm vị trí/gesture OEM thực.
+
 
 ## Tay nắm trắng dài hơn — 0.3.14-test/code26
 Chủ dự án yêu cầu phần kéo đồng bộ với thanh trắng giữa hai app, dài hơn một

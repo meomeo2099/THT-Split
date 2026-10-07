@@ -1,5 +1,11 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Làm rõ07/10 — đúng thanh trắng hệ thống
+- Ảnh040145 chỉ tay nắm trắng của Android; muốn gộp phần kéo vào đó, dài thêm.
+- Bỏ thanh riêng; dùng pill trắng kéo dài trùng vị trí native, không sửa SystemUI.
+- Native thả tay áp dụng tỷ lệ rồi cập nhật tay nắm, tránh hai dấu lệch lúc kéo.
+
+
 ## Chốt07/10 — thanh trắng
 - Đồng màu thanh kéo với vạch trắng giữa hai app; tay nắm trắng dài thêm chút.
 - Giữ vùng kéo toàn chiều cao, cùng tâm đường chia; thả tay áp dụng tỷ lệ.

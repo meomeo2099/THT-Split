@@ -1,5 +1,16 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Tay nắm trắng0.3.14 —07/10
+Đổi màu/chiều dài SplitDividerView, không đổi gesture/geometry/backend.
+Java compile/diff --check local đạt; release37568930544/job112622945467 và
+debug37568930468/job112622944778 completed/success: unit/lint/build/signer/QR/
+Node/dry-run/metadata đạt. Artifact11460330695 APK266965 bytes/com.tht.split/
+code26/min26/target32; SHA46e813a21c2beed3eea917638bcd985458082c7f38d210cf38a98997e42af2dc
+khớp checksum/update.json/GitHub digest; apksigner v2 cùng cert cố định, assets
+nguyên0.3.13. Cần nhìn thanh trắng72dp/vạch giữa tại30/50/70 và kéo đầu/giữa/
+cuối; chưa có QA trên LDPlayer/xe hoặc chứng minh trùng divider OEM thực.
+
+
 ## Màn chờ/thanh kéo0.3.13 —07/10
 43 Java nguồn compile local đạt, diff --check sạch. Release37568347356/
 job112621121563 và Debug37568347320/job112621121154 completed/success:

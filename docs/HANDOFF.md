@@ -7,7 +7,14 @@ không chuyển cyan khi chạm, giữ badge tỷ lệ cyan. Vùng kéo48dp toà
 và tay nắm cùng tâm g.splitX; preview/cancel/restore cập nhật cùng view như0.3.13.
 Chỉ SplitDividerView và version đổi; không sửa thanh phân cách do Android/OEM
 vẽ, backend/resize/Bridge/timing hoặc layout loading. Giữ signer/QR/icon/Worker.
-Đợi CI/APK; chưa xác minh vị trí divider thật trên LDPlayer/xe.
+Java compile/diff --check đạt. Release37568930544/job112622945467 và debug
+37568930468/job112622944778 completed/success: unit/lint/build/signer/QR/Node/
+dry-run/metadata đạt. Code8bfb75d6e0518531e62cf2d771c93581fd68b83c;
+release405361117/v0.3.14-test prerelease=true/draft=false, APK617497379/
+checksum617497383/manifest617497382. Artifact11460330695 kiểm APK thực
+266965 bytes/com.tht.split/code26/min26/target32; SHA46e813a21c2beed3eea917638bcd985458082c7f38d210cf38a98997e42af2dc
+khớp checksum/manifest/GitHub digest, apksigner v2 cùng cert tht-split. Assets
+nguyên0.3.13. Chưa xác minh vị trí divider thật trên LDPlayer/xe.
 
 
 ## Màn chờ và thanh kéo toàn chiều cao — 0.3.13-test/code25

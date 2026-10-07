@@ -1,5 +1,11 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt07/10 — ủng hộ/liên hệ
+- Làm trang ủng hộ và liên hệ gọn gàng hơn; giữ QR ngân hàng/Zalo, STK/chủ tài
+  khoản và Facebook đã cung cấp. Nút sao chép/mở liên hệ vẫn dễ bấm.
+- Chế độ3 app ghim1 mới là ý tưởng, chưa triển khai; test chia đôi trước.
+
+
 ## Chốt06/10 18:32 — tạo bản mới thử cập nhật
 - Phát hành0.3.10-test/code22 với cùng khóa ký cố định của0.3.9-test/code21.
 - Giữ chức năng/Bridge/Worker, dùng bản mới để thử cập nhật đè và giữ cấu hình.

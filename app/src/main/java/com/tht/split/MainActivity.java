@@ -315,43 +315,80 @@ public final class MainActivity extends Activity {
             }).setNegativeButton("Hủy",null).show();
     }
     private void donation(){
-        body.addView(title("Ủng hộ THT Split"));space(body,6);
-        note("Cảm ơn bạn đã đồng hành và giúp THT Split ngày càng hoàn thiện.");space(body,12);
-        boolean sideBySide=screenWidth>=900;
-        LinearLayout content=sideBySide?AppUi.row(this):AppUi.column(this);content.setGravity(Gravity.TOP);body.addView(content,lp(-1,-2));
-        LinearLayout bank=AppUi.column(this);AppUi.pad(bank,24);bank.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,16)));
-        content.addView(bank,sideBySide?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
-        LinearLayout heading=AppUi.row(this);bank.addView(heading);AppUi.Icon heart=new AppUi.Icon(this,"heart",AppUi.CYAN);
-        heading.addView(heart,lp(AppUi.dp(this,40),AppUi.dp(this,40)));TextView bankName=AppUi.text(this,DonationProfile.BANK,22,AppUi.TEXT);bankName.setTypeface(null,Typeface.BOLD);
-        LinearLayout.LayoutParams bankLabel=new LinearLayout.LayoutParams(0,-2,1);bankLabel.leftMargin=AppUi.dp(this,12);heading.addView(bankName,bankLabel);space(bank,20);line(bank);space(bank,20);
-        bank.addView(AppUi.text(this,"SỐ TÀI KHOẢN",13,AppUi.MUTED));space(bank,6);TextView account=AppUi.text(this,DonationProfile.ACCOUNT,screenWidth>=900?32:26,AppUi.CYAN);account.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));account.setTextIsSelectable(true);bank.addView(account);space(bank,20);
-        bank.addView(AppUi.text(this,"CHỦ TÀI KHOẢN",13,AppUi.MUTED));space(bank,6);TextView holder=AppUi.text(this,DonationProfile.HOLDER,20,AppUi.TEXT);holder.setTypeface(null,Typeface.BOLD);bank.addView(holder);space(bank,24);
-        Button copy=AppUi.button(this,"Sao chép số tài khoản",true);bank.addView(copy,lp(-1,AppUi.dp(this,52)));copy.setOnClickListener(v->copy(DonationProfile.ACCOUNT));
-        TextView voluntary=AppUi.text(this,"Ủng hộ hoàn toàn tự nguyện. Cảm ơn sự hỗ trợ của bạn!",15,AppUi.MUTED);voluntary.setLineSpacing(AppUi.dp(this,4),1);space(bank,16);bank.addView(voluntary);
-        if(sideBySide)content.addView(new View(this),lp(AppUi.dp(this,24),1));else space(content,20);
-        LinearLayout qr=AppUi.column(this);AppUi.pad(qr,24);qr.setGravity(Gravity.CENTER_HORIZONTAL);qr.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,16)));
-        content.addView(qr,sideBySide?lp(AppUi.dp(this,348),-2):lp(-1,-2));TextView scan=AppUi.text(this,"Quét mã để ủng hộ",19,AppUi.TEXT);scan.setTypeface(null,Typeface.BOLD);qr.addView(scan);space(qr,16);
-        int size=sideBySide?280:Math.min(280,Math.max(160,screenWidth-96));ImageView image=new ImageView(this);
-        image.setContentDescription("QR ủng hộ "+DonationProfile.BANK+", tài khoản "+DonationProfile.ACCOUNT);image.setBackgroundColor(android.graphics.Color.WHITE);
-        image.setScaleType(ImageView.ScaleType.FIT_CENTER);image.setPadding(AppUi.dp(this,12),AppUi.dp(this,12),AppUi.dp(this,12),AppUi.dp(this,12));qr.addView(image,lp(AppUi.dp(this,size),AppUi.dp(this,size)));
-        try(InputStream in=getAssets().open(DonationProfile.QR_ASSET)){android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeStream(in);if(bmp==null)throw new IOException("Không đọc được QR");image.setImageBitmap(bmp);}
-        catch(IOException e){image.setVisibility(View.GONE);qr.addView(AppUi.text(this,"Không đọc được QR. Hãy sao chép số tài khoản.",15,AppUi.MUTED));}
-        space(qr,12);TextView hint=AppUi.text(this,"Mở ứng dụng ngân hàng trên điện thoại\nđể quét mã QR.",14,AppUi.MUTED);hint.setGravity(Gravity.CENTER);qr.addView(hint);
-        contacts();
+        body.addView(title("Ủng hộ & liên hệ"));space(body,6);
+        note("Cảm ơn bạn đã đồng hành cùng THT Split.");space(body,12);
+        int available=screenWidth-(landscapeLayout()?184+48:32);
+        boolean columns=available>=760;int cardWidth=columns?(available-16)/2:available;
+        LinearLayout cards=columns?AppUi.row(this):AppUi.column(this);cards.setGravity(Gravity.TOP);body.addView(cards,lp(-1,-2));
+        LinearLayout bank=supportCard(cards,columns,"Ủng hộ","heart");
+        LinearLayout bankContent=supportContent(bank,cardWidth);LinearLayout details=AppUi.column(this);
+        addSupportDetails(bankContent,details,cardWidth);
+        TextView bankName=AppUi.text(this,DonationProfile.BANK,16,AppUi.TEXT);bankName.setTypeface(null,Typeface.BOLD);details.addView(bankName);space(details,8);
+        details.addView(AppUi.text(this,"SỐ TÀI KHOẢN",12,AppUi.MUTED));space(details,4);
+        TextView account=AppUi.text(this,DonationProfile.ACCOUNT,22,AppUi.CYAN);account.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));account.setTextIsSelectable(true);details.addView(account);space(details,6);
+        details.addView(AppUi.text(this,DonationProfile.HOLDER,14,AppUi.TEXT));space(details,10);
+        supportButton(details,"Sao chép số tài khoản",true,()->copy(DonationProfile.ACCOUNT));
+        supportQr(bankContent,DonationProfile.QR_ASSET,"QR ủng hộ "+DonationProfile.BANK+", tài khoản "+DonationProfile.ACCOUNT,cardWidth,
+            "Không đọc được QR. Hãy sao chép số tài khoản.");
+        space(bank,12);bank.addView(AppUi.text(this,"Ủng hộ hoàn toàn tự nguyện.",13,AppUi.MUTED));
+        if(columns)cards.addView(new View(this),lp(AppUi.dp(this,16),1));else space(cards,16);
+        contacts(cards,columns,cardWidth);
     }
-    private void contacts(){
-        space(body,28);body.addView(title("Liên hệ THT"));space(body,12);
-        boolean wide=landscapeLayout();LinearLayout content=wide?AppUi.row(this):AppUi.column(this);content.setGravity(Gravity.TOP);body.addView(content,lp(-1,-2));
-        LinearLayout facebook=AppUi.column(this);AppUi.pad(facebook,24);facebook.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,16)));content.addView(facebook,wide?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
-        facebook.addView(title("Facebook"));space(facebook,8);facebook.addView(AppUi.text(this,"Trao đổi và gửi phản hồi cho THT.",16,AppUi.MUTED));space(facebook,16);
-        button(facebook,"Mở Facebook",true,()->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(ContactProfile.FACEBOOK_URL)));}catch(ActivityNotFoundException e){toast("Máy chưa có ứng dụng mở liên kết. Hãy sao chép link Facebook.");}});
-        button(facebook,"Sao chép link Facebook",false,()->copy(ContactProfile.FACEBOOK_URL));
-        if(wide)content.addView(new View(this),lp(AppUi.dp(this,24),1));else space(content,20);
-        LinearLayout zalo=AppUi.column(this);AppUi.pad(zalo,24);zalo.setGravity(Gravity.CENTER_HORIZONTAL);zalo.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,16)));content.addView(zalo,wide?lp(AppUi.dp(this,348),-2):lp(-1,-2));
-        TextView label=AppUi.text(this,"Kết nối qua Zalo",19,AppUi.TEXT);label.setTypeface(null,Typeface.BOLD);zalo.addView(label);space(zalo,16);
-        int size=wide?280:Math.min(280,Math.max(160,screenWidth-96));ImageView qr=new ImageView(this);qr.setContentDescription("QR Zalo liên hệ THT");qr.setBackgroundColor(android.graphics.Color.WHITE);qr.setScaleType(ImageView.ScaleType.FIT_CENTER);qr.setPadding(AppUi.dp(this,12),AppUi.dp(this,12),AppUi.dp(this,12),AppUi.dp(this,12));zalo.addView(qr,lp(AppUi.dp(this,size),AppUi.dp(this,size)));
-        try(InputStream in=getAssets().open(ContactProfile.ZALO_QR_ASSET)){android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeStream(in);if(bmp==null)throw new IOException("Không đọc được QR Zalo");qr.setImageBitmap(bmp);}catch(IOException e){qr.setVisibility(View.GONE);zalo.addView(AppUi.text(this,"Không đọc được QR Zalo. Bạn có thể liên hệ qua Facebook.",15,AppUi.MUTED));}
-        space(zalo,12);TextView hint=AppUi.text(this,"Mở Zalo trên điện thoại để quét mã.",14,AppUi.MUTED);hint.setGravity(Gravity.CENTER);zalo.addView(hint);
+    private LinearLayout supportCard(LinearLayout parent,boolean columns,String label,String icon){
+        LinearLayout card=AppUi.column(this);AppUi.pad(card,16);card.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));
+        parent.addView(card,columns?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
+        LinearLayout heading=AppUi.row(this);heading.setGravity(Gravity.CENTER_VERTICAL);card.addView(heading,lp(-1,-2));
+        heading.addView(new AppUi.Icon(this,icon,AppUi.CYAN),lp(AppUi.dp(this,26),AppUi.dp(this,26)));
+        TextView name=AppUi.text(this,label,19,AppUi.TEXT);name.setTypeface(null,Typeface.BOLD);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-2,1);p.leftMargin=AppUi.dp(this,10);heading.addView(name,p);
+        space(card,12);line(card);space(card,14);return card;
+    }
+    private LinearLayout supportContent(LinearLayout card,int width){
+        LinearLayout content=width>=384?AppUi.row(this):AppUi.column(this);content.setGravity(Gravity.CENTER_VERTICAL);
+        card.addView(content,lp(-1,-2));return content;
+    }
+    private void addSupportDetails(LinearLayout content,LinearLayout details,int width){
+        content.addView(details,width>=384?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
+    }
+    private void supportButton(LinearLayout parent,String label,boolean primary,Runnable action){
+        Button b=AppUi.button(this,label,primary);b.setTextSize(14);LinearLayout.LayoutParams p=lp(-1,-2);
+        p.setMargins(0,AppUi.dp(this,3),0,AppUi.dp(this,3));parent.addView(b,p);b.setOnClickListener(v->action.run());
+    }
+    private ImageView qrImage(String asset,String description,int size)throws IOException{
+        ImageView image=new ImageView(this);image.setContentDescription(description);image.setBackgroundColor(android.graphics.Color.WHITE);
+        image.setScaleType(ImageView.ScaleType.FIT_CENTER);int pad=AppUi.dp(this,8);image.setPadding(pad,pad,pad,pad);
+        try(InputStream in=getAssets().open(asset)){
+            android.graphics.Bitmap bitmap=android.graphics.BitmapFactory.decodeStream(in);if(bitmap==null)throw new IOException("Không đọc được QR");image.setImageBitmap(bitmap);
+        }
+        image.setLayoutParams(lp(AppUi.dp(this,size),AppUi.dp(this,size)));return image;
+    }
+    private void supportQr(LinearLayout parent,String asset,String description,int width,String fallback){
+        boolean horizontal=width>=384;LinearLayout panel=AppUi.column(this);panel.setGravity(Gravity.CENTER_HORIZONTAL);
+        LinearLayout.LayoutParams p=horizontal?lp(AppUi.dp(this,168),-2):lp(-1,-2);
+        if(horizontal)p.leftMargin=AppUi.dp(this,16);else p.topMargin=AppUi.dp(this,12);parent.addView(panel,p);
+        try{
+            ImageView image=qrImage(asset,description,160);image.setContentDescription(description+". Chạm để phóng to");
+            image.setBackground(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));image.setFocusable(true);image.setClickable(true);
+            image.setOnClickListener(v->showSupportQr(asset,description));panel.addView(image);
+            space(panel,6);TextView hint=AppUi.text(this,"Chạm QR để xem lớn",12,AppUi.MUTED);hint.setGravity(Gravity.CENTER);panel.addView(hint);
+        }catch(IOException e){panel.addView(AppUi.text(this,fallback,13,AppUi.MUTED));}
+    }
+    private void showSupportQr(String asset,String description){
+        int size=Math.max(128,Math.min(420,Math.min(screenWidth-72,getResources().getConfiguration().screenHeightDp-180)));
+        LinearLayout panel=AppUi.column(this);panel.setGravity(Gravity.CENTER);AppUi.pad(panel,12);
+        try{panel.addView(qrImage(asset,description,size));AppUi.dialog(this).setTitle(description).setView(panel).setPositiveButton("Đóng",null).show();}
+        catch(IOException e){toast("Không đọc được mã QR");}
+    }
+    private void contacts(LinearLayout parent,boolean columns,int width){
+        LinearLayout card=supportCard(parent,columns,"Liên hệ THT","link");LinearLayout content=supportContent(card,width);
+        LinearLayout details=AppUi.column(this);addSupportDetails(content,details,width);
+        TextView name=AppUi.text(this,"TRAN HUU TAI",16,AppUi.TEXT);name.setTypeface(null,Typeface.BOLD);details.addView(name);space(details,8);
+        details.addView(AppUi.text(this,"Hỗ trợ và góp ý qua Zalo hoặc Facebook.",14,AppUi.MUTED));space(details,10);
+        supportButton(details,"Mở Facebook",true,()->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(ContactProfile.FACEBOOK_URL)));}
+            catch(ActivityNotFoundException e){toast("Máy chưa có ứng dụng mở liên kết. Hãy sao chép link Facebook.");}});
+        supportButton(details,"Sao chép link",false,()->copy(ContactProfile.FACEBOOK_URL));
+        supportQr(content,ContactProfile.ZALO_QR_ASSET,"QR Zalo liên hệ THT",width,"Không đọc được QR Zalo. Hãy liên hệ qua Facebook.");
+        space(card,12);card.addView(AppUi.text(this,"Quét QR bằng Zalo trên điện thoại.",13,AppUi.MUTED));
     }
     private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nperformance="+PerformanceLog.samples(this)+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
     @Override protected void onActivityResult(int request,int result,Intent data){

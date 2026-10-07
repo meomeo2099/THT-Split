@@ -1,4 +1,15 @@
-# Bàn giao THT Split — 0.3.11-test, 06/10/2026
+# Bàn giao THT Split — 0.3.12-test, 07/10/2026
+
+## Ủng hộ và liên hệ gọn hơn — 0.3.12-test/code24
+Chủ dự án yêu cầu thiết kế lại trang ủng hộ/liên hệ gọn gàng hơn. Gom thành hai
+thẻ cân nhau với QR160dp, chữ/nút ngắn, padding16/gap16; tính phần rộng nội dung
+sau navigation/padding, đủ760dp mới đặt hai thẻ cạnh nhau. Thẻ<384dp xếp nội
+dung dọc tránh ép STK/nút; có cuộn. QR chạm mở dialog ảnh lớn theo chiều màn,
+FIT_CENTER giữ toàn ảnh/nền trắng; lỗi đọc vẫn còn thông tin/nút liên hệ.
+Giữ nguyên profile/STK/link/bytes QR, icon app, backend/overlay/ADB/Worker/Voice
+và khóa ký. Không làm chế độ3 app: chủ dự án muốn test chia đôi trước.
+Chờ CI và APK ký; chưa có ảnh kiểm UI thật LDPlayer/xe.
+
 
 ## Tối ưu và sao lưu — bản 0.3.11-test/code23
 Chủ dự án xác nhận cập nhật đã OK, yêu cầu làm cả 5 phần tối ưu đã đề xuất.

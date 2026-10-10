@@ -1,5 +1,20 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## EX2 root sau reboot0.3.16 —10/10
+45 Java nguồn compile local đạt;7 CommandRunner tests đạt (EOF pipe/file,
+stderr/exit fail/no retry, Binder error exit0, timeout,0600/output cap/cleanup).
+CI38068315132/job114260388387 completed/success unitRelease/lint/build/signer/
+metadata/publish. Debug38068315133/job114260388120 unitDebug/lint/build/signer
+đạt nhưng job failure ở quota artifact. Release artifact optional không còn
+chặn publish, không bỏ bất kỳ build/test/signer check nào hoặc xóa bản cũ.
+Release409069183/v0.3.16-test public draft=false/prerelease=true trong repo private;
+APK628452707/269029 bytes/SHA5269085309ffca4e0ddea32bb7a0d4d52420d7e2809cdb9dcb94596cc1391020,
+checksum628452710/manifest628452705. Chứng chỉ pin được CI verify; chưa tải APK
+local để xác minh lại. Bootstrap sleep1/echo +12poll250ms giữ nguyên; Bridgev7
+để thay tiến trìnhv6 sau reboot. Chưa có log AVC/Bridge context hoặc test xe,
+không kết luận SELinux là nguyên nhân đã chứng minh hoặc đã hết lỗi reboot.
+
+
 ## Ghép tay nắm với divider hệ thống0.3.15 —07/10
 44 Java nguồn compile local đạt;10 tests DividerPlacement/LayoutMath đạt,
 gồm4 mới kiểm native tâm display, actual seam, bounds sai và clamp insets.

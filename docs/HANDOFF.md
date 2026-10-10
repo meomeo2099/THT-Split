@@ -20,7 +20,17 @@ CI38068116109/job114259814881 unitRelease/lint/build/signer/metadata đạt,
 nhưng upload-artifact lỗi Artifact storage quota has been hit, publish bị skip.
 Cho bản sao artifact của release continue-on-error; kiểm build/signature/metadata
 và publish Releases vẫn bắt buộc. Không xóa artifact/release hay đổi signer.
-Đợi lần phát hành mới; test JVM không chứng minh đã sửa reboot trên xe.
+Lần mới38068315132/job114260388387 completed/success: unitRelease/lint/build/
+signer/metadata và publish đạt; artifact vẫn quota nhưng bản sao optional.
+Debug38068315133/job114260388120 unitDebug/lint/build/signer đạt, job failure
+chỉ ở artifact quota (không che là toàn debug workflow xanh).
+Code893625db5cf2391ba2e32066a4748fc2bbecc169; workflowfix0c9271281fc8890f2e869165b517ce863111a91f.
+Release409069183/v0.3.16-test draft=false/prerelease=true; APK628452707 size269029,
+SHA5269085309ffca4e0ddea32bb7a0d4d52420d7e2809cdb9dcb94596cc1391020;
+checksum628452710/manifest628452705. Signer cố định được CI kiểm pin; chưa tải
+binary về local để apksigner lại vì không có artifact. Giao qua Releases/app
+Worker update; chưa sửa/deploy Worker hay xác nhận cache đã nhận bản mới.
+Test JVM/CI không chứng minh đã sửa reboot trên xe; cần DEVICE_TESTv7.
 
 
 ## Gộp hình tay nắm với thanh hệ thống — 0.3.15-test/code27

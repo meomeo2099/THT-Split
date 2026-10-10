@@ -16,7 +16,11 @@ Client bắt buộc v7 để không dùng Bridge v6 còn chạy: cần reboot m�
 sau cập nhật; boot tự bootstrap vẫn sleep1/echo +12 PING250ms, RSA/token giữ.
 Java compile và7 tests runner local đạt: stderr/stdout, stdin EOF hai mode,
 exit failure không retry, Binder lỗi exit0, timeout, file0600/cap và output lớn.
-Đợi CI/APK; test JVM không chứng minh SELinux OEM hoặc đã sửa reboot trên xe.
+CI38068116109/job114259814881 unitRelease/lint/build/signer/metadata đạt,
+nhưng upload-artifact lỗi Artifact storage quota has been hit, publish bị skip.
+Cho bản sao artifact của release continue-on-error; kiểm build/signature/metadata
+và publish Releases vẫn bắt buộc. Không xóa artifact/release hay đổi signer.
+Đợi lần phát hành mới; test JVM không chứng minh đã sửa reboot trên xe.
 
 
 ## Gộp hình tay nắm với thanh hệ thống — 0.3.15-test/code27

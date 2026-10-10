@@ -97,6 +97,8 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk THT-Split.apk
           python3 server/release-metadata.py THT-Split.apk --tag "$RELEASE_TAG"
       - uses: actions/upload-artifact@v4
+        # Optional duplicate; Releases remains mandatory after build/signature verification.
+        continue-on-error: true
         with:
           name: THT-Split-release-apk
           path: |

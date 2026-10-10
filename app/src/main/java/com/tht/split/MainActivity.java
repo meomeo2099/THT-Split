@@ -236,7 +236,7 @@ public final class MainActivity extends Activity {
         connectionDialog=AppUi.dialog(this).setTitle("Kiểm tra kết nối").setMessage(store.s("connection_status","")).setPositiveButton("Ẩn",null).create();connectionDialog.show();
         refreshHandler.post(connectionTick);
         io.execute(()->{String result;try{
-            JSONObject p=new Backend(this,method).ping();result=methodLabel(method)+" sẵn sàng • UID "+p.getInt("uid")+" • API "+p.getInt("sdk")+(p.has("bridgeVersion")?" • bridge v"+p.getInt("bridgeVersion"):"")+"\nHãy mở cặp app để kiểm tra bố cục trên màn.";
+            JSONObject p=new Backend(this,method).ping();result=methodLabel(method)+" sẵn sàng • UID "+p.getInt("uid")+" • API "+p.getInt("sdk")+(p.has("bridgeVersion")?" • bridge v"+p.getInt("bridgeVersion"):"")+(p.has("context")?"\nContext: "+p.optString("context")+" • đầu ra: "+p.optString("commandIo"):"")+"\nHãy mở cặp app để kiểm tra bố cục trên màn.";
         }catch(Exception e){result="Không thành công: "+com.tht.split.core.FailureText.describe(e);store.set("last_error",result);android.util.Log.e("THTSplit",result);}
             store.set("connection_status",result);final String message=result;
             runOnUiThread(()->{connectionChecking=false;refreshHandler.removeCallbacks(connectionTick);if(connectionDialog!=null){connectionDialog.dismiss();connectionDialog=null;}if(isFinishing()||isDestroyed())return;render();AppUi.dialog(this).setTitle("Kết quả kết nối").setMessage(message).setPositiveButton("Đóng",null).show();});

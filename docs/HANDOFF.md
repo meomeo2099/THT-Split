@@ -1,4 +1,23 @@
-# Bàn giao THT Split — 0.3.15-test, 07/10/2026
+# Bàn giao THT Split — 0.3.16-test, 10/10/2026
+
+## Lỗi gọi activity sau reboot trên EX2 —0.3.16/code28
+Chủ dự án xác nhận cài lần đầu dùng được, reboot màn rồi Failed transaction
+(2147483646). File thiết bị: IHU629G Android9/SDK28/incremental121, ADB máy tính
+uid0/context u:r:su:s0; chưa có log AVC/Bridge context sau reboot. Không kết luận
+race bootstrap hoặc SELinux là nguyên nhân đã chứng minh. Giả thuyết cần thử:
+ProcessBuilder truyền su-owned fifo descriptors tới system_server bị firmware
+từ chối. Bridge v7 với UID0 dùng stdin /dev/null, stdout+stderr qua tệp mới
+0600 trong /data/local/tmp; truyền argv trực tiếp, không ghép shell/không retry
+lệnh có side effect. UID2000 giữ pipe, đóng stdin EOF, giới hạn đọc24KB.
+Timeout12s, output file cap256KB kiểm mỗi50ms, dọn capture trong finally; lỗi
+gồm tên chương trình/UID/context, PING/UI thêm context/commandIo. Không setenforce,
+không đổi context/UID, root màn, pm grant, framework, bố cục hoặc dữ liệu app khác.
+Client bắt buộc v7 để không dùng Bridge v6 còn chạy: cần reboot màn một lần
+sau cập nhật; boot tự bootstrap vẫn sleep1/echo +12 PING250ms, RSA/token giữ.
+Java compile và7 tests runner local đạt: stderr/stdout, stdin EOF hai mode,
+exit failure không retry, Binder lỗi exit0, timeout, file0600/cap và output lớn.
+Đợi CI/APK; test JVM không chứng minh SELinux OEM hoặc đã sửa reboot trên xe.
+
 
 ## Gộp hình tay nắm với thanh hệ thống — 0.3.15-test/code27
 Đã đọc ảnh image(20261007-040145).png: chủ dự án chỉ tay nắm trắng nhỏ trên

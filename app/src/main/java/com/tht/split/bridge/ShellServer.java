@@ -25,7 +25,6 @@ public final class ShellServer {
         if(context.checkSelfPermission("android.permission.MANAGE_ACTIVITY_STACKS")!=android.content.pm.PackageManager.PERMISSION_GRANTED)throw new SecurityException("Thiếu quyền hệ thống");
         systemContext=context.getApplicationContext();try{return handle(q).put("ok",true);}finally{systemContext=null;}
     }
-    private static final ExecutorService IO=Executors.newCachedThreadPool();
     public static void main(String[] args)throws Exception {
         if(Process.myUid()!=2000 && Process.myUid()!=0)throw new SecurityException("Bridge cần uid shell (ADB)");
         if(args.length!=1||!args[0].matches("[0-9a-f]{64}"))throw new IllegalArgumentException("Thiếu token 64 ký tự");
@@ -107,10 +106,11 @@ public final class ShellServer {
         if(systemContext!=null){android.app.ActivityOptions options=android.app.ActivityOptions.makeBasic();android.app.ActivityOptions.class.getMethod("setLaunchWindowingMode",int.class).invoke(options,mode);systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_LAUNCHER).setComponent(android.content.ComponentName.unflattenFromString(comp)).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),options.toBundle());return;}
         String output=exec("am","start","-W","--user","current","--windowingMode",String.valueOf(mode),"-a","android.intent.action.MAIN","-c","android.intent.category.LAUNCHER","-f","0x10000000","-n",comp);if(output.contains("Error:")||output.contains("Exception"))throw new IOException(output);}
     private static String exec(String...command)throws Exception{
-        java.lang.Process p=new ProcessBuilder(command).redirectErrorStream(true).start();
-        Future<String> output=IO.submit(()->{ByteArrayOutputStream bytes=new ByteArrayOutputStream();byte[] b=new byte[2048];int n;try(InputStream in=p.getInputStream()){while((n=in.read(b))!=-1){if(bytes.size()<24000)bytes.write(b,0,Math.min(n,24000-bytes.size()));}}return bytes.toString("UTF-8");});
-        try{if(!p.waitFor(12,TimeUnit.SECONDS)){p.destroyForcibly();throw new IOException("Lệnh quá thời gian");}String s=output.get(2,TimeUnit.SECONDS);if(p.exitValue()!=0)throw new IOException(s);return s;}finally{output.cancel(true);}
+        // Preserve shell UID behavior; root ADB uses regular descriptors, not su-owned pipes.
+        try{return CommandRunner.run(command,Process.myUid()==0?new File("/data/local/tmp"):null,12000);}
+        catch(IOException e){throw new IOException(e.getMessage()+" [UID "+Process.myUid()+", context "+securityContext()+"]",e);}
     }
+    private static String securityContext(){try(BufferedReader r=new BufferedReader(new FileReader("/proc/self/attr/current"))){String s=r.readLine();return s==null?"unknown":s.trim().replace("\u0000","");}catch(IOException e){return "unknown";}}
     private static void resize(int leftTask,int rightTask,String mode,Rect left,Rect right)throws Exception{
         if(mode.equals("native")){
             // Final bounds: no temporary task/inset rectangles from divider animation.
@@ -158,7 +158,7 @@ public final class ShellServer {
     }
     private static JSONObject handle(JSONObject q)throws Exception{
         String op=q.getString("op");JSONObject out=new JSONObject();
-        if(op.equals("PING"))return out.put("bridgeVersion",6).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
+        if(op.equals("PING"))return out.put("bridgeVersion",7).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe").put("manager",manager().getClass().getName());
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
             String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];

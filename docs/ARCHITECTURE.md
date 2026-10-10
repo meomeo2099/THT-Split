@@ -160,3 +160,9 @@ RSAPrivateKeySpec, public exponent F4 cho provider non-CRT (khóa app-only, gene
 cũ Conscrypt mặc định65537; generator mới pin2048/F4). AUTH Cipher dùng PrivateKey.
 Không tạo khóa khác khi file có lỗi, không đổi khóa cũ hay xác thực vượt hộp thoại.
 UI/boot hiện nguyên nhân gốc có lọc token/encoded keys, log lỗi Kiểm tra hỗ trợ chẩn đoán.
+## Bridge v7 —10/10/2026
+UID0 exec dùng /dev/null stdin và capture0600 trong /data/local/tmp thay fifo
+su; UID2000 dùng pipe/EOF. CommandRunner không shell interpolation/side-effect
+retry, timeout12s, bounded output/read and cleanup. PING thêm context/commandIo.
+Client cần v7; update mã APK không thay tiến trình v6 đã chạy, reboot một lần.
+Bootstrap sleep1/echo+12poll250ms không đổi; không đổi SELinux/system framework.

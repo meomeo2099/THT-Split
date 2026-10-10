@@ -1,5 +1,17 @@
 # Nguồn tham khảo và giới hạn
 
+## Failed transaction/root ADB —10/10
+AOSP cmd.cpp gọi IBinder::shellCommand với stdin/stdout/stderr và báo
+FAILED_TRANSACTION; mã lỗi này không chứng minh missing permission.
+AOSP system_server policy cho read/write shell_data_file qua fd đã mở,
+khác fifo tạo bởi domain su. Firmware user/test-keys có thể khác policy.
+https://android.googlesource.com/platform/frameworks/native/+/baa86314946d66f7323443f562e5f66e898e37b2/cmds/cmd/cmd.cpp
+https://android.googlesource.com/platform/system/sepolicy/+/refs/heads/android11-dev/private/system_server.te
+File thực người dùng chỉ xác nhận phiên ADB root/su, chưa có AVC hoặc context
+Bridge sau reboot. File redirect là sửa tương thích để thử, không khẳng định
+đã chứng minh nguyên nhân hoặc hết lỗi trên xe. Không thay SELinux policy.
+
+
 ## Tay nắm native Android9 —07/10
 Đã đọc AOSP mirror tag android-9.0.0_r54: docked_stack_divider.xml khai báo
 DividerHandleView, landscape DockedDividerHandle gravity=center_vertical;

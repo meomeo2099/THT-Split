@@ -1,5 +1,12 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt10/10 — sửa lỗi sau restart màn EX2
+- Mới cài THT Split dùng được, restart màn rồi Failed transaction khi dùng.
+- Dựa thông tin IHU629G Android9/firmware121, phiên ADB root/su; sửa Bridge,
+  giữ quy trình tự nối đã ổn định, không coi root UID bảo đảm mọi Binder call.
+- Gửi bản cùng chữ ký để thử trước/sau reboot; không làm thay services.jar.
+
+
 ## Làm rõ07/10 — đúng thanh trắng hệ thống
 - Ảnh040145 chỉ tay nắm trắng của Android; muốn gộp phần kéo vào đó, dài thêm.
 - Bỏ thanh riêng; dùng pill trắng kéo dài trùng vị trí native, không sửa SystemUI.

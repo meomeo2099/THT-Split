@@ -239,3 +239,16 @@ suy ra cổng đóng từ thông báo generic của APK cũ; TCP có listener ch
 6. Nếu còn lỗi: chụp lỗi gốc trong Kiểm tra hoặc Xuất log hỗ trợ; logcat có tagTHTSplit.
 Bridge vẫn v6 từ0.2.8, sửa nằm trong client APK. Bridge v6 đang chạy/token đúng có
 thể được reuse; test tự bootstrap cần bắt đầu sau reboot mà chưa chạy lệnh dự phòng.
+## EX2 sau reboot —0.3.16/Bridge v7
+1. Cài đè APK0.3.16 cùng signer, giữ preset/RSA/token. Reboot màn một lần để
+   dừng Bridgev6; không kill app_process chung, không chạy bridge thủ công trước.
+2. Mở THT Split, ADB nội bộ > Kiểm tra: cần v7/UID0 hoặc2000/context/commandIo.
+   UID0 phải file; UID2000 pipe. Chụp kết quả, không gửi token/lệnh dự phòng.
+3. Chia cùng cặp trước reboot, đổi bên/tỷ lệ/fullscreen/restore/Home.
+4. Reboot thật lần2, chờ ADB/Wi-Fi sẵn sàng, mở app và chia cùng cặp. Không dùng
+   máy tính bootstrap; ghi kết quả/video, so firmware121 và thời điểm lỗi.
+5. Nếu vẫn Failed transaction: chạy từ máy tính am get-current-user và
+   adb shell -tt am get-current-user; xuất log ngay sau lỗi, kiểm AVC/Binder.
+   File /data/local/tmp/tht-command-*.out không còn sau lệnh thành công/lỗi.
+6. LDPlayer9 phải thử reboot/tự bootstrap tương tự, UID2000 giữ pipe. Off/layout/
+   Voice/QR/cập nhật giữ nguyên; không coi JVM/CI là phép thử xe thành công.

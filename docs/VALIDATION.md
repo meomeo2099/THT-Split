@@ -1,5 +1,20 @@
 # Kiểm tra 0.2.0-test — 05/10/2026
 
+## Bản AOSP platform test riêng —13/10
+Nhánh test/aosp-platform-split từ baa5827; code d87fe941b5665f1d662bc9d28ad7cdf7decf1618.
+CI38362762170/job115180631927 completed/success: unitPlatformTest/lint/build,
+pin AOSP DER, apksigner verify và aapt package/manifest đạt. API26/target32,
+com.tht.split.platformtest/code28/0.3.16-test-platformtest1. CertSHA256 đúng
+c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8.
+Release411404594/platform-test-0.3.16-1 draft=false/prerelease=true;
+APK636255350/275860 bytes/SHA2c554090a18e5b61a6cba04743aabde1d2e2b7f24dfc08a9c920172ccf84eab9,
+checksum636255351/hướng dẫn636255352. Artifact optional lỗi quota; không có
+binary local để verify lại. Không đổi Secrets/signer/package APK bản thường,
+không merge main. Chỉ pin chứng thư APK, chưa kiểm trùng platform/quyền thực
+trên xe, không gọi cài/chia/reboot thành công. Cần chụp certmatch/granted trước
+pm grant và thử split/full/restore/reboot theo PLATFORM_TEST.md.
+
+
 ## EX2 root sau reboot0.3.16 —10/10
 45 Java nguồn compile local đạt;7 CommandRunner tests đạt (EOF pipe/file,
 stderr/exit fail/no retry, Binder error exit0, timeout,0600/output cap/cleanup).

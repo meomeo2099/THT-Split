@@ -18,8 +18,18 @@ Giữ Bridge/resize/UI/QR/icon/API; Voice phải gửi explicit package thử, c
 repoVoice. Release riêng không update.json nên Worker thường không chọn.
 Nguồn local khôi phục văn bản qua connector sau dọn workspace; assets binary/
 wrapper jar vẫn giữ trong base tree GitHub, CI checkout đầy đủ để build.
-Đợi CI; cài/quyền/Binder/reboot trên xe chưa xác minh. docs/PLATFORM_TEST.md
-có cách kiểm quyền TRƯỚC pm grant và thử chia sau reboot thật.
+CI38362762170/job115180631927 completed/success: testPlatformTestUnitTest,
+lintPlatformTest/assemblePlatformTest, pin cert và apksigner APK thực đạt.
+Package com.tht.split.platformtest/code28/0.3.16-test-platformtest1 được aapt
+kiểm; permission theo package thử, không sharedUserId. Khóa thử tạm được dọn.
+Code d87fe941b5665f1d662bc9d28ad7cdf7decf1618; release411404594/tag
+platform-test-0.3.16-1 draft=false/prerelease=true/latest=false. APK636255350/
+275860 bytes/SHA2c554090a18e5b61a6cba04743aabde1d2e2b7f24dfc08a9c920172ccf84eab9;
+checksum636255351/hướng dẫn636255352. Artifact optional vẫn quota (log ghi
+Failed to CreateArtifact), không có artifact để tải binary local verify lại;
+không coi step kết luận success sau continue-on-error là upload thành công.
+Cài/quyền/Binder/reboot trên xe chưa xác minh. docs/PLATFORM_TEST.md có cách
+kiểm quyền TRƯỚC pm grant và thử chia sau reboot thật. Main vẫn baa5827.
 
 
 ## Lỗi gọi activity sau reboot trên EX2 —0.3.16/code28

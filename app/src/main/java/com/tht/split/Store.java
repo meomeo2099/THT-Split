@@ -8,7 +8,7 @@ public final class Store {
     public final android.content.SharedPreferences prefs;
     public Store(Context c){this(c,"tht_split");}
     public Store(Context c,String namespace){prefs=c.getSharedPreferences(namespace,Context.MODE_PRIVATE);}
-    public String s(String key,String def){return prefs.getString(key,def);}
+    public String s(String key,String def){if(BuildConfig.PLATFORM_TEST&&key.equals("transport"))return "system";return prefs.getString(key,def);}
     public int i(String key,int def){return prefs.getInt(key,def);}
     public boolean b(String key,boolean def){return prefs.getBoolean(key,def);}
     public void set(String key,String value){prefs.edit().putString(key,value).apply();}

@@ -1,5 +1,27 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## Bản thử AOSP platform riêng —13/10
+Chủ dự án gửi SIGNING_AND_VOICE_KEY.md rồi yêu cầu build dùng chứng thư đó.
+Nhánh test/aosp-platform-split dựa baa5827, buildType platformTest/code28/
+0.3.16-test-platformtest1/applicationId com.tht.split.platformtest. Chứng thư
+pin c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8;
+khóa thử công khai AOSP android9_r1 tải tạm vào CI, không git/Secrets bản thường.
+Không đổi khóa release tht-split hoặc phiên bản APK thường; chưa merge main.
+Manifest permission CONTROL_SPLIT theo applicationId tránh duplicate permission
+khác signer khi cài song song; bản thường tên quyền/package giữ nguyên.
+PLATFORM_TEST ép transport system trong Store/Backend; hiển thị đối chiếu cert
+android/quyền thực/UID. Chưa có quyền thì lỗi, không fallbackBridge/Off.
+Không sharedUserId; CONTROL_URL rỗng ở bản thử để tránh luồng update của bản
+thường. Update UI chỉ diagnostic/exportlog. Bỏ nút freeform shell settings ở
+bản thử vì quyền MANAGE_ACTIVITY_STACKS không cấp WRITE_SECURE_SETTINGS.
+Giữ Bridge/resize/UI/QR/icon/API; Voice phải gửi explicit package thử, chưa sửa
+repoVoice. Release riêng không update.json nên Worker thường không chọn.
+Nguồn local khôi phục văn bản qua connector sau dọn workspace; assets binary/
+wrapper jar vẫn giữ trong base tree GitHub, CI checkout đầy đủ để build.
+Đợi CI; cài/quyền/Binder/reboot trên xe chưa xác minh. docs/PLATFORM_TEST.md
+có cách kiểm quyền TRƯỚC pm grant và thử chia sau reboot thật.
+
+
 ## Lỗi gọi activity sau reboot trên EX2 —0.3.16/code28
 Chủ dự án xác nhận cài lần đầu dùng được, reboot màn rồi Failed transaction
 (2147483646). File thiết bị: IHU629G Android9/SDK28/incremental121, ADB máy tính

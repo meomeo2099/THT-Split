@@ -1,5 +1,12 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt13/10 — build thử chữ ký AOSP platform
+- Dùng chứng thư trong SIGNING_AND_VOICE_KEY.md để tạo APK thử.
+- Package riêng để cài song song, giữ khóa/cập nhật/dữ liệu bản thường.
+- Chỉ chạy quyền hệ thống khi Android đã cấp, kiểm cert/quyền thực trên xe.
+- Không thêm shared UID hoặc sửa firmware để giả định đã có quyền.
+
+
 ## Chốt10/10 — sửa lỗi sau restart màn EX2
 - Mới cài THT Split dùng được, restart màn rồi Failed transaction khi dùng.
 - Dựa thông tin IHU629G Android9/firmware121, phiên ADB root/su; sửa Bridge,

@@ -7,6 +7,8 @@ android {
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
         applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 28; versionName '0.3.16-test'
+        manifestPlaceholders = [appLabel: 'THT Split']
+        buildConfigField 'boolean', 'PLATFORM_TEST', 'false'
         def controlUrl = providers.environmentVariable('THT_CONTROL_URL').getOrElse('').trim()
         if (!controlUrl) controlUrl = 'https://chiamanhinh.mavoice.workers.dev'
         if (controlUrl && !(controlUrl ==~ /https:\/\/[a-zA-Z0-9.-]+/)) throw new GradleException('THT_CONTROL_URL phải là HTTPS origin')
@@ -26,6 +28,16 @@ android {
     buildTypes {
         debug { if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
         release { minifyEnabled false; if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
+        platformTest {
+            initWith release
+            applicationIdSuffix '.platformtest'
+            versionNameSuffix '-platformtest1'
+            signingConfig null
+            matchingFallbacks = ['release']
+            manifestPlaceholders = [appLabel: 'THT Split Platform Test']
+            buildConfigField 'boolean', 'PLATFORM_TEST', 'true'
+            buildConfigField 'String', 'CONTROL_URL', '""'
+        }
     }
 }
 dependencies { testImplementation 'junit:junit:4.13.2'; testImplementation 'org.json:json:20240303' }

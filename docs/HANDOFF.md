@@ -1,5 +1,22 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## UID 1000 test riêng — 16/10/2026
+Yêu cầu mới: chủ dự án muốn thử chạy THT Split với android.uid.system.
+Tạo nhánh test/uid1000-platform-0.3.18 từ release/platform-original, chưa
+merge main hay nhánh release; giữ các phiên bản/Secrets/Worker cũ. Test variant
+platformSystem, package gốc com.tht.split, code30/name0.3.18-uid1000-test1;
+chỉ manifest overlay của variant này có sharedUserId=android.uid.system.
+Ký bằng cùng cert AOSP9 công khai c8a2e9...2ab8 đã dùng trong platformRelease,
+pin fingerprint trước/sau ký; không đổi khóa bản THT Split thường.
+PLATFORM_TEST=true, PLATFORM_RELEASE=false, CONTROL_URL rỗng: không OTA,
+không fallback Bridge, giữ native UI và chẩn đoán system. Thêm workflow push
+nhánh riêng, kiểm unit/lint/build/apksigner/aapt manifest/package/signature,
+phát hành tag riêng prerelease để test, không cập nhật bản chính thức.
+Cần kết quả CI và sau đó kiểm trên EX2 thực: cài mới có thể cần gỡ APK đang cài
+(dù cùng signer) vì sharedUserId thay đổi; backup trước, không tự xóa dữ liệu.
+Không kết luận UID1000 dùng được nếu chỉ build xong. Xem docs/UID1000_TEST.md.
+
+
 ## Release platform package gốc —15/10
 Chủ dự án gửi platform.pk8/platform.x509.pem, xác minh bằng openssl: publickey
 khớp, certSHA c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8,

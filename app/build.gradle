@@ -6,7 +6,7 @@ android {
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
-        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 29; versionName '0.3.17'
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 30; versionName '0.3.18'
         manifestPlaceholders = [appLabel: 'THT Split']
         buildConfigField 'boolean', 'PLATFORM_TEST', 'false'
         buildConfigField 'boolean', 'PLATFORM_RELEASE', 'false'

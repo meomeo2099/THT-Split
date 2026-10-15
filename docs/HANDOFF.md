@@ -23,7 +23,16 @@ và kiểm ngay; chưa deploy/sửa Worker/minimum/khóa chung. Không bỏ sign
 docs/PLATFORM_RELEASE.md ghi sao lưu/gỡ-cài một lần nếu khác signer; không tự
 xóa app/dữ liệu. Bản platformtest là package khác không cập nhật đè được.
 Workspace đã dọn nguồn cũ; chỉ khôi phục tệp sửa, CI checkout base tree đầy đủ.
-Đợi CI/APK; không gọi bản mới đã chia/reboot thành công trên xe.
+CI38764095446/job116522674568 completed/success: testPlatformReleaseUnitTest,
+lintPlatformRelease/assemblePlatformRelease; apksigner pin mới đúng, aapt
+com.tht.split/code29/0.3.17-platform/labelTHT Split, không debuggable/sharedUID.
+Metadata tạo từ APK thực với signer mới đạt. Codee7da1777f6f4f48bbe7dff8e52fe5ad22c5105e5;
+release413997367/v0.3.17-platform draft=false/prerelease=true/latest=false.
+APK644363704/275860bytes/SHAad9e338a9db1340b54d0f045a52d12e64e47ffde6457dfbc655ef97567700471;
+checksum644363702/metadata644363703/hướng dẫn644363705. Artifact optional vẫn
+lỗi quota nên không có binary để tải local apksigner lại. Không xóa artifact/
+release cũ. Bản sẵn sàng tải từ Releases; chưa xác minh cài/quyền/chia/reboot
+trên xe với package gốc/signer mới. Chưa thay Worker pin hoặc dữ liệu/Secrets.
 
 
 ## Bản thử AOSP platform riêng —13/10

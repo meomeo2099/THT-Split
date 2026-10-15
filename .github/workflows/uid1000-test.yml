@@ -1,0 +1,93 @@
+name: THT Split UID1000 isolated test
+on:
+  push:
+    branches: [test/uid1000-platform-0.3.18]
+    paths:
+      - app/**
+      - docs/UID1000_TEST.md
+      - .github/workflows/uid1000-test.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tht-split-uid1000-test
+  cancel-in-progress: false
+jobs:
+  uid1000-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platforms;android-35 build-tools;35.0.0 platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build thử UID1000, unit test và lint
+        run: chmod +x gradlew && ./gradlew :app:testPlatformSystemUnitTest :app:lintPlatformSystem :app:assemblePlatformSystem
+      - name: Lấy cặp khóa thử AOSP công khai, pin chứng thư
+        env:
+          EXPECTED_CERT: c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, os, pathlib, ssl, urllib.request
+          root = pathlib.Path(os.environ["RUNNER_TEMP"]) / "aosp-platform-uid1000"
+          root.mkdir(mode=0o700)
+          for filename in ("platform.pk8", "platform.x509.pem"):
+              url = "https://android.googlesource.com/platform/build/+/android-9.0.0_r1/target/product/security/" + filename + "?format=TEXT"
+              with urllib.request.urlopen(url, timeout=30) as response:
+                  data = base64.b64decode(response.read(), validate=True)
+              output = root / filename
+              output.write_bytes(data)
+              output.chmod(0o600)
+          der = ssl.PEM_cert_to_DER_cert((root / "platform.x509.pem").read_text())
+          assert hashlib.sha256(der).hexdigest() == os.environ["EXPECTED_CERT"], "AOSP cert mismatch"
+          PY
+      - name: Ký, xác minh signer, package gốc và shared UID
+        env:
+          EXPECTED_CERT: c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8
+        run: |
+          set -euo pipefail
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          "$tools/apksigner" sign \
+            --key "$RUNNER_TEMP/aosp-platform-uid1000/platform.pk8" \
+            --cert "$RUNNER_TEMP/aosp-platform-uid1000/platform.x509.pem" \
+            --out THT-Split-UID1000-Test.apk \
+            app/build/outputs/apk/platformSystem/app-platformSystem-unsigned.apk
+          "$tools/apksigner" verify --verbose --print-certs THT-Split-UID1000-Test.apk > "$RUNNER_TEMP/signature.txt"
+          grep -Fx "Signer #1 certificate SHA-256 digest: $EXPECTED_CERT" "$RUNNER_TEMP/signature.txt"
+          "$tools/aapt" dump badging THT-Split-UID1000-Test.apk > "$RUNNER_TEMP/badging.txt"
+          grep -F "package: name='com.tht.split' versionCode='30' versionName='0.3.18-uid1000-test1'" "$RUNNER_TEMP/badging.txt"
+          grep -F "application-label:'THT Split UID1000 Test'" "$RUNNER_TEMP/badging.txt"
+          "$tools/aapt" dump xmltree THT-Split-UID1000-Test.apk AndroidManifest.xml > "$RUNNER_TEMP/manifest.txt"
+          grep -F "android:sharedUserId" "$RUNNER_TEMP/manifest.txt"
+          grep -F "android.uid.system" "$RUNNER_TEMP/manifest.txt"
+          ! grep -E 'android:debuggable.*0xffffffff' "$RUNNER_TEMP/manifest.txt"
+          sha256sum THT-Split-UID1000-Test.apk > THT-Split-UID1000-Test.apk.sha256
+          cp docs/UID1000_TEST.md HUONG_DAN_UID1000.md
+      - name: Tạo pre-release thử riêng, không có metadata OTA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create uid1000-test-0.3.18-1 \
+            THT-Split-UID1000-Test.apk THT-Split-UID1000-Test.apk.sha256 HUONG_DAN_UID1000.md \
+            --draft --prerelease --latest=false --target "$GITHUB_SHA" \
+            --title "THT Split 0.3.18 UID1000 — TEST" \
+            --notes-file docs/UID1000_TEST.md
+          gh release edit uid1000-test-0.3.18-1 --draft=false
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: THT-Split-UID1000-Test
+          path: |
+            THT-Split-UID1000-Test.apk
+            THT-Split-UID1000-Test.apk.sha256
+            HUONG_DAN_UID1000.md
+          retention-days: 3
+      - name: Dọn khóa thử khỏi runner
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/aosp-platform-uid1000"

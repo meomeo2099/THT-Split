@@ -7,7 +7,7 @@ permissions:
   contents: read
 concurrency:
   group: tht-split-platform-update-0.3.18
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   platform-release:
     runs-on: ubuntu-latest

@@ -1,5 +1,33 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## Release 0.3.18-platform — thử cập nhật trực tiếp từ 0.3.17-platform (16/10/2026)
+Yêu cầu chủ dự án: build bản 0.3.18-platform package chính để kiểm tra cài đè.
+Nhánh release/platform-update-0.3.18 xuất phát release/platform-original;
+chưa merge main hay thay release/worker cũ. Chỉ nâng app/build.gradle
+versionCode 29→30, versionName 0.3.17→0.3.18; variant platformRelease
+giữ versionNameSuffix "-platform", applicationId com.tht.split, không shared UID
+hay UID1000, cert SHA256 AOSP9 c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8.
+Không thay Java/Bridge/Voice/UI. Workflow riêng trên branch này kiểm chứng
+build test/lint, signer/package/code30/name 0.3.18-platform/manifest no shared
+UID/nondebuggable, metadata update.json từ APK đã ký. Bản UID1000 trước đó ở
+test/uid1000-platform-0.3.18 không thuộc kênh cập nhật này.
+CI các lần đầu gặp 403 khi tạo Release; mốc cuối cùng 38779199155 /
+job116574809305 completed/success, test/lint/build/apksigner/aapt/publish OK.
+Release v0.3.18-platform published/prerelease/not draft:
+https://github.com/meomeo2099/THT-Split/releases/tag/v0.3.18-platform
+THT-Split.apk 275860 bytes, SHA APK
+5ef6fbfce9471d687ee0038270953a245a886573e45eff6a5b60b3ae296bc6c5;
+đủ checksum, update.json và HUONG_DAN_PLATFORM.md. Artifact upload step báo
+success nhưng API liệt kê artifacts rỗng sau run; GitHub Release asset đã xác nhận.
+Đã bổ sung docs/PLATFORM_UPDATE_0318.md: thử adb install -r 0.3.17→0.3.18,
+không tự gỡ/dọn app, sao lưu trước, kiểm dữ liệu và reboot trên xe.
+Server Github Worker hiện normalizeCertSha256 chỉ chấp nhận 1 SHA, giá trị
+RELEASE_CERT_SHA256 gồm dấu phẩy là lỗi, không phải allowlist. Chưa deploy/sửa
+Worker/chuyển SHA/mandatory/minimum để tránh ảnh hưởng khách Legacy; in-app OTA
+cần thay đổi kênh có kiểm tra tương thích trước khi thử. Chưa xác nhận update
+hoạt động trên xe chỉ từ CI.
+
+
 ## Release platform package gốc —15/10
 Chủ dự án gửi platform.pk8/platform.x509.pem, xác minh bằng openssl: publickey
 khớp, certSHA c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8,

@@ -1,5 +1,13 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt15/10 — Release chữ ký platform, package gốc
+- Dùng cặp khóa gửi15/10 đã xác minh khớp cert AOSP của bản thử.
+- Chủ dự án yêu cầu com.tht.split gốc; không dùng suffix platformtest cho APK này.
+- Giữ giao diện Android native/Java, không WebView; quyền hệ thống trực tiếp.
+- Ghi rõ đổi signer không cài đè bản thường, có sao lưu/chuyển thủ công một lần.
+- Không tự thay Secrets signer cũ hoặc bỏ kiểm chữ ký cập nhật/đổi Worker dữ liệu.
+
+
 ## Chốt13/10 — build thử chữ ký AOSP platform
 - Dùng chứng thư trong SIGNING_AND_VOICE_KEY.md để tạo APK thử.
 - Package riêng để cài song song, giữ khóa/cập nhật/dữ liệu bản thường.
@@ -154,3 +162,4 @@ Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đ�
 - Sao lưu chỉ cài đặt/cặp, không credential/policy/session; khôi phục có xác
   nhận và chỉ khi đã tắt chia. Không tự gỡ/cài app hoặc bỏ kiểm signer.
 - Không gọi tối ưu là đã mượt trên xe khi mới có build/unit test.
+

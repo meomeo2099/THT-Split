@@ -6,9 +6,10 @@ android {
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
-        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 28; versionName '0.3.16-test'
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 29; versionName '0.3.17'
         manifestPlaceholders = [appLabel: 'THT Split']
         buildConfigField 'boolean', 'PLATFORM_TEST', 'false'
+        buildConfigField 'boolean', 'PLATFORM_RELEASE', 'false'
         def controlUrl = providers.environmentVariable('THT_CONTROL_URL').getOrElse('').trim()
         if (!controlUrl) controlUrl = 'https://chiamanhinh.mavoice.workers.dev'
         if (controlUrl && !(controlUrl ==~ /https:\/\/[a-zA-Z0-9.-]+/)) throw new GradleException('THT_CONTROL_URL phải là HTTPS origin')
@@ -38,6 +39,15 @@ android {
             buildConfigField 'boolean', 'PLATFORM_TEST', 'true'
             buildConfigField 'String', 'CONTROL_URL', '""'
         }
+        platformRelease {
+            initWith release
+            versionNameSuffix '-platform'
+            signingConfig null
+            matchingFallbacks = ['release']
+            manifestPlaceholders = [appLabel: 'THT Split']
+            buildConfigField 'boolean', 'PLATFORM_TEST', 'true'
+            buildConfigField 'boolean', 'PLATFORM_RELEASE', 'true'
+        }
     }
 }
 dependencies { testImplementation 'junit:junit:4.13.2'; testImplementation 'org.json:json:20240303' }
@@ -56,3 +66,4 @@ tasks.register('hiddenApiStubsJar', Jar) {
     destinationDirectory = layout.buildDirectory.dir('hidden-api-stubs')
 }
 dependencies { compileOnly files(tasks.named('hiddenApiStubsJar')) }
+

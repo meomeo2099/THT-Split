@@ -158,7 +158,11 @@ public final class ShellServer {
     }
     private static JSONObject handle(JSONObject q)throws Exception{
         String op=q.getString("op");JSONObject out=new JSONObject();
-        if(op.equals("PING"))return out.put("bridgeVersion",7).put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe").put("manager",manager().getClass().getName());
+        if(op.equals("PING")){
+            out.put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
+            if(systemContext!=null)return out.put("transport","system").put("systemPermission",true);
+            return out.put("bridgeVersion",7).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe");
+        }
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
             String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];
@@ -197,3 +201,4 @@ public final class ShellServer {
         throw new IllegalArgumentException("Lệnh không hỗ trợ");
     }
 }
+

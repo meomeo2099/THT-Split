@@ -1,0 +1,80 @@
+name: THT Split Release package gốc ký platform
+on:
+  push:
+    branches: [release/platform-original]
+    paths: [app/**, .github/workflows/platform-release.yml]
+permissions:
+  contents: read
+concurrency:
+  group: tht-split-platform-original
+  cancel-in-progress: false
+jobs:
+  platform-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platforms;android-35 build-tools;35.0.0 platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Kiểm thử, lint và build Release quyền hệ thống
+        run: chmod +x gradlew && ./gradlew :app:testPlatformReleaseUnitTest :app:lintPlatformRelease :app:assemblePlatformRelease
+      - name: Lấy khóa thử công khai AOSP và kiểm chứng thư đã yêu cầu
+        env:
+          EXPECTED_CERT: c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, os, pathlib, ssl, urllib.request
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'aosp-platform-test'
+          root.mkdir(mode=0o700)
+          for name in ('platform.pk8','platform.x509.pem'):
+              url='https://android.googlesource.com/platform/build/+/android-9.0.0_r1/target/product/security/'+name+'?format=TEXT'
+              with urllib.request.urlopen(url,timeout=30) as response:
+                  data=base64.b64decode(response.read(),validate=True)
+              p=root/name;p.write_bytes(data);p.chmod(0o600)
+          cert=ssl.PEM_cert_to_DER_cert((root/'platform.x509.pem').read_text())
+          assert hashlib.sha256(cert).hexdigest()==os.environ['EXPECTED_CERT'], 'Sai chứng thư AOSP'
+          PY
+      - name: Ký APK thử và xác minh package, quyền, chứng chỉ
+        env:
+          EXPECTED_CERT: c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8
+        run: |
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          "$tools/apksigner" sign --key "$RUNNER_TEMP/aosp-platform-test/platform.pk8" --cert "$RUNNER_TEMP/aosp-platform-test/platform.x509.pem" --out THT-Split.apk app/build/outputs/apk/platformRelease/app-platformRelease-unsigned.apk
+          "$tools/apksigner" verify --verbose --print-certs THT-Split.apk > "$RUNNER_TEMP/platform-signature.txt"
+          grep -Fx "Signer #1 certificate SHA-256 digest: $EXPECTED_CERT" "$RUNNER_TEMP/platform-signature.txt"
+          "$tools/aapt" dump badging THT-Split.apk > "$RUNNER_TEMP/platform-badging.txt"
+          grep "package: name='com.tht.split' versionCode='29' versionName='0.3.17-platform'" "$RUNNER_TEMP/platform-badging.txt"
+          grep "application-label:'THT Split'" "$RUNNER_TEMP/platform-badging.txt"
+          "$tools/aapt" dump xmltree THT-Split.apk AndroidManifest.xml > "$RUNNER_TEMP/platform-manifest.txt"
+          grep 'com.tht.split.permission.CONTROL_SPLIT' "$RUNNER_TEMP/platform-manifest.txt"
+          ! grep 'android:sharedUserId' "$RUNNER_TEMP/platform-manifest.txt"
+          ! grep 'android:debuggable.*0xffffffff' "$RUNNER_TEMP/platform-manifest.txt"
+          sha256sum THT-Split.apk > THT-Split.apk.sha256
+          EXPECTED_CERT_SHA256="$EXPECTED_CERT" python3 server/release-metadata.py THT-Split.apk --tag v0.3.17-platform
+          cp docs/PLATFORM_RELEASE.md HUONG_DAN_PLATFORM.md
+      - name: Phát hành APK và metadata với chữ ký platform
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.3.17-platform THT-Split.apk THT-Split.apk.sha256 update.json HUONG_DAN_PLATFORM.md --draft --prerelease --latest=false --target "$GITHUB_SHA" --title "THT Split 0.3.17 — Quyền hệ thống" --notes-file docs/PLATFORM_RELEASE.md
+          gh release edit v0.3.17-platform --draft=false
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: THT-Split-Platform-Release
+          path: |
+            THT-Split.apk
+            THT-Split.apk.sha256
+            update.json
+            HUONG_DAN_PLATFORM.md
+          retention-days: 3
+      - name: Xóa khóa thử tạm khỏi runner
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/aosp-platform-test"

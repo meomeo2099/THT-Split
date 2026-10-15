@@ -216,7 +216,7 @@ public final class MainActivity extends Activity {
     }
     private String methodLabel(String m){return m.equals("off")?"Off — mở trực tiếp":m.equals("system")?"Quyền hệ thống":"ADB nội bộ";}
     private void chooseTransport(){
-        if(BuildConfig.PLATFORM_TEST){toast("Bản thử chỉ dùng Quyền hệ thống; xem quyền đã cấp trong Kết nối & quyền");return;}
+        if(BuildConfig.PLATFORM_TEST){toast("Bản platform dùng trực tiếp Quyền hệ thống; xem quyền đã cấp trong Kết nối & quyền");return;}
         if(connectionChecking){toast("Đang kiểm tra kết nối, vui lòng đợi kết quả");return;}
         if(store.b("session_active",false)||store.b("session_busy",false)){toast("Tắt chia màn hiện tại trước khi chuyển phương thức");return;}
         String[] values={"adb","off","system"};AppUi.dialog(this).setTitle("Phương thức điều khiển").setItems(new String[]{"ADB nội bộ (mặc định)","Off — mở trực tiếp","Quyền hệ thống"},(d,n)->{
@@ -246,7 +246,8 @@ public final class MainActivity extends Activity {
     }
     private void freeform(boolean enable){runIo(()->{if(!enable&&!store.b("freeform_backup",false))return "Chưa có bản lưu tùy chọn cũ; không thay đổi.";JSONObject q=new JSONObject().put("op",enable?"FREEFORM_ENABLE":"FREEFORM_RESTORE");if(!enable)for(String key:new String[]{"enable_freeform_support","force_resizable_activities"})q.put(key,store.s("old_"+key,"null"));JSONObject out=new Backend(this,store.s("transport","adb")).call(q);if(enable&&!store.b("freeform_backup",false)){for(String key:new String[]{"enable_freeform_support","force_resizable_activities"})store.set("old_"+key,out.getString(key));store.set("freeform_backup",true);}if(!enable)store.set("freeform_backup",false);return enable?"Đã bật hỗ trợ freeform. Có thể cần reboot; ADB nội bộ tự thử kết nối lại khi dùng.":"Đã khôi phục tùy chọn cũ.";});}
     private void updateSettings(){
-        if(BuildConfig.PLATFORM_TEST){body.addView(title("Bản thử platform"));note("THT Split "+BuildConfig.VERSION_NAME+"\n"+PlatformDiagnostics.describe(this));note("Cập nhật bản thử bằng APK riêng. Không dùng nguồn cập nhật của bản THT Split thường.");button(body,"Xuất log hỗ trợ",false,this::exportLog);return;}
+        if(BuildConfig.PLATFORM_TEST&&!BuildConfig.PLATFORM_RELEASE){body.addView(title("Bản thử platform"));note("THT Split "+BuildConfig.VERSION_NAME+"\n"+PlatformDiagnostics.describe(this));note("Cập nhật bản thử bằng APK riêng. Không dùng nguồn cập nhật của bản THT Split thường.");button(body,"Xuất log hỗ trợ",false,this::exportLog);return;}
+        if(BuildConfig.PLATFORM_RELEASE)note("Bản quyền hệ thống • package com.tht.split • cập nhật phải cùng chữ ký platform.\n"+PlatformDiagnostics.describe(this));
         body.addView(title("Phiên bản & cập nhật"));note("THT Split "+BuildConfig.VERSION_NAME);
         RemoteControl remote=new RemoteControl(this);note(remote.status());
         note("Không cần đăng ký hoặc nhập key. Cài xong có thể dùng ngay, kể cả khi chưa kết nối mạng.");
@@ -408,3 +409,4 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onDestroy(){refreshHandler.removeCallbacksAndMessages(null);if(connectionDialog!=null){connectionDialog.dismiss();connectionDialog=null;}if(downloadDialog!=null)downloadDialog.dismiss();io.shutdownNow();networkIo.shutdownNow();super.onDestroy();}
 }
+

@@ -1,5 +1,31 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## Release platform package gốc —15/10
+Chủ dự án gửi platform.pk8/platform.x509.pem, xác minh bằng openssl: publickey
+khớp, certSHA c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8,
+trùng cặp thử AOSP. Yêu cầu rõ build Release package gốc com.tht.split, thay
+cho đề xuất cài đè package thử. Đây là chuyển signer được chủ dự án chỉ định,
+không xoay khóa vì lỗi update. Giữ Secrets/khóa tht-split của main không đổi.
+Nhánh release/platform-original từ66f4f79, buildType platformRelease/init release,
+versionCode29/versionName0.3.17-platform, không suffix applicationId/shared UID.
+PLATFORM_TEST=true để tái dùng gate system-only, PLATFORM_RELEASE=true để hiện
+UI cập nhật thường và giữ Worker CONTROL_URL. Không tự nối Bridge hoặc fallback.
+PING khi systemContext trả sdk/uid/manager/systemPermission, bỏ bridgeVersion/
+commandIo/context pipe không đúng; đường daemon PING v7 giữ nguyên.
+Giữ Java/native UI/QR/icon/layout/Voice receiver/permission package gốc. Không
+sửa THTVoice; nếu gỡ bản signer cũ, token đổi và Voice cần nhập lại token.
+Ảnh13/10 xác nhận platformtest trùng cert/được cấp MANAGE_ACTIVITY_STACKS trên
+Android9 UID10036/context platform_app; chưa có xác nhận đầy đủ split/reboot.
+Workflow riêng chạy unit/lint/build, ký AOSP đúng pin và kiểm package29/label/
+không debuggable/không sharedUID; tạo metadata từ APK thực, publish tag riêng.
+Worker vẫn pin signer cũ: muốn OTA nhánh này cần chủ dự án đổi RELEASE_CERT_SHA256
+và kiểm ngay; chưa deploy/sửa Worker/minimum/khóa chung. Không bỏ signer checks.
+docs/PLATFORM_RELEASE.md ghi sao lưu/gỡ-cài một lần nếu khác signer; không tự
+xóa app/dữ liệu. Bản platformtest là package khác không cập nhật đè được.
+Workspace đã dọn nguồn cũ; chỉ khôi phục tệp sửa, CI checkout base tree đầy đủ.
+Đợi CI/APK; không gọi bản mới đã chia/reboot thành công trên xe.
+
+
 ## Bản thử AOSP platform riêng —13/10
 Chủ dự án gửi SIGNING_AND_VOICE_KEY.md rồi yêu cầu build dùng chứng thư đó.
 Nhánh test/aosp-platform-split dựa baa5827, buildType platformTest/code28/
@@ -665,3 +691,4 @@ Nguồn0.2.2 cũng có cast này; khác provider có thể giải thích bản A
   có; reboot rồi thử tự mở lại. Không yêu cầu chạy lệnh dự phòng như điều kiện test.
 - CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37280998296.
   Chưa thử APK sửa trên LDPlayer/xe; xem VALIDATION cho checksum và giới hạn.
+

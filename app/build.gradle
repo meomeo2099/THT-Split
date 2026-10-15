@@ -6,7 +6,7 @@ android {
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
-        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 29; versionName '0.3.17'
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 30; versionName '0.3.18'
         manifestPlaceholders = [appLabel: 'THT Split']
         buildConfigField 'boolean', 'PLATFORM_TEST', 'false'
         buildConfigField 'boolean', 'PLATFORM_RELEASE', 'false'
@@ -47,6 +47,17 @@ android {
             manifestPlaceholders = [appLabel: 'THT Split']
             buildConfigField 'boolean', 'PLATFORM_TEST', 'true'
             buildConfigField 'boolean', 'PLATFORM_RELEASE', 'true'
+        }
+        // Isolated UID 1000 trial. Not a normal release or OTA variant.
+        platformSystem {
+            initWith platformRelease
+            versionNameSuffix '-uid1000-test1'
+            signingConfig null
+            matchingFallbacks = ['release']
+            manifestPlaceholders = [appLabel: 'THT Split UID1000 Test']
+            buildConfigField 'boolean', 'PLATFORM_TEST', 'true'
+            buildConfigField 'boolean', 'PLATFORM_RELEASE', 'false'
+            buildConfigField 'String', 'CONTROL_URL', '""'
         }
     }
 }

@@ -59,22 +59,22 @@ jobs:
           sha256sum THT-Split.apk > THT-Split.apk.sha256
           EXPECTED_CERT_SHA256="$EXPECTED_CERT" python3 server/release-metadata.py THT-Split.apk --tag v0.3.18-platform
           cp docs/PLATFORM_UPDATE_0318.md HUONG_DAN_PLATFORM.md
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: THT-Split-0.3.18-platform-update-apk
+          path: |
+            THT-Split.apk
+            THT-Split.apk.sha256
+            update.json
+            HUONG_DAN_PLATFORM.md
+          retention-days: 7
       - name: Phát hành bản thử cập nhật từ 0.3.17-platform
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create v0.3.18-platform THT-Split.apk THT-Split.apk.sha256 update.json HUONG_DAN_PLATFORM.md --draft --prerelease --latest=false --target "$GITHUB_SHA" --title "THT Split 0.3.18-platform — Test cập nhật 0.3.17" --notes-file docs/PLATFORM_UPDATE_0318.md
           gh release edit v0.3.18-platform --draft=false
-      - uses: actions/upload-artifact@v4
-        continue-on-error: true
-        with:
-          name: THT-Split-Platform-Release
-          path: |
-            THT-Split.apk
-            THT-Split.apk.sha256
-            update.json
-            HUONG_DAN_PLATFORM.md
-          retention-days: 3
       - name: Xóa khóa thử tạm khỏi runner
         if: always()
         run: rm -rf "$RUNNER_TEMP/aosp-platform-test"

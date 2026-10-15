@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the isolated platformSystem build opts into the system shared UID.
+     Normal/debug/platformRelease manifests remain unchanged. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sharedUserId="android.uid.system" />

@@ -11,7 +11,7 @@ public final class SplitEngine {
     private final Context context;private final Store store,state;public JSONObject lastResult=new JSONObject();
     public SplitEngine(Context c,Store session){context=c;store=new Store(c);state=session;}
     public LayoutMath geometry(boolean toolbar){Point size=new Point();((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealSize(size);
-        return new LayoutMath(size.x,size.y,state.i("top_px",72),state.i("bottom_px",112),toolbar&&supportsTaskResize()?toolbarPx():0,8,state.i("ratio",50));}
+        return new LayoutMath(size.x,size.y,state.i("side_left_px",0),state.i("top_px",72),state.i("bottom_px",112),toolbar&&supportsTaskResize()?toolbarPx():0,8,state.i("ratio",50));}
     public int toolbarPx(){return Math.round((store.s("button_size","small").equals("large")?60:48)*context.getResources().getDisplayMetrics().density);}
     private String component(String p)throws Exception{Intent i=context.getPackageManager().getLaunchIntentForPackage(p);if(i==null||i.getComponent()==null)throw new IllegalArgumentException("Ứng dụng chưa cài hoặc không mở được: "+p);return i.getComponent().flattenToString();}
     private JSONObject request(String op,boolean toolbar)throws Exception{String l=state.s("left",""),r=state.s("right","");if(l.isEmpty()||r.isEmpty()||l.equals(r))throw new IllegalArgumentException("Hãy chọn hai ứng dụng khác nhau");
@@ -26,3 +26,4 @@ public final class SplitEngine {
     public void stop()throws Exception{call(fullscreenRequest("STOP","left"));}
     public void home()throws Exception{call(new JSONObject().put("op","HOME"));}
 }
+

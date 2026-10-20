@@ -1,5 +1,10 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt20/10 — ảnh thanh hệ thống bên trái
+- Theo ảnh gconnect-screenshot.png: có dock dọc trái, vùng app bắt đầu gần160px.
+- Thêm khoảng chừa bên trái chỉnh được, tỷ lệ/task/overlay/kéo dùng cùng vùng;
+  160px là mặc định thử theo ảnh, cần xác minh trên xe; EX2 giữ mặc định0px.
+
 ## Chốt20/10 — thêm cấu hình Coolray 2025
 - Làm thêm bản theo tài liệu SX11-LA/IHU730P,1920×720/160dpi do chủ dự án gửi,
   vì giao diện bản trước bị lỗi. Giao diện thích ứng màn thấp/cỡ chữ, đủ mục.

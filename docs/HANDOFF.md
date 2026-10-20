@@ -1,5 +1,26 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## Bổ sung thanh hệ thống bên trái —20/10/2026
+Đã đọc ảnh gconnect-screenshot.png (1920×720): dock trái≈120px, nội dung app
+bắt đầu gần x160px. Đây là số đo ảnh, chưa phải inset WindowManager đã xác minh.
+Thêm side_left_px mặc định thử160 cho Coolray (flag/model/product); EX2 vẫn0,
+giá trị đã lưu được ưu tiên. UI chỉnh0..600px; snapshot allowlist/validation giữ
+backup/restore mới, không đổi token/khóa/policy. Cài đè không ghi đè tùy chỉnh.
+LayoutMath có constructor nhận inset trái, overload cũ vẫn0. Tỷ lệ/kéo tính theo
+vùng còn lại:1920−160=1760, tâm50:50 x1040. SplitEngine gửi task bounds cùng vùng.
+Toolbar/loading/mini và preview divider cùng offset; session capture/rollback/
+cache fingerprint gồm side_left_px. Không sửa Bridge/bootstrap/signer/API Voice,
+không thay firmware hoặc đoán giao thức ecarx_splitscreen. Fullscreen vẫn do
+Android quản lý như bản trước; read-back báo chưa xác minh nếu OEM bỏ bounds.
+Không tự thêm padding160 vào Activity vì Android có thể đã trừ dock khỏi window.
+Top72/bottom112 vẫn thử nghiệm, không suy số đo trên/dưới từ hình; chỉnh trên xe.
+Đã javac47 Java main với Android34/stub R/BuildConfig và chạy harness thật:
+5 tỷ lệ720p, tâm1040, kéo176px=10%, clamp30/70, invalid inset, snapshot trái160
+và từ chối sai kiểu/phạm vi; hồi quyEX2 lề0/tâm960 đạt. git diff --check đạt.
+Thêm unit tests nhưng JUnit/lint/UI giả lập/APK chưa xác minh vì lần CI trước
+không cấp runner. Giữ nhánh riêng Coolray, chưa merge main/chuyển OTA EX2.
+
+
 ## Coolray 2025 —20/10/2026
 Yêu cầu làm thêm bản cấu hình vì giao diện bản trước lỗi. Dựa file người dùng
 Coolray2025-Voice-Spec.md: SX11-LA/IHU730P, Android9/API28,1920×720/160dpi.

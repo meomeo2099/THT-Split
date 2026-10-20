@@ -9,7 +9,10 @@ public final class Store {
     public Store(Context c){this(c,"tht_split");}
     public Store(Context c,String namespace){prefs=c.getSharedPreferences(namespace,Context.MODE_PRIVATE);}
     public String s(String key,String def){if(BuildConfig.PLATFORM_TEST&&key.equals("transport"))return "system";return prefs.getString(key,def);}
-    public int i(String key,int def){return prefs.getInt(key,def);}
+    public int i(String key,int def){
+        if(key.equals("side_left_px")&&(BuildConfig.COOLRAY_2025||com.tht.split.core.ScreenProfile.coolray2025(android.os.Build.MODEL,android.os.Build.PRODUCT)))def=160;
+        return prefs.getInt(key,def);
+    }
     public boolean b(String key,boolean def){return prefs.getBoolean(key,def);}
     public void set(String key,String value){prefs.edit().putString(key,value).apply();}
     public void set(String key,int value){prefs.edit().putInt(key,value).apply();}
@@ -21,3 +24,4 @@ public final class Store {
         boolean found=false;for(int n=0;n<old.length();n++){JSONObject o=old.optJSONObject(n);if(o==null)continue;if(id.equals(o.optString("id"))){next.put(pair);found=true;}else next.put(o);}if(!found)next.put(pair);set("pairs",next.toString());}
     public synchronized void deletePair(String id){JSONArray old=pairs(), next=new JSONArray();for(int n=0;n<old.length();n++){JSONObject o=old.optJSONObject(n);if(o!=null&&!id.equals(o.optString("id")))next.put(o);}set("pairs",next.toString());}
 }
+

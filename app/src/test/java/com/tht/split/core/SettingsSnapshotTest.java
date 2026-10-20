@@ -5,6 +5,13 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 public class SettingsSnapshotTest {
+    @Test public void backsUpLeftDockWithoutAcceptingInvalidTypesOrSizes(){
+        Map<String,Object> s=settings();s.put("side_left_px",160);
+        assertEquals(160,new SettingsSnapshot(s,Collections.emptyList()).settings.get("side_left_px"));
+        for(Object bad:new Object[]{-1,601,160d,"160"}){
+            s.put("side_left_px",bad);reject(()->new SettingsSnapshot(s,Collections.emptyList()));
+        }
+    }
     private static Map<String,Object> settings(){Map<String,Object> m=new LinkedHashMap<>();m.put("left","com.google.android.apps.maps");m.put("right","com.google.android.youtube");m.put("ratio",50);m.put("adb_port",5555);m.put("auto_hide",true);return m;}
     private static Map<String,Object> pair(String id){Map<String,Object> m=new LinkedHashMap<>();m.put("id",id);m.put("name","Bản đồ & YouTube");m.put("left","com.google.android.apps.maps");m.put("right","com.google.android.youtube");m.put("ratio",45);return m;}
     private static void reject(Runnable run){try{run.run();fail("Must reject invalid snapshot");}catch(IllegalArgumentException expected){}}
@@ -39,3 +46,4 @@ public class SettingsSnapshotTest {
         assertEquals(1,commits[0]);assertEquals("private-voice",current.get("voice_token"));assertEquals("private-bridge",current.get("bridge_token"));assertEquals(true,current.get("freeform_backup"));assertEquals("keep",current.get("last_error"));assertEquals(50,current.get("ratio"));assertFalse(current.containsKey("top_px"));
     }
 }
+

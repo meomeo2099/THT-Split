@@ -10,6 +10,12 @@ SX11-LA / IHU730P, Android9 API28, 1920×720 / 160dpi, launcher ecarx.launcher3.
 - Nội dung và hộp thoại tiếp tục cuộn, dùng kích thước Android cấp thực tế,
   không chạy wm size/density trên xe hoặc ép ứng dụng khác đổi giao diện.
 - Nhãn Coolray2025 và log bổ sung model/product/kích thước vùng ứng dụng/mật độ.
+- Theo ảnh gconnect-screenshot.png1920×720: dock hệ thống bên trái khoảng120px,
+  nội dung ứng dụng bắt đầu gần x160px. Thêm Chừa thanh hệ thống bên trái,
+  mặc định thử160px trên Coolray; EX2 mặc định0px, giữ giá trị người dùng đã lưu.
+- Tỷ lệ được tính trong vùng còn lại (1920−160=1760px), nên50:50 có tâm x1040,
+  không phải960. Toolbar, màn chờ, nút mở lại và kéo dùng cùng khoảng chừa.
+  Backend vẫn kiểm bounds thực; OEM có thể không nhận insets ở chế độ native.
 
 ## Cài đặt
 Tải **THT-Split-Coolray2025.apk** trong Release này. Package gốc com.tht.split,
@@ -31,7 +37,8 @@ bản này. Worker, khóa/mở và kiểm chứng APK vẫn theo bản platform 
    không tự cấp quyền, không thêm shared UID, không đoán giao thức ecarx_splitscreen.
 3. Chia hai app, đổi tỷ lệ/đổi bên/toàn màn/khôi phục, tắt/mở màn rồi thử lại.
 4. Khoảng chừa72/112px hiện là giá trị thử từ bản trước, **chưa đo trên Coolray**.
-   Cài đặt → Chia màn hình: chỉnh trên/dưới theo thanh hệ thống/điều hòa thực tế,
+   Khoảng chừa trái160px ước lượng từ ảnh, chưa xác minh vùng task trên firmware.
+   Cài đặt → Chia màn hình: chỉnh trái/trên/dưới theo thanh hệ thống/điều hòa thực tế,
    rồi Khôi phục cặp. Cài đè giữ khoảng chừa người dùng đã chỉnh.
 5. Nếu còn lệch, gửi ảnh toàn màn và log qua Cài đặt → Cập nhật → Xuất log hỗ trợ.
 

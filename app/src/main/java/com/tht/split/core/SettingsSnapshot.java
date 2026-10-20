@@ -6,7 +6,7 @@ import java.util.*;
 public final class SettingsSnapshot {
     public static final int MAX_BYTES=1048576,MAX_PAIRS=100;
     public static final Set<String> KEYS=Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(
-        "left","right","ratio","mode","top_px","bottom_px","toolbar_side","auto_hide","hide_seconds",
+        "left","right","ratio","mode","top_px","bottom_px","side_left_px","toolbar_side","auto_hide","hide_seconds",
         "button_size","opacity","mini_position","launch_wait_ms","transport","adb_host","adb_port","adb_at_boot","voice_enabled")));
     public final Map<String,Object> settings;
     public final List<Map<String,Object>> pairs;
@@ -24,6 +24,7 @@ public final class SettingsSnapshot {
                 case "left":case "right":v=pkg(v,true);break;
                 case "ratio":v=number(v,30,70);break;
                 case "top_px":case "bottom_px":v=number(v,0,400);break;
+                case "side_left_px":v=number(v,0,600);break;
                 case "hide_seconds":v=number(v,3,30);break;
                 case "opacity":v=number(v,40,100);break;
                 case "launch_wait_ms":v=number(v,0,3000);break;
@@ -63,3 +64,4 @@ public final class SettingsSnapshot {
         if(!s.matches("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*")||s.equals("com.tht.split"))throw invalid("Tên ứng dụng không hợp lệ");return s;}
     private static String choice(Object v,String...allowed){for(String s:allowed)if(s.equals(v))return s;throw invalid("Lựa chọn không được hỗ trợ");}
 }
+

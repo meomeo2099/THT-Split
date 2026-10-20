@@ -19,6 +19,20 @@ APK+checksum+guide+ảnh giả lập, không update.json/chuyển OTA EX2. CI ch
 tại mốc commit này; cần ghi bổ sung kết quả thực. Chưa thử trên Coolray thật.
 Xem docs/COOLRAY_2025.md; cần ảnh/log trên xe để xác minh lỗi UI cụ thể đã hết.
 
+Kết quả20/10: commit09f7298, workflow39405081467 đã thử2 lần; cả hai kết thúc
+failure trước cấp runner (runner_id0, steps[]), không log build/artifact/APK.
+Job cuối118569657276. Connector không đọc được endpoint annotations, chưa biết
+nguyên nhân hệ thống GitHub; cần mở trang Actions xem Annotations trước sửa.
+Không gọi đây là lỗi Java/SDK, không phát hành APK hoặc đánh dấu test/lint/UI đạt.
+Đã kiểm cục bộ bằng JDK17 javac -source8/target8: toàn bộ47 Java main + stub
+Unsafe biên dịch với Android34 android.jar; R/BuildConfig tạm sinh chỉ để kiểm
+kiểu nên chưa thay được Gradle/AAPT/lint. Harness thực chạy đạt nhận diện model/
+product, viewport720/600 vsEX2/narrow, font1.3, LayoutMath năm tỷ lệ tại1920×720.
+Python smoke script py_compile và git diff --check đạt. JUnit/giả lập chưa chạy.
+Bước tiếp: mở https://github.com/meomeo2099/THT-Split/actions/runs/39405081467
+xem Annotations, khắc phục điều kiện runner rồi Re-run failed jobs. Chỉ gửi link
+Release/APK sau khi job chạy test/lint/sign/emulator/publish thành công thực tế.
+
 
 ## Release 0.3.18-platform — thử cập nhật trực tiếp từ 0.3.17-platform (16/10/2026)
 Yêu cầu chủ dự án: build bản 0.3.18-platform package chính để kiểm tra cài đè.

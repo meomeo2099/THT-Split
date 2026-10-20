@@ -1,5 +1,12 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt20/10 — thêm cấu hình Coolray 2025
+- Làm thêm bản theo tài liệu SX11-LA/IHU730P,1920×720/160dpi do chủ dự án gửi,
+  vì giao diện bản trước bị lỗi. Giao diện thích ứng màn thấp/cỡ chữ, đủ mục.
+- Giữ package gốc/chữ ký platform theo yêu cầu trước, không thay bản EX2/main
+  hoặc tự đổi Worker/kênh OTA. Chưa có số đo insets/cert Coolray nên cần thử xe.
+
+
 ## Chốt15/10 — Release chữ ký platform, package gốc
 - Dùng cặp khóa gửi15/10 đã xác minh khớp cert AOSP của bản thử.
 - Chủ dự án yêu cầu com.tht.split gốc; không dùng suffix platformtest cho APK này.

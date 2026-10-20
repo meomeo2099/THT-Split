@@ -1,5 +1,25 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## Coolray 2025 —20/10/2026
+Yêu cầu làm thêm bản cấu hình vì giao diện bản trước lỗi. Dựa file người dùng
+Coolray2025-Voice-Spec.md: SX11-LA/IHU730P, Android9/API28,1920×720/160dpi.
+Nhánh release/coolray2025-0.3.19 từ ddab015 (0.3.18 platform), thêm coolrayRelease:
+package com.tht.split/code31/name0.3.19-coolray2025/cert AOSP platform như0.3.18.
+Không shared UID. Không merge main, không thay Secrets signer tht-split.
+MainActivity/ScreenProfile: chiều cao khả dụng<=720dp và rộng>=900dp dùng header52,
+thẻ chọn app gọn, settings tabs ngang cuộn, menu chính cuộn và nút tăng theo font.
+Không đổi density/resolution, SplitEngine/geometry/overlay/Bridge/Voice/Worker.
+Khoảng chừa72/112px giữ cấu hình cũ, chưa có số đo HVAC Coolray trong spec;
+không tự scale/ghi đè insets đã chỉnh. Chỉ có tên service ecarx_splitscreen trong
+spec, chưa có giao thức Binder nên không gọi theo transaction code phỏng đoán.
+Cert platform Coolray chưa xác minh, không suy từ ảnh EX2 thành hỗ trợ mọi xe.
+Workflow riêng test/lint/build, ký/kiểm cert-package-code-manifest, UI smoke
+giả lập Android9 tại1920×720/160dpi/font1.0 và1.3,1920×600/font1.0. Publish
+APK+checksum+guide+ảnh giả lập, không update.json/chuyển OTA EX2. CI chưa chạy
+tại mốc commit này; cần ghi bổ sung kết quả thực. Chưa thử trên Coolray thật.
+Xem docs/COOLRAY_2025.md; cần ảnh/log trên xe để xác minh lỗi UI cụ thể đã hết.
+
+
 ## Release 0.3.18-platform — thử cập nhật trực tiếp từ 0.3.17-platform (16/10/2026)
 Yêu cầu chủ dự án: build bản 0.3.18-platform package chính để kiểm tra cài đè.
 Nhánh release/platform-update-0.3.18 xuất phát release/platform-original;

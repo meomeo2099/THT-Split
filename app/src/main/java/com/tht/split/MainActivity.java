@@ -11,6 +11,7 @@ import android.widget.*;
 import com.tht.split.bridge.ShellClient;
 import com.tht.split.connection.Backend;
 import com.tht.split.core.LayoutMath;
+import com.tht.split.core.ScreenProfile;
 import com.tht.split.remote.*;
 import org.json.*;
 import java.io.*;
@@ -38,15 +39,19 @@ public final class MainActivity extends Activity {
     private TextView title(String s){TextView t=AppUi.text(this,s,22,AppUi.TEXT);t.setTypeface(null,Typeface.BOLD);return t;}
     private Button button(LinearLayout l,String s,boolean selected,Runnable click){Button b=AppUi.button(this,s,selected);b.setMinHeight(AppUi.dp(this,52));LinearLayout.LayoutParams p=lp(-1,-2);p.setMargins(0,AppUi.dp(this,4),0,AppUi.dp(this,4));l.addView(b,p);b.setOnClickListener(v->click.run());return b;}
     private boolean landscapeLayout(){return screenWidth>=900;}
+    private boolean shortLayout(){return ScreenProfile.shortLandscape(screenWidth,getResources().getConfiguration().screenHeightDp);}
+    private boolean coolrayProfile(){return BuildConfig.COOLRAY_2025||ScreenProfile.coolray2025(Build.MODEL,Build.PRODUCT);}
+    private int navHeight(){return ScreenProfile.navigationHeight(shortLayout(),getResources().getConfiguration().fontScale);}
+    private int navigationWidth(){return shortLayout()?176:184;}
     private void line(LinearLayout parent){View v=new View(this);v.setBackgroundColor(AppUi.LINE);parent.addView(v,lp(-1,AppUi.dp(this,1)));}
     private void scrollBody(LinearLayout parent){
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setClipToPadding(false);
         parent.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));body=AppUi.column(this);
-        AppUi.pad(body,landscapeLayout()?24:16);scroll.addView(body);
+        AppUi.pad(body,shortLayout()?12:landscapeLayout()?24:16);scroll.addView(body);
     }
     private void navItem(LinearLayout nav,String label,String icon,boolean selected,boolean compact,Runnable action){
         LinearLayout item=AppUi.navigation(this,label,icon,selected,compact);
-        LinearLayout.LayoutParams p=compact?new LinearLayout.LayoutParams(0,AppUi.dp(this,68),1):lp(-1,AppUi.dp(this,60));
+        LinearLayout.LayoutParams p=compact?new LinearLayout.LayoutParams(0,AppUi.dp(this,68),1):lp(-1,AppUi.dp(this,navHeight()));
         int gap=AppUi.dp(this,4);p.setMargins(gap,gap,gap,gap);nav.addView(item,p);item.setOnClickListener(v->action.run());
     }
     private void render(){
@@ -58,13 +63,16 @@ public final class MainActivity extends Activity {
         header.addView(brand,new LinearLayout.LayoutParams(0,-1,1));
         brand.addView(new AppUi.Icon(this,"brand",AppUi.CYAN),lp(AppUi.dp(this,54),AppUi.dp(this,36)));
         View divider=new View(this);divider.setBackgroundColor(AppUi.CYAN);LinearLayout.LayoutParams d=lp(AppUi.dp(this,2),AppUi.dp(this,28));d.setMargins(AppUi.dp(this,12),0,AppUi.dp(this,12),0);brand.addView(divider,d);
-        brand.addView(title("THT Split"));AppUi.Icon gear=new AppUi.Icon(this,"gear",AppUi.TEXT);
+        brand.addView(title(BuildConfig.COOLRAY_2025?"THT Split • Coolray 2025":"THT Split"));AppUi.Icon gear=new AppUi.Icon(this,"gear",AppUi.TEXT);
         gear.setBackground(AppUi.surface(this,false));header.addView(gear,lp(AppUi.dp(this,48),AppUi.dp(this,48)));
-        gear.setContentDescription("Cài đặt");gear.setOnClickListener(v->{page="settings";render();});root.addView(header,lp(-1,AppUi.dp(this,64)));line(root);
+        gear.setContentDescription("Cài đặt");gear.setOnClickListener(v->{page="settings";render();});root.addView(header,lp(-1,AppUi.dp(this,shortLayout()?52:64)));line(root);
         LinearLayout content=landscapeLayout()?AppUi.row(this):AppUi.column(this);content.setGravity(Gravity.TOP);
         root.addView(content,new LinearLayout.LayoutParams(-1,0,1));
         LinearLayout nav=landscapeLayout()?AppUi.column(this):AppUi.row(this);AppUi.pad(nav,8);
-        content.addView(nav,lp(landscapeLayout()?AppUi.dp(this,184):-1,landscapeLayout()?-1:AppUi.dp(this,92)));
+        if(landscapeLayout()){
+            ScrollView navigation=new ScrollView(this);navigation.setFillViewport(true);navigation.addView(nav);
+            content.addView(navigation,lp(AppUi.dp(this,navigationWidth()),-1));
+        }else content.addView(nav,lp(-1,AppUi.dp(this,92)));
         navItem(nav,"Chia màn hình","split",page.equals("home"),!landscapeLayout(),()->{page="home";render();});
         navItem(nav,"Cặp đã lưu","bookmark",page.equals("pairs"),!landscapeLayout(),()->{page="pairs";render();});
         navItem(nav,"Cài đặt","gear",page.equals("settings"),!landscapeLayout(),()->{page="settings";render();});
@@ -74,16 +82,16 @@ public final class MainActivity extends Activity {
     }
     private void home(){
         String denied=new RemoteControl(this).denial();if(!denied.isEmpty()){note(denied);button(body,"Kiểm tra cập nhật",true,()->{page="settings";section="updates";render();refreshRemote(true,true);});}
-        body.addView(title("Chọn hai ứng dụng"));space(body,16);
+        body.addView(title("Chọn hai ứng dụng"));space(body,shortLayout()?8:16);
         LinearLayout cards=landscapeLayout()?AppUi.row(this):AppUi.column(this);body.addView(cards,lp(-1,-2));
         appCard(cards,"Ứng dụng bên trái","left");AppUi.Icon swap=new AppUi.Icon(this,"swap",AppUi.TEXT);swap.setBackground(AppUi.surface(this,false));
         LinearLayout.LayoutParams p=lp(AppUi.dp(this,56),AppUi.dp(this,56));p.setMargins(AppUi.dp(this,16),AppUi.dp(this,8),AppUi.dp(this,16),AppUi.dp(this,8));p.gravity=Gravity.CENTER;
         cards.addView(swap,p);swap.setContentDescription("Đổi bên hai ứng dụng");swap.setFocusable(true);swap.setOnClickListener(v->{String l=store.s("left","");store.set("left",store.s("right",""));store.set("right",l);render();});
-        appCard(cards,"Ứng dụng bên phải","right");space(body,20);
+        appCard(cards,"Ứng dụng bên phải","right");space(body,shortLayout()?12:20);
         LinearLayout ratios=landscapeLayout()?AppUi.row(this):AppUi.column(this);body.addView(ratios,lp(-1,-2));
         TextView label=AppUi.text(this,"Tỷ lệ chia màn hình",16,AppUi.TEXT);ratios.addView(label,lp(landscapeLayout()?AppUi.dp(this,184):-1,AppUi.dp(this,48)));
         LinearLayout ratioArea=AppUi.column(this);ratios.addView(ratioArea,landscapeLayout()?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
-        ratioRow(ratioArea,store.i("ratio",50),n->{store.set("ratio",n);render();});space(body,18);
+        ratioRow(ratioArea,store.i("ratio",50),n->{store.set("ratio",n);render();});space(body,shortLayout()?10:18);
         JSONArray saved=store.pairs();
         if(saved.length()>0){body.addView(AppUi.text(this,"Cặp đã lưu — mở nhanh",16,AppUi.MUTED));space(body,8);LinearLayout quick=landscapeLayout()?AppUi.row(this):AppUi.column(this);
             if(landscapeLayout()){HorizontalScrollView scroller=new HorizontalScrollView(this);scroller.setHorizontalScrollBarEnabled(false);scroller.addView(quick);body.addView(scroller,lp(-1,-2));}else body.addView(quick,lp(-1,-2));
@@ -97,13 +105,13 @@ public final class MainActivity extends Activity {
         if(store.b("session_active",false)){space(body,12);if(!store.s("transport","adb").equals("off"))button(body,"Khôi phục cặp đang chạy",false,()->send("restore"));button(body,"Tắt chia màn hình",false,()->send("stop"));}
     }
     private void appCard(LinearLayout parent,String label,String side){
-        LinearLayout card=AppUi.column(this);AppUi.pad(card,20);card.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));
+        LinearLayout card=AppUi.column(this);AppUi.pad(card,shortLayout()?12:20);card.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));
         parent.addView(card,landscapeLayout()?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));
-        TextView heading=AppUi.text(this,label,17,AppUi.TEXT);heading.setTypeface(null,Typeface.BOLD);card.addView(heading);space(card,12);
+        TextView heading=AppUi.text(this,label,17,AppUi.TEXT);heading.setTypeface(null,Typeface.BOLD);card.addView(heading);space(card,shortLayout()?8:12);
         String pkg=store.s(side,"");LinearLayout app=AppUi.row(this);ImageView icon=new ImageView(this);
         try{icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg));}catch(Exception ignored){icon.setImageResource(R.mipmap.ic_launcher);}
-        app.addView(icon,lp(AppUi.dp(this,64),AppUi.dp(this,64)));TextView name=AppUi.text(this,AppPicker.label(this,pkg),20,AppUi.TEXT);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        LinearLayout.LayoutParams n=new LinearLayout.LayoutParams(0,-2,1);n.leftMargin=AppUi.dp(this,16);app.addView(name,n);card.addView(app);space(card,12);
+        int iconSize=shortLayout()?48:64;app.addView(icon,lp(AppUi.dp(this,iconSize),AppUi.dp(this,iconSize)));TextView name=AppUi.text(this,AppPicker.label(this,pkg),20,AppUi.TEXT);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams n=new LinearLayout.LayoutParams(0,-2,1);n.leftMargin=AppUi.dp(this,16);app.addView(name,n);card.addView(app);space(card,shortLayout()?8:12);
         Button change=AppUi.button(this,"Đổi ứng dụng",false);card.addView(change,lp(-1,AppUi.dp(this,48)));change.setOnClickListener(v->AppPicker.show(this,label,false,p->{store.set(side,p);render();}));
     }
     private interface Ratio{void selected(int n);}
@@ -122,7 +130,7 @@ public final class MainActivity extends Activity {
     private void pairs(){
         body.addView(title("Cặp đã lưu"));space(body,16);JSONArray pairs=store.pairs();
         if(pairs.length()==0){LinearLayout empty=AppUi.column(this);AppUi.pad(empty,24);empty.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));body.addView(empty,lp(-1,-2));empty.addView(AppUi.text(this,"Chưa có cặp ứng dụng",20,AppUi.TEXT));space(empty,8);empty.addView(AppUi.text(this,"Chọn hai ứng dụng và tỷ lệ, rồi bấm Lưu cặp để mở nhanh lần sau.",16,AppUi.MUTED));space(empty,16);button(empty,"Chọn ứng dụng",true,()->{page="home";render();});return;}
-        for(int n=0;n<pairs.length();n++){JSONObject pair=pairs.optJSONObject(n);if(pair==null)continue;LinearLayout card=AppUi.column(this);AppUi.pad(card,20);card.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));body.addView(card,lp(-1,-2));
+        for(int n=0;n<pairs.length();n++){JSONObject pair=pairs.optJSONObject(n);if(pair==null)continue;LinearLayout card=AppUi.column(this);AppUi.pad(card,shortLayout()?12:20);card.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));body.addView(card,lp(-1,-2));
             LinearLayout top=AppUi.row(this);card.addView(top);TextView name=AppUi.text(this,pair.optString("name"),20,AppUi.TEXT);name.setTypeface(null,Typeface.BOLD);top.addView(name,new LinearLayout.LayoutParams(0,-2,1));
             space(card,12);LinearLayout apps=AppUi.row(this);card.addView(apps,lp(-1,-2));pairApp(apps,pair.optString("left"));TextView plus=AppUi.text(this,"+",20,AppUi.MUTED);plus.setGravity(Gravity.CENTER);apps.addView(plus,lp(AppUi.dp(this,32),AppUi.dp(this,40)));pairApp(apps,pair.optString("right"));
             space(card,16);LinearLayout bottom=landscapeLayout()?AppUi.row(this):AppUi.column(this);card.addView(bottom,lp(-1,-2));TextView ratio=AppUi.text(this,"Tỷ lệ "+pair.optInt("ratio",50)+":"+(100-pair.optInt("ratio",50)),16,AppUi.CYAN);bottom.addView(ratio,landscapeLayout()?new LinearLayout.LayoutParams(0,-2,1):lp(-1,-2));if(!landscapeLayout())space(bottom,12);
@@ -142,12 +150,13 @@ public final class MainActivity extends Activity {
     }
     private void settings(LinearLayout area){
         String[] keys={"layout","toolbar","voice","connection","updates","backup"},labels={"Chia màn hình","Thanh điều khiển","THT Voice","Kết nối & quyền","Cập nhật","Sao lưu"},icons={"split","sliders","voice","link","update","bookmark"};
-        LinearLayout frame=screenWidth>=900?AppUi.row(this):AppUi.column(this);frame.setGravity(Gravity.TOP);area.addView(frame,lp(-1,-1));
-        LinearLayout tabs=screenWidth>=900?AppUi.column(this):AppUi.row(this);AppUi.pad(tabs,8);
-        if(screenWidth>=900){LinearLayout.LayoutParams t=lp(AppUi.dp(this,224),-1);t.setMargins(AppUi.dp(this,8),AppUi.dp(this,16),0,AppUi.dp(this,16));ScrollView tabScroll=new ScrollView(this);tabScroll.setVerticalScrollBarEnabled(false);tabScroll.addView(tabs);frame.addView(tabScroll,t);tabs.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,12)));}
-        else{HorizontalScrollView scroller=new HorizontalScrollView(this);scroller.setHorizontalScrollBarEnabled(false);scroller.addView(tabs);frame.addView(scroller,lp(-1,AppUi.dp(this,80)));}
-        for(int n=0;n<keys.length;n++){String key=keys[n];LinearLayout tab=AppUi.navigation(this,labels[n],icons[n],section.equals(key),false);LinearLayout.LayoutParams t=lp(screenWidth>=900?-1:AppUi.dp(this,192),AppUi.dp(this,60));t.setMargins(0,0,AppUi.dp(this,4),AppUi.dp(this,6));tabs.addView(tab,t);tab.setOnClickListener(v->{section=key;render();});}
-        LinearLayout panel=AppUi.column(this);frame.addView(panel,screenWidth>=900?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));scrollBody(panel);
+        LinearLayout frame=landscapeLayout()&&!shortLayout()?AppUi.row(this):AppUi.column(this);frame.setGravity(Gravity.TOP);area.addView(frame,lp(-1,-1));
+        boolean sideTabs=landscapeLayout()&&!shortLayout();
+        LinearLayout tabs=sideTabs?AppUi.column(this):AppUi.row(this);AppUi.pad(tabs,8);
+        if(sideTabs){LinearLayout.LayoutParams t=lp(AppUi.dp(this,224),-1);t.setMargins(AppUi.dp(this,8),AppUi.dp(this,16),0,AppUi.dp(this,16));ScrollView tabScroll=new ScrollView(this);tabScroll.setVerticalScrollBarEnabled(false);tabScroll.addView(tabs);frame.addView(tabScroll,t);tabs.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,12)));}
+        else{HorizontalScrollView scroller=new HorizontalScrollView(this);scroller.setHorizontalScrollBarEnabled(false);scroller.addView(tabs);frame.addView(scroller,lp(-1,AppUi.dp(this,navHeight()+22)));}
+        for(int n=0;n<keys.length;n++){String key=keys[n];LinearLayout tab=AppUi.navigation(this,labels[n],icons[n],section.equals(key),false);LinearLayout.LayoutParams t=lp(sideTabs?-1:AppUi.dp(this,192),AppUi.dp(this,navHeight()));t.setMargins(0,0,AppUi.dp(this,4),AppUi.dp(this,6));tabs.addView(tab,t);tab.setOnClickListener(v->{section=key;render();});}
+        LinearLayout panel=AppUi.column(this);frame.addView(panel,sideTabs?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));scrollBody(panel);
         LinearLayout settingsCard=AppUi.column(this);settingsCard.setBackground(AppUi.bg(AppUi.CARD,AppUi.dp(this,14)));AppUi.pad(settingsCard,16);body.addView(settingsCard,lp(-1,-2));body=settingsCard;
         switch(section){case "toolbar":toolbarSettings();break;case "voice":voiceSettings();break;case "connection":connectionSettings();break;case "updates":updateSettings();break;case "backup":backupSettings();break;default:layoutSettings();}
     }
@@ -175,9 +184,10 @@ public final class MainActivity extends Activity {
         LinearLayout row=settingRow(label);Button b=AppUi.button(this,store.i(key,def)+" px",false);row.addView(b,controlParams());
         b.setOnClickListener(v->{EditText input=AppUi.input(this);input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);input.setText(String.valueOf(store.i(key,def)));AppUi.dialog(this).setTitle(label).setView(input).setPositiveButton("Lưu",(d,n)->{try{int x=Integer.parseInt(input.getText().toString());if(x<0||x>max)throw new NumberFormatException();store.set(key,x);render();}catch(NumberFormatException e){toast("Giá trị từ 0 đến "+max);}}).setNegativeButton("Hủy",null).show();});
     }
-    private void layoutSettings(){body.addView(title("Chia màn hình"));choice("Chế độ chia","mode",new String[]{"native","freeform"},new String[]{"Chia đôi (EX2)","Cửa sổ tự do"},"native");
+    private void layoutSettings(){body.addView(title("Chia màn hình"));choice("Chế độ chia","mode",new String[]{"native","freeform"},new String[]{coolrayProfile()?"Chia đôi (Coolray 2025)":"Chia đôi (EX2)","Cửa sổ tự do"},"native");
+        if(coolrayProfile())note("Cấu hình Coolray 2025. Chỉnh khoảng chừa theo thanh trạng thái và điều hòa trên màn xe, rồi bấm Khôi phục cặp để áp dụng.");
         note("ADB nội bộ hoặc quyền hệ thống dùng chế độ đã chọn. Off luôn mở cửa sổ tự do, không xác minh bố cục trên firmware xe. App tự nhớ cặp và tỷ lệ lần trước; không tự mở app khi xe khởi động.");number("Chừa phía trên","top_px",72,400);number("Chừa điều hòa phía dưới","bottom_px",112,400);
-        button(body,"Khôi phục khoảng chừa EX2",false,()->{store.set("top_px",72);store.set("bottom_px",112);render();});note("Thay đổi chế độ/khoảng chừa áp dụng khi Bắt đầu chia hoặc Khôi phục cặp.");}
+        button(body,coolrayProfile()?"Đặt lại khoảng chừa thử nghiệm":"Khôi phục khoảng chừa EX2",false,()->{store.set("top_px",72);store.set("bottom_px",112);render();});note("Thay đổi chế độ/khoảng chừa áp dụng khi Bắt đầu chia hoặc Khôi phục cặp.");}
     private void toolbarSettings(){
         body.addView(title("Thanh điều khiển"));space(body,12);
         choice("Vị trí nhóm nút","toolbar_side",new String[]{"left","right"},new String[]{"Bên trái","Bên phải"},"right");line(body);
@@ -321,7 +331,7 @@ public final class MainActivity extends Activity {
     private void donation(){
         body.addView(title("Ủng hộ & liên hệ"));space(body,6);
         note("Cảm ơn bạn đã đồng hành cùng THT Split.");space(body,12);
-        int available=screenWidth-(landscapeLayout()?184+48:32);
+        int available=screenWidth-(landscapeLayout()?navigationWidth()+(shortLayout()?24:48):32);
         boolean columns=available>=760;int cardWidth=columns?(available-16)/2:available;
         LinearLayout cards=columns?AppUi.row(this):AppUi.column(this);cards.setGravity(Gravity.TOP);body.addView(cards,lp(-1,-2));
         LinearLayout bank=supportCard(cards,columns,"Ủng hộ","heart");
@@ -394,7 +404,7 @@ public final class MainActivity extends Activity {
         supportQr(content,ContactProfile.ZALO_QR_ASSET,"QR Zalo liên hệ THT",width,"Không đọc được QR Zalo. Hãy liên hệ qua Facebook.");
         space(card,12);card.addView(AppUi.text(this,"Quét QR bằng Zalo trên điện thoại.",13,AppUi.MUTED));
     }
-    private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+(BuildConfig.PLATFORM_TEST?"\n"+PlatformDiagnostics.describe(this):"")+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nperformance="+PerformanceLog.samples(this)+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
+    private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+(BuildConfig.PLATFORM_TEST?"\n"+PlatformDiagnostics.describe(this):"")+"\nprofile="+(coolrayProfile()?"coolray2025":"ex2")+" model="+Build.MODEL+" product="+Build.PRODUCT+"\nuiDp="+getResources().getConfiguration().screenWidthDp+"x"+getResources().getConfiguration().screenHeightDp+" densityDpi="+getResources().getDisplayMetrics().densityDpi+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nperformance="+PerformanceLog.samples(this)+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);if(request<31||request>33||result!=RESULT_OK||data==null||data.getData()==null)return;
         Uri uri=data.getData();if(request==33&&!canRestore())return;backupWorking=true;String log=exportedLog;
@@ -409,4 +419,5 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onDestroy(){refreshHandler.removeCallbacksAndMessages(null);if(connectionDialog!=null){connectionDialog.dismiss();connectionDialog=null;}if(downloadDialog!=null)downloadDialog.dismiss();io.shutdownNow();networkIo.shutdownNow();super.onDestroy();}
 }
+
 

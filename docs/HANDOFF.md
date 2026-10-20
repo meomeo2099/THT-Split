@@ -1,5 +1,26 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## Xác nhận Release Coolray2025 —20/10/2026
+Commit mã2cb76dbea338ee579db4387641544288abdff9d4 đã được build/ký/phát hành.
+CI39407617760/job118577273157 completed/success: testCoolrayReleaseUnitTest,
+lintCoolrayRelease, assembleCoolrayRelease, apksigner/aapt cert/package/code31/
+name0.3.19-coolray2025, no sharedUID/nondebuggable đều đạt. UI Android9 emulator:
+1920×720/160dpi font1.0 và1.3,1920×600/font1.0 đều UI OK. Đã xem ảnh home720/1.0
+và settings720/1.3: nội dung/nút rõ, các mục đủ; đây chưa là test trên Coolray.
+Release418273160/v0.3.19-coolray2025 đã publish/prerelease/not draft:
+https://github.com/meomeo2099/THT-Split/releases/tag/v0.3.19-coolray2025
+APK659005898:275860 bytes, SHA256
+123a8a0f94bff17745c733209d15c7fa997c33de5816f86c75b113f4f03236ae.
+Cert vẫn c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8.
+Đủ APK/checksum/guide9ảnhPNG; không update.json/chuyểnWorker. Artifact12257529224
+đã upload thực sự; tải/kiểm SHA ZIP và APK khớp Release, DEX chứa side_left_px/
+draggedRatio/nhãn lề trái mới. Hai lần trước không cấp runner là lịch sử; lần
+mới đã chạy đạt, không tiếp tục yêu cầu chủ dự án gửi Annotations cũ.
+Bước tiếp: cài đè bản platform cùng signer, kiểm quyền thực Coolray, chỉnh lề
+trái160px và trên/dưới theo xe rồi thử cặp/tỷ lệ/kéo/full/restore/reboot. Không
+kết luận đã hết lỗi trên xe từ UI smoke/ảnh giả lập. EX2/main giữ nhánh cũ.
+
+
 ## Bổ sung thanh hệ thống bên trái —20/10/2026
 Đã đọc ảnh gconnect-screenshot.png (1920×720): dock trái≈120px, nội dung app
 bắt đầu gần x160px. Đây là số đo ảnh, chưa phải inset WindowManager đã xác minh.

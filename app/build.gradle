@@ -6,7 +6,8 @@ android {
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
-        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 31; versionName '0.3.19'
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 32; versionName '0.3.20'
+        testInstrumentationRunner 'com.tht.split.OverlayTestRunner'
         manifestPlaceholders = [appLabel: 'THT Split']
         buildConfigField 'boolean', 'PLATFORM_TEST', 'false'
         buildConfigField 'boolean', 'PLATFORM_RELEASE', 'false'
@@ -27,6 +28,7 @@ android {
         }
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    testBuildType 'coolrayRelease'
     buildTypes {
         debug { if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
         release { minifyEnabled false; if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
@@ -74,5 +76,6 @@ tasks.register('hiddenApiStubsJar', Jar) {
     destinationDirectory = layout.buildDirectory.dir('hidden-api-stubs')
 }
 dependencies { compileOnly files(tasks.named('hiddenApiStubsJar')) }
+
 
 

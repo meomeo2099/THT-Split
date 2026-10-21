@@ -15,7 +15,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class SplitService extends Service {
-    private Store store,session;private SplitEngine engine;private WindowManager wm;
+    private Store store,session;private SplitEngine engine;private WindowManager wm;private OverlayPositioner positioner;
     private final Handler main=new Handler(Looper.getMainLooper());
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private final ExecutorService policyIo=Executors.newSingleThreadExecutor();
@@ -27,7 +27,7 @@ public final class SplitService extends Service {
     private final Runnable autoHide=()->send("hide");
     private final Runnable policyPoll=new Runnable(){public void run(){if(destroyed)return;main.postDelayed(this,60000);policyIo.execute(()->{com.tht.split.remote.RemoteControl r=new com.tht.split.remote.RemoteControl(SplitService.this);try{r.refresh(false);}catch(Exception ignored){}String denied=r.denial();if(!denied.isEmpty())main.post(()->{if(!destroyed){toast(denied);stopSelf();}});});}};
     @Override public void onCreate(){super.onCreate();store=new Store(this);store.set("session_busy",false);session=new Store(this,"tht_split_session");
-        session.set("left",store.s("left",""));session.set("right",store.s("right",""));session.set("ratio",store.i("ratio",50));captureLayoutSettings();engine=new SplitEngine(this,session);wm=(WindowManager)getSystemService(WINDOW_SERVICE);
+        session.set("left",store.s("left",""));session.set("right",store.s("right",""));session.set("ratio",store.i("ratio",50));captureLayoutSettings();engine=new SplitEngine(this,session);wm=(WindowManager)getSystemService(WINDOW_SERVICE);positioner=new OverlayPositioner(wm,value->store.set("last_overlay",value));
         NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);n.createNotificationChannel(new NotificationChannel("split","THT Split",NotificationManager.IMPORTANCE_LOW));
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         startForeground(1,new Notification.Builder(this,"split").setSmallIcon(R.drawable.icon_foreground).setContentTitle("THT Split").setContentText("Chạm để mở ứng dụng / khôi phục cặp").setContentIntent(open).setOngoing(true).build());
@@ -87,7 +87,7 @@ public final class SplitService extends Service {
     private void captureLayoutSettings(){session.set("transport",store.s("transport","adb"));session.set("mode",store.s("mode","native"));session.set("top_px",store.i("top_px",72));session.set("bottom_px",store.i("bottom_px",112));session.set("side_left_px",store.i("side_left_px",0));}
     private void scheduleHide(){main.removeCallbacks(autoHide);if(active&&visible&&store.b("auto_hide",true)&&!full)main.postDelayed(autoHide,store.i("hide_seconds",5)*1000L);}
     private WindowManager.LayoutParams params(int w,int h,int x,int y){WindowManager.LayoutParams p=new WindowManager.LayoutParams(w,h,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,android.graphics.PixelFormat.TRANSLUCENT);p.gravity=Gravity.TOP|Gravity.LEFT;p.x=x;p.y=y;p.alpha=store.i("opacity",90)/100f;return p;}
-    private void remove(View v){if(v!=null&&v.getParent()!=null)try{wm.removeView(v);}catch(IllegalArgumentException ignored){}}
+    private void remove(View v){if(v!=null)positioner.forget(v);if(v!=null&&v.getParent()!=null)try{wm.removeView(v);}catch(IllegalArgumentException ignored){}}
     private void clear(){remove(toolbar);remove(mini);remove(divider);remove(loading);toolbar=mini=divider=loading=null;ratioViews.clear();overlayKey="";}
     private void render(String action){render();}
     private void dismissConfiguration(){
@@ -99,11 +99,11 @@ public final class SplitService extends Service {
         clear();Point size=new Point();wm.getDefaultDisplay().getRealSize(size);
         LayoutMath g=engine.geometry(false);
         SplitLoadingView panel=new SplitLoadingView(this,g.areaWidth,g.left.height());loading=panel;
-        WindowManager.LayoutParams p=params(g.areaWidth,g.left.height(),g.areaLeft,g.left.top);p.alpha=1f;wm.addView(panel,p);
+        WindowManager.LayoutParams p=params(g.areaWidth,g.left.height(),g.areaLeft,g.left.top);p.alpha=1f;panel.setContentDescription("Màn chờ chia");attach(panel,p);
     }
     private Ui.Icon icon(LinearLayout row,String kind,int color,String label,Runnable click){Ui.Icon v=new Ui.Icon(this,kind,color);v.setContentDescription(label);int s=engine.toolbarPx()-Ui.dp(this,8);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(s,s);p.setMargins(Ui.dp(this,3),0,Ui.dp(this,3),0);row.addView(v,p);v.setOnClickListener(w->{scheduleHide();click.run();});return v;}
     private void attach(View view,WindowManager.LayoutParams params){
-        if(view.getParent()==null)wm.addView(view,params);else wm.updateViewLayout(view,params);
+        positioner.place(view,params);
     }
     private LayoutMath.Box observedBox(String key){
         JSONArray bounds=engine.lastResult.optJSONArray(key);if(bounds==null||bounds.length()!=4)return null;
@@ -126,7 +126,7 @@ public final class SplitService extends Service {
                 }
                 lock(icon(bar,"apps",Ui.TEXT,"Đổi ứng dụng",this::pickSide),controls);lock(icon(bar,"swap",Ui.TEXT,"Đổi bên",()->send("swap")),controls);lock(icon(bar,"full",Ui.TEXT,"Toàn màn hình",this::chooseFullscreen),controls);
                 icon(bar,"home",Ui.TEXT,"Về Home",()->send("home"));icon(bar,"up",Ui.CYAN,"Ẩn thanh",()->send("hide"));icon(bar,"close",Ui.RED,controls?"Tắt chia":"Dừng điều khiển Off",()->send("stop"));
-                if(leftControls)bar.addView(new View(this),new LinearLayout.LayoutParams(0,-1,1));toolbar=bar;
+                if(leftControls)bar.addView(new View(this),new LinearLayout.LayoutParams(0,-1,1));bar.setContentDescription("Thanh điều khiển chia");toolbar=bar;
             }
             for(java.util.Map.Entry<Integer,Button> item:ratioViews.entrySet()){
                 boolean selected=controls&&item.getKey()==session.i("ratio",50);Button b=item.getValue();
@@ -158,7 +158,7 @@ public final class SplitService extends Service {
                             dragging=true;ratio=g.draggedRatio(startRatio,delta);WindowManager.LayoutParams current=(WindowManager.LayoutParams)v.getLayoutParams();
                             // Native handle stays on the real seam until release applies resize.
                             // Moving just our pill would expose the original system pill beside it.
-                            if(!nativeHandle){current.x=g.splitAt(ratio)-w/2;wm.updateViewLayout(v,current);}grip.feedback(true,ratio,event.getY());return true;
+                            if(!nativeHandle){positioner.move(v,g.splitAt(ratio)-w/2,g.left.top);}grip.feedback(true,ratio,event.getY());return true;
                         case MotionEvent.ACTION_UP:
                             if(!touching)return true;touching=false;grip.feedback(false,ratio,0);
                             if(!busy.get()&&dragging&&ratio!=startRatio)startForegroundService(new Intent(SplitService.this,SplitService.class).putExtra("command","ratio").putExtra("ratio",ratio));
@@ -179,4 +179,5 @@ public final class SplitService extends Service {
     @Override public void onDestroy(){destroyed=true;main.removeCallbacksAndMessages(null);clear();worker.shutdownNow();policyIo.shutdownNow();store.set("session_active",false);store.set("session_busy",false);super.onDestroy();}
     @Override public IBinder onBind(Intent i){return null;}
 }
+
 

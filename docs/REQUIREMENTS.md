@@ -1,5 +1,11 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Phản hồi21/10 — thanh kéo và dải đen sai vị trí
+- Dựa ảnh thật Coolray, sửa vị trí overlay theo tọa độ đo trên màn;
+  bỏ chừa dưới EX2 mặc định trên Coolray, giữ chỉnh tay và cấu hình đã lưu.
+- Bổ sung kiểm thử overlay thực, không dùng test Activity để kết luận lớp nổi đúng.
+
+
 ## Chốt20/10 — ảnh thanh hệ thống bên trái
 - Theo ảnh gconnect-screenshot.png: có dock dọc trái, vùng app bắt đầu gần160px.
 - Thêm khoảng chừa bên trái chỉnh được, tỷ lệ/task/overlay/kéo dùng cùng vùng;

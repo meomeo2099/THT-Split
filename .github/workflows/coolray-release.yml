@@ -24,7 +24,7 @@ jobs:
           packages: platforms;android-35 build-tools;35.0.0 platform-tools
       - uses: gradle/actions/setup-gradle@v4
       - name: Kiểm thử, lint và build Release quyền hệ thống
-        run: chmod +x gradlew && ./gradlew :app:testCoolrayReleaseUnitTest :app:lintCoolrayRelease :app:assembleCoolrayRelease
+        run: chmod +x gradlew && ./gradlew :app:testCoolrayReleaseUnitTest :app:lintCoolrayRelease :app:assembleCoolrayRelease :app:assembleCoolrayReleaseAndroidTest
       - name: Lấy khóa thử công khai AOSP và kiểm chứng thư đã yêu cầu
         env:
           EXPECTED_CERT: c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8
@@ -50,13 +50,16 @@ jobs:
           "$tools/apksigner" verify --verbose --print-certs THT-Split-Coolray2025.apk > "$RUNNER_TEMP/platform-signature.txt"
           grep -Fx "Signer #1 certificate SHA-256 digest: $EXPECTED_CERT" "$RUNNER_TEMP/platform-signature.txt"
           "$tools/aapt" dump badging THT-Split-Coolray2025.apk > "$RUNNER_TEMP/platform-badging.txt"
-          grep "package: name='com.tht.split' versionCode='31' versionName='0.3.19-coolray2025'" "$RUNNER_TEMP/platform-badging.txt"
+          grep "package: name='com.tht.split' versionCode='32' versionName='0.3.20-coolray2025'" "$RUNNER_TEMP/platform-badging.txt"
           grep "application-label:'THT Split Coolray 2025'" "$RUNNER_TEMP/platform-badging.txt"
           "$tools/aapt" dump xmltree THT-Split-Coolray2025.apk AndroidManifest.xml > "$RUNNER_TEMP/platform-manifest.txt"
           grep 'com.tht.split.permission.CONTROL_SPLIT' "$RUNNER_TEMP/platform-manifest.txt"
           ! grep 'android:sharedUserId' "$RUNNER_TEMP/platform-manifest.txt"
           ! grep 'android:debuggable.*0xffffffff' "$RUNNER_TEMP/platform-manifest.txt"
           sha256sum THT-Split-Coolray2025.apk > THT-Split-Coolray2025.apk.sha256
+          test_apk=$(python3 -c "import glob; p=glob.glob('app/build/outputs/apk/androidTest/coolrayRelease/*.apk'); assert len(p)==1,p; print(p[0])")
+          "$tools/apksigner" sign --key "$RUNNER_TEMP/aosp-platform-test/platform.pk8" --cert "$RUNNER_TEMP/aosp-platform-test/platform.x509.pem" --out THT-Split-overlay-tests.apk "$test_apk"
+          "$tools/apksigner" verify THT-Split-overlay-tests.apk
           cp docs/COOLRAY_2025.md HUONG_DAN_COOLRAY_2025.md
       - name: Cho phép tăng tốc giả lập Android
         run: |
@@ -71,11 +74,16 @@ jobs:
           target: default
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1920x720
-          script: python3 scripts/check-coolray-ui.py
+          script: |
+            python3 scripts/check-coolray-ui.py
+            adb install -r THT-Split-overlay-tests.apk
+            adb shell appops set com.tht.split SYSTEM_ALERT_WINDOW allow
+            adb shell am instrument -w com.tht.split.test/com.tht.split.OverlayTestRunner | tee overlay-result.txt
+            grep -F THT_OVERLAY_TEST_OK overlay-result.txt
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: THT-Split-Coolray2025-0.3.19
+          name: THT-Split-Coolray2025-0.3.20
           path: |
             THT-Split-Coolray2025.apk
             THT-Split-Coolray2025.apk.sha256
@@ -86,9 +94,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v0.3.19-coolray2025 THT-Split-Coolray2025.apk THT-Split-Coolray2025.apk.sha256 HUONG_DAN_COOLRAY_2025.md coolray-ui/*.png --draft --prerelease --latest=false --target "$GITHUB_SHA" --title "THT Split 0.3.19 — Coolray 2025" --notes-file docs/COOLRAY_2025.md
-          gh release edit v0.3.19-coolray2025 --draft=false
+          gh release create v0.3.20-coolray2025 THT-Split-Coolray2025.apk THT-Split-Coolray2025.apk.sha256 HUONG_DAN_COOLRAY_2025.md coolray-ui/*.png --draft --prerelease --latest=false --target "$GITHUB_SHA" --title "THT Split 0.3.20 — Sửa thanh kéo Coolray 2025" --notes-file docs/COOLRAY_2025.md
+          gh release edit v0.3.20-coolray2025 --draft=false
       - name: Xóa khóa thử tạm khỏi runner
         if: always()
         run: rm -rf "$RUNNER_TEMP/aosp-platform-test"
+
 

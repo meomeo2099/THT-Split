@@ -1,5 +1,28 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## Sửa overlay Coolray theo ảnh21/10 —0.3.20-coolray2025/code32
+Ảnh gconnect-screenshot (2).png: khe chia khoảngx844 nhưng pill trắng khoảng1006,
+mini cũng lệch ngang; dải đen dưới112px tương ứng lề EX2 còn dùng. Gốc frame
+TYPE_APPLICATION_OVERLAY dịch theo dock là suy luận từ ảnh, chưa có log WM xe.
+OverlayPositioner dùng OnPreDraw/getLocationOnScreen so desired physical pixels,
+bù LayoutParams theo actual delta (không trừ cứng160), tối đa3 vòng; hủy frame
+khi sửa để hạn chế lóe ở vị trí cũ. Đo lại với view đang gắn, cache origin riêng
+mỗi view; forget khi remove. Loading/toolbar/mini/divider/freeform preview cùng
+đường place; giữ raw delta kéo và seam read-back. Log last_overlay expected/
+actual/origin, không token. Không đổi Bridge/bootstrap/Voice/Worker/permission.
+Store default bottom Coolray0 thay112; EX2 vẫn112. Giữ top72/side160 chỉnh được,
+ưu tiên giá trị đã lưu. Nút Đặt lại bố cục Coolray đặt72/0/160 nếu người dùng
+đã lưu lề cũ; không tự ghi đè custom. Native/fullscreen tiếp tục kiểm bounds.
+Main package/cert như0.3.19, build code32/name0.3.20-coolray2025, không sharedUID.
+Thêm test APK instrumentation riêng, runner extends Instrumentation trong
+androidTest, không receiver/debug endpoint trong APK phát hành. Thử window thật
+và root translation mô phỏng origin0/160/160+24; move/reuse và bottom override.
+Mô phỏng không thay phép thử firmware Coolray. Workflow giữ UI smoke3 cấu hình,
+thêm build/ký testAPK cùng cert, appops overlay trong emulator, marker bắt buộc
+THT_OVERLAY_TEST_OK rồi mới publishRelease0.3.20. Chưa chạy CI tại commit này.
+Giữ nhánh Coolray hiện tại, chưa merge main/chuyển OTA EX2. Xem guide Coolray.
+
+
 ## Xác nhận Release Coolray2025 —20/10/2026
 Commit mã2cb76dbea338ee579db4387641544288abdff9d4 đã được build/ký/phát hành.
 CI39407617760/job118577273157 completed/success: testCoolrayReleaseUnitTest,

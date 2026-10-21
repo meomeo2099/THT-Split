@@ -1,5 +1,22 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## Xác nhận phát hành bản sửa0.3.20 —21/10/2026
+Mã b167e64c7568028d5efa0401c7c25ec504a14084 đã qua CI39533452463 /
+job119004502615 completed/success. Unit/lint/build cả APK chính và testAPK,
+kiểm cert/package/code32/name0.3.20-coolray2025/no sharedUID/nondebuggable đạt.
+UI smoke3 cấu hình đạt, instrumentation trả THT_OVERLAY_TEST_OK: window thật,
+root translation mô phỏng origin0/160/160+24, move/reuse và default/custom bottom.
+Không phải phép thử dock OEM trên Coolray thực. Chưa xác nhận ảnh xe đã hết lỗi.
+Release419082667 v0.3.20-coolray2025 published/prerelease/not draft, APK661131360
+279956bytes SHA256 bbb5e6737f4c471ad025459b4f7106f5e929117c2648cf12718695b988e8f562.
+Cert vẫn c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8.
+Đủ checksum/guide/9ảnh, artifact12316960540 đã upload. TestAPK không publish.
+https://github.com/meomeo2099/THT-Split/releases/tag/v0.3.20-coolray2025
+Bước tiếp trên xe: cài đè, tắt chia, Đặt lại bố cục Coolray nếu còn lề đã lưu,
+mở lại cặp. Nếu lệch, lấy log last_overlay/last_layout mới; không hard-code trừ
+160 hoặc kết luận nguyên nhân firmware chỉ từ mô phỏng. Main/Worker giữ nguyên.
+
+
 ## Sửa overlay Coolray theo ảnh21/10 —0.3.20-coolray2025/code32
 Ảnh gconnect-screenshot (2).png: khe chia khoảngx844 nhưng pill trắng khoảng1006,
 mini cũng lệch ngang; dải đen dưới112px tương ứng lề EX2 còn dùng. Gốc frame

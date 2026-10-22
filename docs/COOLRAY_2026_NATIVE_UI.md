@@ -41,9 +41,12 @@ Android9 giả lập1920×1080: cặp native hai app có sẵn, hide/show giữ 
 scope guard không sửa primary ngoài cặp, ngủ/thức thật khôi phục overlay. Test APK không
 phát hành. Đây chưa là kiểm thử firmware IHU689G. Không xuất metadata sang kênh OTA chung.
 
-## Trạng thái 22/10/2026
-Mã đã lưu trên fix/coolray2026-system-ui (f7763e5). CI39800897559 không khởi tạo
-được job; lần chạy lại kết thúc startup_failure trước build. Chưa có APK/Release mới.
-Local đã kiểm cú pháp Java/YAML và smoke logic policy/scope bằng JDK17; chưa chạy
-Gradle/lint/instrumentation Android. Phần xác minh trên là điều kiện phải đạt trước
-phát hành, chưa phải kết quả đã chạy. Cần chạy lại CI và xem log nếu còn thất bại.
+## Kết quả build 22/10/2026
+CI39802460650/job119906600143 đã completed/success trên commit33475b9.
+76 unit test đạt, lint/build đạt. Kiểm tra signer/package/code33/nondebuggable/
+no sharedUID đạt. Test Android9 cặp native, hide/show giữ bounds, swap bị chặn,
+foreign stack guard và ngủ/thức tái tạo thanh THT có marker THT_NATIVE_UI_TEST_OK.
+Ảnh sau thức đã kiểm tra có hai app và toolbar THT. Không coi đây là thử firmware xe.
+Release v0.3.21-thtsign đã phát hành prerelease riêng; APK275860bytes, SHA256:
+9ef304241498c034ef885767261e4a79d2934b3f9782687d2b3449f5be4988f3
+Giữ chứng thư THT_SIGN hiện tại. Chưa chuyển kênh OTA, chưa xác nhận hết lỗi thanh xe.

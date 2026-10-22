@@ -1,0 +1,31 @@
+name: Cập nhật hướng dẫn bản thử 0.3.21
+on:
+  push:
+    branches: [fix/coolray2026-system-ui]
+    paths: [.github/workflows/native-ui-release-docs.yml, docs/COOLRAY_2026_NATIVE_UI.md]
+permissions:
+  contents: write
+jobs:
+  release-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xác minh bản đã build và cập nhật riêng hướng dẫn
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          expected=33475b9492d3e6d5b79f72de0a1efad5e7a2888d
+          actual=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v0.3.21-thtsign" --jq '.object.sha')
+          [[ "$actual" == "$expected" ]]
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/v0.3.21-thtsign" > "$RUNNER_TEMP/release.json"
+          python3 - <<'PY'
+          import json, os, pathlib
+          r=json.loads((pathlib.Path(os.environ['RUNNER_TEMP'])/'release.json').read_text())
+          assert not r['draft'] and r['prerelease']
+          a=next(x for x in r['assets'] if x['name']=='THT-Split.apk')
+          assert a['digest']=='sha256:9ef304241498c034ef885767261e4a79d2934b3f9782687d2b3449f5be4988f3'
+          PY
+          gh release edit v0.3.21-thtsign --notes-file docs/COOLRAY_2026_NATIVE_UI.md
+          cp docs/COOLRAY_2026_NATIVE_UI.md HUONG_DAN.md
+          gh release upload v0.3.21-thtsign HUONG_DAN.md --clobber

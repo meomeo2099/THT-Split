@@ -1,5 +1,24 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## 22/10 — Đã build và phát hành 0.3.21-thtsign
+CI39802460650/job119906600143 completed/success; nguồn33475b9492d3e6d5b79f72de0a1efad5e7a2888d
+trên fix/coolray2026-system-ui. 76 unit test/0 lỗi, lint/assemble APK+test APK đạt.
+Ký THT_SIGN_* đúng pin c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8;
+aapt com.tht.split/code33/name0.3.21-thtsign, no sharedUID/nondebuggable đạt.
+Instrumentation Android9/AOSP/1920×1080: native hai app Settings/Dialer, hide/show
+không thay bounds, swap bị chặn, foreign stack bị chặn trước mutation, SCREEN_OFF/ON
+thật tạo lại toolbar. Marker THT_NATIVE_UI_TEST_OK; ảnh sau thức đã xem, hai app và
+thanh THT hiện. Không chứng minh firmware OEM/SystemUI xe đã được sửa.
+Release420872620/v0.3.21-thtsign draft=false/prerelease=true, không đổi OTA/main.
+APK666221957/275860bytes/SHA256
+9ef304241498c034ef885767261e4a79d2934b3f9782687d2b3449f5be4988f3.
+Checksum666221952; artifact12435139693 có reports/ảnh/marker/APK, tải lại kiểm ZIP
+b417d78b96dfcddc8a9541c0c7347c571484fd07328d8d306d64a57b1468c727 và SHA APK đạt.
+Guide/notes snapshot cũ còn dòng chưa build do run thất bại trước đó; workflow docs
+riêng chỉ cập nhật notes và HUONG_DAN.md sau kiểm target+SHA APK, không thay APK/tag.
+Bật Tương thích giao diện xe rồi thoát phiên cũ/mở cặp mới. Native live-swap tạm khóa;
+người dùng chọn thứ tự trước khi chia. Cần thử xe, nếu thanh OEM vẫn mất thu log ngay.
+
 ## 22/10 — Yêu cầu build lại bản 2026 trên nền EX2
 Chủ dự án yêu cầu build; repo hiện public. Run cũ39800897559 đã startup_failure
 và API từ chối retry (This workflow run cannot be retried). Thêm workflow_dispatch

@@ -1,5 +1,32 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## 22/10/2026 — Bản thử 0.3.21-thtsign trên nền EX2 cho Coolray2026
+Chủ dự án làm rõ xe là2026, dùng nền EX2; không phải nhánh Coolray2025.
+Nguồn gốc022315f (release/tht-sign); package com.tht.split/code33/name0.3.21-thtsign,
+chứng thư THT_SIGN giữ pin c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8.
+Không nhập lề trái160px/OverlayPositioner/bottom0/profile2025. Giữ inset EX2 72/112.
+Phản hồi: dùng quyền hệ thống, ẩn/đổi bên làm màn tắt, thức dậy mất cả thanh xe
+và thanh THT trong khi hai app còn hiện. Báo cáo IHU689G/Android9/API28, launcher
+com.flyme.auto.launcher theo người dùng. Chưa có crash/window log đúng lúc sự cố;
+không kết luận SystemUI crash. log1.txt chỉ là lỗi whitelist của THT Manager.
+Thêm oem_ui_compat: mặc định ON nếu MODEL IHU689G + có package launcher trên;
+người dùng có thể bật tay ở Thanh điều khiển. EX2 khác mặc định giữ hành vi cũ.
+Compat native: hide/show chỉ overlay, giữ vùng dành toolbar; khóa live swap ở
+service/API và nút thanh công cụ, chọn thứ tự app trước khi mở cặp. Đây là giới hạn
+có chủ ý cần báo người dùng; chưa khẳng định đã sửa được swap của firmware.
+SCREEN_OFF gỡ overlay; SCREEN_ON tạo lại thanh nếu phiên/service còn sống,
+không gọi backend trên sự kiện màn, không tự mở app sau reboot/process death.
+Giới hạn clearPrimary: nếu bật compat chỉ collapse primary gồm toàn task của
+cặp được yêu cầu; gặp task ngoài cặp thì từ chối trước mutation. Đổi cặp/replace
+có thể cần thoát phiên cũ trước; không kill/restart SystemUI hay launcher.
+Bridge bootstrap/protocol/RSA, Voice token/API auth, Worker/Secrets giữ nguyên.
+Workflow native-ui-release dùng THT_SIGN_* hiện tại, fail nếu thiếu/sai pin;
+unit/lint/build + test Android9 native hai app, hide/show bounds, swap bị chặn,
+foreign primary guard, thực sleep/wake. Chỉ publish prerelease sau marker OK;
+không update.json hay chuyển kênh OTA chung. Chưa có kết quả CI tại commit này;
+phải ghi lại kết quả sau. Chưa thử trên xe. Xem docs/COOLRAY_2026_NATIVE_UI.md.
+
+
 ## Release 0.3.18-platform — thử cập nhật trực tiếp từ 0.3.17-platform (16/10/2026)
 Yêu cầu chủ dự án: build bản 0.3.18-platform package chính để kiểm tra cài đè.
 Nhánh release/platform-update-0.3.18 xuất phát release/platform-original;
@@ -742,3 +769,4 @@ Chủ dự án yêu cầu THT Split dùng chung Secrets `THT_SIGN_*` với THT V
   Android 9 chỉ cấp quyền này khi cài Voice, nên cài/cập nhật Voice **sau** khi đã có Split.
 - Cần thêm 5 Secrets `THT_SIGN_*` vào repo THT-Split. Workflow cũ (`THT_KEYSTORE_*`, platform-release) giữ nguyên.
 - Chưa chạy trên xe; chưa build cục bộ (container không tải được Android Gradle Plugin).
+

@@ -180,6 +180,8 @@ public final class MainActivity extends Activity {
         button(body,"Khôi phục khoảng chừa EX2",false,()->{store.set("top_px",72);store.set("bottom_px",112);render();});note("Thay đổi chế độ/khoảng chừa áp dụng khi Bắt đầu chia hoặc Khôi phục cặp.");}
     private void toolbarSettings(){
         body.addView(title("Thanh điều khiển"));space(body,12);
+        toggle("Tương thích giao diện xe","oem_ui_compat",OemUiCompat.detected(this));
+        note("Bật khi ẩn thanh hoặc đổi bên làm mất giao diện xe. Khi dùng chia native, ẩn thanh giữ vùng chia; đổi bên trong phiên tạm khóa. Chọn thứ tự app trước khi Bắt đầu chia. Áp dụng khi mở hoặc Khôi phục cặp.");line(body);
         choice("Vị trí nhóm nút","toolbar_side",new String[]{"left","right"},new String[]{"Bên trái","Bên phải"},"right");line(body);
         toggle("Tự ẩn thanh điều khiển","auto_hide",true);line(body);
         intChoice("Ẩn sau","hide_seconds",new int[]{3,5,8,10},new String[]{"3 giây","5 giây","8 giây","10 giây"},5);line(body);
@@ -394,7 +396,7 @@ public final class MainActivity extends Activity {
         supportQr(content,ContactProfile.ZALO_QR_ASSET,"QR Zalo liên hệ THT",width,"Không đọc được QR Zalo. Hãy liên hệ qua Facebook.");
         space(card,12);card.addView(AppUi.text(this,"Quét QR bằng Zalo trên điện thoại.",13,AppUi.MUTED));
     }
-    private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+(BuildConfig.PLATFORM_TEST?"\n"+PlatformDiagnostics.describe(this):"")+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nperformance="+PerformanceLog.samples(this)+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
+    private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+(BuildConfig.PLATFORM_TEST?"\n"+PlatformDiagnostics.describe(this):"")+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmodel="+Build.MODEL+" oem_ui_compat="+OemUiCompat.enabled(this,store)+" screen_event="+store.s("last_screen_event","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nperformance="+PerformanceLog.samples(this)+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);if(request<31||request>33||result!=RESULT_OK||data==null||data.getData()==null)return;
         Uri uri=data.getData();if(request==33&&!canRestore())return;backupWorking=true;String log=exportedLog;
@@ -409,4 +411,5 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onDestroy(){refreshHandler.removeCallbacksAndMessages(null);if(connectionDialog!=null){connectionDialog.dismiss();connectionDialog=null;}if(downloadDialog!=null)downloadDialog.dismiss();io.shutdownNow();networkIo.shutdownNow();super.onDestroy();}
 }
+
 

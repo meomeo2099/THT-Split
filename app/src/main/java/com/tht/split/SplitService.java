@@ -10,6 +10,7 @@ import android.widget.*;
 import com.tht.split.core.LayoutMath;
 import com.tht.split.core.DividerPlacement;
 import com.tht.split.core.TransportPolicy;
+import com.tht.split.core.NativeUiPolicy;
 import org.json.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +25,18 @@ public final class SplitService extends Service {
     private View toolbar,mini,divider,loading;private boolean visible=true,full=false,active=false;
     private final java.util.Map<Integer,Button> ratioViews=new java.util.HashMap<>();
     private String overlayKey="";private boolean miniFull;
+    private boolean screenAwake=true,screenReceiverRegistered;private int wakeEpoch;
+    private final BroadcastReceiver screenReceiver=new BroadcastReceiver(){
+        @Override public void onReceive(Context context,Intent intent){
+            if(destroyed)return;
+            if(Intent.ACTION_SCREEN_OFF.equals(intent.getAction())){
+                screenAwake=false;if(!session.b("oem_ui_compat",false))return;main.removeCallbacks(autoHide);clear();store.set("last_screen_event","screen_off");
+            }else if(Intent.ACTION_SCREEN_ON.equals(intent.getAction())){
+                screenAwake=true;if(!session.b("oem_ui_compat",false))return;wakeEpoch++;store.set("last_screen_event","screen_on");
+                main.postDelayed(()->{if(!destroyed&&active&&screenAwake&&!busy.get()){visible=true;clear();render();scheduleHide();}},250);
+            }
+        }
+    };
     private final Runnable autoHide=()->send("hide");
     private final Runnable policyPoll=new Runnable(){public void run(){if(destroyed)return;main.postDelayed(this,60000);policyIo.execute(()->{com.tht.split.remote.RemoteControl r=new com.tht.split.remote.RemoteControl(SplitService.this);try{r.refresh(false);}catch(Exception ignored){}String denied=r.denial();if(!denied.isEmpty())main.post(()->{if(!destroyed){toast(denied);stopSelf();}});});}};
     @Override public void onCreate(){super.onCreate();store=new Store(this);store.set("session_busy",false);session=new Store(this,"tht_split_session");
@@ -31,6 +44,9 @@ public final class SplitService extends Service {
         NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);n.createNotificationChannel(new NotificationChannel("split","THT Split",NotificationManager.IMPORTANCE_LOW));
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         startForeground(1,new Notification.Builder(this,"split").setSmallIcon(R.drawable.icon_foreground).setContentTitle("THT Split").setContentText("Chạm để mở ứng dụng / khôi phục cặp").setContentIntent(open).setOngoing(true).build());
+        PowerManager power=(PowerManager)getSystemService(POWER_SERVICE);screenAwake=power==null||power.isInteractive();
+        IntentFilter screenFilter=new IntentFilter();screenFilter.addAction(Intent.ACTION_SCREEN_OFF);screenFilter.addAction(Intent.ACTION_SCREEN_ON);
+        registerReceiver(screenReceiver,screenFilter);screenReceiverRegistered=true;
         main.post(policyPoll);
     }
     public static void command(Context c,String cmd){c.startForegroundService(new Intent(c,SplitService.class).putExtra("command",cmd));}
@@ -42,12 +58,19 @@ public final class SplitService extends Service {
         if(!cmd.equals("status")&&!Settings.canDrawOverlays(this)){VoiceReplies.send(this,i,"error","OVERLAY_REQUIRED","Cần quyền hiển thị nổi",null);toast("Cần cấp quyền hiển thị trên ứng dụng khác");stopSelf();return START_NOT_STICKY;}
         String transport=(cmd.equals("start")||cmd.equals("preset"))?store.s("transport","adb"):session.s("transport","adb");
         if(!TransportPolicy.allows(transport,cmd)){String message="Off không điều khiển được task đang chạy. Chọn ADB nội bộ để dùng chức năng này.";VoiceReplies.send(this,i,"error","UNSUPPORTED_OPERATION",message,null);toast(message);if(!active&&!busy.get())stopSelf();return START_NOT_STICKY;}
+        if(NativeUiPolicy.blocksSwap(session.b("oem_ui_compat",false),session.s("mode","native"))&&cmd.equals("swap")){
+            String message="Chế độ tương thích tạm khóa đổi bên khi đang chia native. Hãy chọn thứ tự app trước khi bắt đầu chia.";
+            store.set("last_error",message);VoiceReplies.send(this,i,"error","UNSUPPORTED_OPERATION",message,null);toast(message);if(!active&&!busy.get())stopSelf();return START_NOT_STICKY;
+        }
+        if(session.b("oem_ui_compat",false)&&!screenAwake&&!cmd.equals("status")&&!com.tht.split.core.AccessRules.exitCommand(cmd)){
+            String message="Màn đang nghỉ. Bật màn rồi thử lại.";VoiceReplies.send(this,i,"error","DEVICE_ASLEEP",message,null);if(!active)stopSelf();return START_NOT_STICKY;
+        }
         if(!busy.compareAndSet(false,true)){VoiceReplies.send(this,i,"error","BUSY","Split đang xử lý lệnh khác; thử lại sau",null);toast("Đang xử lý, vui lòng đợi");return START_NOT_STICKY;}
-        store.set("session_busy",true);final String action=cmd;main.removeCallbacks(autoHide);
+        store.set("session_busy",true);final String action=cmd;final int dispatchEpoch=wakeEpoch;main.removeCallbacks(autoHide);
         final boolean opening=java.util.Arrays.asList("start","restore","preset","swap","replace").contains(action);
         worker.execute(()->{
             PerformanceLog.Measure measure=new PerformanceLog.Measure(this,action,session.s("transport","adb"));
-            String oldL=session.s("left",""),oldR=session.s("right","");int oldRatio=session.i("ratio",50),oldTop=session.i("top_px",72),oldBottom=session.i("bottom_px",112);String oldMode=session.s("mode","native"),oldTransport=session.s("transport","adb");
+            String oldL=session.s("left",""),oldR=session.s("right","");int oldRatio=session.i("ratio",50),oldTop=session.i("top_px",72),oldBottom=session.i("bottom_px",112);String oldMode=session.s("mode","native"),oldTransport=session.s("transport","adb");boolean oldCompat=session.b("oem_ui_compat",false);
             try {
                 new com.tht.split.remote.RemoteControl(this).require(action);
                 if(opening){FutureTask<Void> prepare=new FutureTask<>(()->{if(destroyed)throw new IllegalStateException("Phiên đã dừng");showLoading();dismissConfiguration();return null;});main.post(prepare);prepare.get(5,TimeUnit.SECONDS);}
@@ -67,8 +90,8 @@ public final class SplitService extends Service {
                         case "swap":session.set("left",oldR);session.set("right",oldL);engine.layout(visible);nextFull=false;break;
                         case "replace":String side=i.getStringExtra("side"),pkg=i.getStringExtra("package");if(!"left".equals(side)&&!"right".equals(side))throw new IllegalArgumentException("Chọn bên trái/phải");if(pkg==null)throw new IllegalArgumentException("Thiếu package");session.set(side,pkg);engine.layout(visible);nextFull=false;break;
                         case "fullscreen":String focus=i.getStringExtra("side");engine.fullscreen(focus==null?"left":focus);nextFull=true;nextVisible=false;break;
-                        case "hide":nextVisible=false;if(!full&&engine.supportsTaskResize())engine.resize(false);break;
-                        case "show":nextVisible=true;if(!full&&engine.supportsTaskResize())engine.resize(true);break;
+                        case "hide":nextVisible=false;if(!full&&engine.supportsTaskResize())NativeUiPolicy.visibility(session.b("oem_ui_compat",false),session.s("mode","native"),false,engine::resize);break;
+                        case "show":nextVisible=true;if(!full&&engine.supportsTaskResize())NativeUiPolicy.visibility(session.b("oem_ui_compat",false),session.s("mode","native"),true,engine::resize);break;
                         default:throw new IllegalArgumentException("Lệnh không hợp lệ");
                     }
                 }
@@ -78,14 +101,14 @@ public final class SplitService extends Service {
                 if(opening)Thread.sleep(Math.max(0,Math.min(3000,store.i("launch_wait_ms",0))));
                 measure.mark("settle");measure.success();
                 final boolean v=nextVisible,f=nextFull,a=nextActive,end=stop;
-                main.post(()->{if(destroyed)return;visible=v;full=f;active=a;if(java.util.Arrays.asList("start","restore","preset","ratio","swap","replace").contains(action)){store.set("left",session.s("left",""));store.set("right",session.s("right",""));store.set("ratio",session.i("ratio",50));}busy.set(false);store.set("session_busy",false);store.set("session_active",active);store.set("session_full",full);try{if(end)stopSelf();else{render(action);scheduleHide();}if(end&&!engine.supportsTaskResize())toast("Đã dừng điều khiển Off. Cửa sổ app vẫn do Android quản lý.");boolean verified=engine.lastResult.optBoolean("verified",false);if((engine.lastResult.has("actualLeftBounds")||engine.lastResult.has("actualFullscreenBounds"))&&!verified){String note=engine.lastResult.optString("note","Android chưa giữ đúng vùng chia yêu cầu");toast(note);store.set("last_error",note);}if(action.equals("hide")||action.equals("show")){verified=true;try{engine.lastResult.put("verified",true);}catch(JSONException ignored){}}VoiceReplies.send(this,i,verified?"success":"requested",verified?"OK":"LAYOUT_UNVERIFIED",verified?"Đã thực hiện lệnh":engine.lastResult.optString("note","Đã gửi yêu cầu cửa sổ, chưa xác minh bố cục"),engine.lastResult);}catch(RuntimeException overlayError){clear();store.set("last_error","Không hiện được thanh điều khiển");VoiceReplies.send(this,i,"error","OVERLAY_FAILED","Không hiện được thanh điều khiển",null);stopSelf();}});
-            }catch(Exception e){session.set("left",oldL);session.set("right",oldR);session.set("ratio",oldRatio);session.set("top_px",oldTop);session.set("bottom_px",oldBottom);session.set("mode",oldMode);session.set("transport",oldTransport);VoiceReplies.send(this,i,"error",e instanceof com.tht.split.remote.RemoteControl.AccessDenied?"ACCESS_BLOCKED":"OPERATION_FAILED",e.getMessage()==null?"Không thực hiện được lệnh":e.getMessage(),null);android.util.Log.e("THTSplit",action+" failed",e);
+                main.post(()->{if(destroyed)return;visible=v||wakeEpoch!=dispatchEpoch;full=f;active=a;if(java.util.Arrays.asList("start","restore","preset","ratio","swap","replace").contains(action)){store.set("left",session.s("left",""));store.set("right",session.s("right",""));store.set("ratio",session.i("ratio",50));}busy.set(false);store.set("session_busy",false);store.set("session_active",active);store.set("session_full",full);try{if(end)stopSelf();else{render(action);scheduleHide();}if(end&&!engine.supportsTaskResize())toast("Đã dừng điều khiển Off. Cửa sổ app vẫn do Android quản lý.");boolean verified=engine.lastResult.optBoolean("verified",false);if((engine.lastResult.has("actualLeftBounds")||engine.lastResult.has("actualFullscreenBounds"))&&!verified){String note=engine.lastResult.optString("note","Android chưa giữ đúng vùng chia yêu cầu");toast(note);store.set("last_error",note);}if(action.equals("hide")||action.equals("show")){verified=true;try{engine.lastResult.put("verified",true);}catch(JSONException ignored){}}VoiceReplies.send(this,i,verified?"success":"requested",verified?"OK":"LAYOUT_UNVERIFIED",verified?"Đã thực hiện lệnh":engine.lastResult.optString("note","Đã gửi yêu cầu cửa sổ, chưa xác minh bố cục"),engine.lastResult);}catch(RuntimeException overlayError){clear();store.set("last_error","Không hiện được thanh điều khiển");VoiceReplies.send(this,i,"error","OVERLAY_FAILED","Không hiện được thanh điều khiển",null);stopSelf();}});
+            }catch(Exception e){session.set("left",oldL);session.set("right",oldR);session.set("ratio",oldRatio);session.set("top_px",oldTop);session.set("bottom_px",oldBottom);session.set("mode",oldMode);session.set("transport",oldTransport);session.set("oem_ui_compat",oldCompat);VoiceReplies.send(this,i,"error",e instanceof com.tht.split.remote.RemoteControl.AccessDenied?"ACCESS_BLOCKED":"OPERATION_FAILED",e.getMessage()==null?"Không thực hiện được lệnh":e.getMessage(),null);android.util.Log.e("THTSplit",action+" failed",e);
                 main.post(()->{if(destroyed)return;busy.set(false);store.set("session_busy",false);toast("Không thực hiện được: "+e.getMessage());store.set("last_error",e.getClass().getSimpleName()+": "+e.getMessage());if(!active||e instanceof com.tht.split.remote.RemoteControl.AccessDenied)stopSelf();else{render();scheduleHide();}});
             }finally{measure.finish();}
         });return START_NOT_STICKY;
     }
-    private void captureLayoutSettings(){session.set("transport",store.s("transport","adb"));session.set("mode",store.s("mode","native"));session.set("top_px",store.i("top_px",72));session.set("bottom_px",store.i("bottom_px",112));}
-    private void scheduleHide(){main.removeCallbacks(autoHide);if(active&&visible&&store.b("auto_hide",true)&&!full)main.postDelayed(autoHide,store.i("hide_seconds",5)*1000L);}
+    private void captureLayoutSettings(){session.set("transport",store.s("transport","adb"));session.set("mode",store.s("mode","native"));session.set("top_px",store.i("top_px",72));session.set("bottom_px",store.i("bottom_px",112));session.set("oem_ui_compat",OemUiCompat.enabled(this,store));}
+    private void scheduleHide(){main.removeCallbacks(autoHide);if(active&&visible&&(!session.b("oem_ui_compat",false)||screenAwake)&&store.b("auto_hide",true)&&!full)main.postDelayed(autoHide,store.i("hide_seconds",5)*1000L);}
     private WindowManager.LayoutParams params(int w,int h,int x,int y){WindowManager.LayoutParams p=new WindowManager.LayoutParams(w,h,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,android.graphics.PixelFormat.TRANSLUCENT);p.gravity=Gravity.TOP|Gravity.LEFT;p.x=x;p.y=y;p.alpha=store.i("opacity",90)/100f;return p;}
     private void remove(View v){if(v!=null&&v.getParent()!=null)try{wm.removeView(v);}catch(IllegalArgumentException ignored){}}
     private void clear(){remove(toolbar);remove(mini);remove(divider);remove(loading);toolbar=mini=divider=loading=null;ratioViews.clear();overlayKey="";}
@@ -96,7 +119,7 @@ public final class SplitService extends Service {
         for(ActivityManager.AppTask task:am.getAppTasks())task.finishAndRemoveTask();
     }
     private void showLoading(){
-        clear();Point size=new Point();wm.getDefaultDisplay().getRealSize(size);
+        clear();if(session.b("oem_ui_compat",false)&&!screenAwake)return;Point size=new Point();wm.getDefaultDisplay().getRealSize(size);
         int top=session.i("top_px",72),bottom=session.i("bottom_px",112);
         if(size.y-top-bottom<160)throw new IllegalArgumentException("Khoảng chừa quá lớn");
         SplitLoadingView panel=new SplitLoadingView(this,size.x,size.y-top-bottom);loading=panel;
@@ -111,8 +134,8 @@ public final class SplitService extends Service {
         return new LayoutMath.Box(bounds.optInt(0,-1),bounds.optInt(1,-1),bounds.optInt(2,-1),bounds.optInt(3,-1));
     }
     private void render(){
-        if(!active){clear();return;}Point size=new Point();wm.getDefaultDisplay().getRealSize(size);
-        String key=size.x+":"+size.y+":"+getResources().getDisplayMetrics().density+":"+engine.toolbarPx()+":"+engine.supportsTaskResize()+":"+session.s("mode","native")+":"+session.i("top_px",72)+":"+session.i("bottom_px",112)+":"+store.s("toolbar_side","right")+":"+store.s("mini_position","center")+":"+store.i("opacity",90);
+        if(!active||(session.b("oem_ui_compat",false)&&!screenAwake)){clear();return;}Point size=new Point();wm.getDefaultDisplay().getRealSize(size);
+        String key=size.x+":"+size.y+":"+getResources().getDisplayMetrics().density+":"+engine.toolbarPx()+":"+engine.supportsTaskResize()+":"+session.s("mode","native")+":"+session.i("top_px",72)+":"+session.i("bottom_px",112)+":"+session.b("oem_ui_compat",false)+":"+store.s("toolbar_side","right")+":"+store.s("mini_position","center")+":"+store.i("opacity",90);
         if(!key.equals(overlayKey)||loading!=null){clear();overlayKey=key;}
         LayoutMath g=engine.geometry(visible&&!full);boolean controls=engine.supportsTaskResize();
         if(visible&&!full){
@@ -125,7 +148,7 @@ public final class SplitService extends Service {
                     LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(Ui.dp(this,66),-1);p.setMargins(Ui.dp(this,3),0,Ui.dp(this,3),0);bar.addView(b,p);
                     b.setOnClickListener(v->startForegroundService(new Intent(this,SplitService.class).putExtra("command","ratio").putExtra("ratio",ratio)));
                 }
-                lock(icon(bar,"apps",Ui.TEXT,"Đổi ứng dụng",this::pickSide),controls);lock(icon(bar,"swap",Ui.TEXT,"Đổi bên",()->send("swap")),controls);lock(icon(bar,"full",Ui.TEXT,"Toàn màn hình",this::chooseFullscreen),controls);
+                lock(icon(bar,"apps",Ui.TEXT,"Đổi ứng dụng",this::pickSide),controls);lock(icon(bar,"swap",Ui.TEXT,"Đổi bên",()->send("swap")),controls&&!NativeUiPolicy.blocksSwap(session.b("oem_ui_compat",false),session.s("mode","native")));lock(icon(bar,"full",Ui.TEXT,"Toàn màn hình",this::chooseFullscreen),controls);
                 icon(bar,"home",Ui.TEXT,"Về Home",()->send("home"));icon(bar,"up",Ui.CYAN,"Ẩn thanh",()->send("hide"));icon(bar,"close",Ui.RED,controls?"Tắt chia":"Dừng điều khiển Off",()->send("stop"));
                 if(leftControls)bar.addView(new View(this),new LinearLayout.LayoutParams(0,-1,1));toolbar=bar;
             }
@@ -177,6 +200,7 @@ public final class SplitService extends Service {
     private void showDialog(AlertDialog d){if(d.getWindow()!=null)d.getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);d.show();if(d.getWindow()!=null)d.getWindow().setBackgroundDrawable(Ui.bg(Ui.CARD,Ui.dp(this,12)));}
     private void pickSide(){main.removeCallbacks(autoHide);AlertDialog d=Ui.dialog(this).setTitle("Đổi ứng dụng").setItems(new String[]{"Bên trái: "+AppPicker.label(this,session.s("left","")),"Bên phải: "+AppPicker.label(this,session.s("right",""))},(dialog,n)->AppPicker.show(this,"Chọn ứng dụng "+(n==0?"trái":"phải"),true,pkg->startForegroundService(new Intent(this,SplitService.class).putExtra("command","replace").putExtra("side",n==0?"left":"right").putExtra("package",pkg)))).setNegativeButton("Hủy",(x,y)->scheduleHide()).create();showDialog(d);}
     private void chooseFullscreen(){main.removeCallbacks(autoHide);AlertDialog d=Ui.dialog(this).setTitle("Toàn màn hình").setItems(new String[]{AppPicker.label(this,session.s("left","")),AppPicker.label(this,session.s("right",""))},(x,n)->startForegroundService(new Intent(this,SplitService.class).putExtra("command","fullscreen").putExtra("side",n==0?"left":"right"))).setNegativeButton("Hủy",(x,y)->scheduleHide()).create();showDialog(d);}
-    @Override public void onDestroy(){destroyed=true;main.removeCallbacksAndMessages(null);clear();worker.shutdownNow();policyIo.shutdownNow();store.set("session_active",false);store.set("session_busy",false);super.onDestroy();}
+    @Override public void onDestroy(){destroyed=true;if(screenReceiverRegistered){unregisterReceiver(screenReceiver);screenReceiverRegistered=false;}main.removeCallbacksAndMessages(null);clear();worker.shutdownNow();policyIo.shutdownNow();store.set("session_active",false);store.set("session_busy",false);super.onDestroy();}
     @Override public IBinder onBind(Intent i){return null;}
 }
+

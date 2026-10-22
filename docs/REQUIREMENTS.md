@@ -1,5 +1,16 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt22/10 — Coolray2026 dùng nền EX2, quyền hệ thống
+- Xe hiện tại là2026, theo chủ dự án trùng nền EX2; không dùng profile Coolray2025.
+- Lỗi mất cả thanh hệ thống xe và thanh THT sau ẩn/đổi bên, màn nghỉ/thức;
+  phương thức đang dùng là quyền hệ thống. Không gán lỗi cho ADB/Bridge.
+- Bản thử cùng package/chứng thư THT_SIGN, giữ bố cục EX2; thêm tùy chọn tương
+  thích để ẩn/hiện không resize native, tái tạo overlay sau thức khi service còn sống.
+- Tạm khóa đổi bên native trong phiên khi bật tương thích; cần nêu rõ giới hạn.
+- Không tự restart/kill tiến trình giao diện xe; chỉ sửa stack trong phạm vi hai app.
+- Kết quả giả lập/build không chứng minh đã sửa firmware xe, cần log đúng lúc lỗi.
+
+
 ## Chốt15/10 — Release chữ ký platform, package gốc
 - Dùng cặp khóa gửi15/10 đã xác minh khớp cert AOSP của bản thử.
 - Chủ dự án yêu cầu com.tht.split gốc; không dùng suffix platformtest cho APK này.
@@ -162,4 +173,5 @@ Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đ�
 - Sao lưu chỉ cài đặt/cặp, không credential/policy/session; khôi phục có xác
   nhận và chỉ khi đã tắt chia. Không tự gỡ/cài app hoặc bỏ kiểm signer.
 - Không gọi tối ưu là đã mượt trên xe khi mới có build/unit test.
+
 

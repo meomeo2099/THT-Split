@@ -1,0 +1,115 @@
+name: THT Split EX2 — tương thích giao diện xe 2026
+on:
+  push:
+    branches: [fix/coolray2026-system-ui]
+    paths: [app/**, .github/workflows/native-ui-release.yml]
+permissions:
+  contents: read
+concurrency:
+  group: tht-split-native-ui-2026
+  cancel-in-progress: true
+jobs:
+  native-ui-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      PLATFORM_CERT: c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bắt buộc có khóa THT_SIGN và đúng chứng thư hiện tại
+        env:
+          KEYSTORE_B64: ${{ secrets.THT_SIGN_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.THT_SIGN_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.THT_SIGN_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.THT_SIGN_KEY_PASSWORD }}
+          CERT_SHA256: ${{ secrets.THT_SIGN_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [[ -n "$KEYSTORE_B64" ]] || missing+=(THT_SIGN_KEYSTORE_BASE64)
+          [[ -n "$STORE_PASSWORD" ]] || missing+=(THT_SIGN_STORE_PASSWORD)
+          [[ -n "$KEY_ALIAS" ]] || missing+=(THT_SIGN_KEY_ALIAS)
+          [[ -n "$KEY_PASSWORD" ]] || missing+=(THT_SIGN_KEY_PASSWORD)
+          [[ -n "$CERT_SHA256" ]] || missing+=(THT_SIGN_CERT_SHA256)
+          if (( ${#missing[@]} )); then echo "::error::Thiếu Secrets: ${missing[*]}"; exit 1; fi
+          pin="$(echo "$CERT_SHA256" | tr -d ': ' | tr 'A-F' 'a-f')"
+          [[ "$pin" == "$PLATFORM_CERT" ]] || { echo "::error::Sai chứng thư THT_SIGN platform"; exit 1; }
+          umask 077
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/tht-sign.ks"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platforms;android-35 build-tools;35.0.0 platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Kiểm thử, lint và build trên nền EX2 THT_SIGN
+        run: chmod +x gradlew && ./gradlew :app:testThtSignReleaseUnitTest :app:lintThtSignRelease :app:assembleThtSignRelease :app:assembleThtSignReleaseAndroidTest
+      - name: Ký và xác minh APK cùng package và chứng thư
+        env:
+          STORE_PASSWORD: ${{ secrets.THT_SIGN_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.THT_SIGN_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.THT_SIGN_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          "$tools/apksigner" sign --ks "$RUNNER_TEMP/tht-sign.ks" --ks-key-alias "$KEY_ALIAS" --ks-pass env:STORE_PASSWORD --key-pass env:KEY_PASSWORD --out THT-Split.apk app/build/outputs/apk/thtSignRelease/app-thtSignRelease-unsigned.apk
+          "$tools/apksigner" verify --verbose --print-certs THT-Split.apk > "$RUNNER_TEMP/sig.txt"
+          grep -Fx "Signer #1 certificate SHA-256 digest: $PLATFORM_CERT" "$RUNNER_TEMP/sig.txt"
+          "$tools/aapt" dump badging THT-Split.apk > "$RUNNER_TEMP/badging.txt"
+          grep "package: name='com.tht.split' versionCode='33' versionName='0.3.21-thtsign'" "$RUNNER_TEMP/badging.txt"
+          grep "application-label:'THT Split'" "$RUNNER_TEMP/badging.txt"
+          "$tools/aapt" dump xmltree THT-Split.apk AndroidManifest.xml > "$RUNNER_TEMP/manifest.txt"
+          grep 'com.tht.split.permission.CONTROL_SPLIT' "$RUNNER_TEMP/manifest.txt"
+          ! grep 'android:sharedUserId' "$RUNNER_TEMP/manifest.txt"
+          ! grep 'android:debuggable.*0xffffffff' "$RUNNER_TEMP/manifest.txt"
+          sha256sum THT-Split.apk > THT-Split.apk.sha256
+          test_apk=$(python3 -c "import glob; p=glob.glob('app/build/outputs/apk/androidTest/thtSignRelease/*.apk'); assert len(p)==1,p; print(p[0])")
+          "$tools/apksigner" sign --ks "$RUNNER_TEMP/tht-sign.ks" --ks-key-alias "$KEY_ALIAS" --ks-pass env:STORE_PASSWORD --key-pass env:KEY_PASSWORD --out THT-Split-native-tests.apk "$test_apk"
+          "$tools/apksigner" verify THT-Split-native-tests.apk
+          cp docs/COOLRAY_2026_NATIVE_UI.md HUONG_DAN.md
+      - name: Cho phép tăng tốc giả lập Android
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Kiểm chia native, ẩn hiện thanh và ngủ thức trên Android9
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 28
+          arch: x86_64
+          target: default
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1920x1080
+          script: |
+            adb shell wm size 1920x1080
+            adb shell wm density 160
+            adb install -r THT-Split.apk
+            adb install -r THT-Split-native-tests.apk
+            adb shell appops set com.tht.split SYSTEM_ALERT_WINDOW allow
+            adb shell am instrument -w com.tht.split.test/com.tht.split.NativeUiTestRunner | tee native-ui-result.txt
+            grep -F THT_NATIVE_UI_TEST_OK native-ui-result.txt
+            adb pull /sdcard/Android/data/com.tht.split/files/native-ui-awake.png native-ui-awake.png
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: THT-Split-0.3.21-thtsign
+          path: |
+            THT-Split.apk
+            THT-Split.apk.sha256
+            HUONG_DAN.md
+            native-ui-result.txt
+            native-ui-awake.png
+            app/build/reports/tests/
+          retention-days: 7
+      - name: Phát hành bản thử riêng, không chuyển kênh OTA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.3.21-thtsign THT-Split.apk THT-Split.apk.sha256 HUONG_DAN.md --draft --prerelease --latest=false --target "$GITHUB_SHA" --title "THT Split 0.3.21 — Tương thích giao diện xe 2026, nền EX2" --notes-file docs/COOLRAY_2026_NATIVE_UI.md
+          gh release edit v0.3.21-thtsign --draft=false
+      - name: Xóa keystore khỏi runner
+        if: always()
+        run: rm -f "$RUNNER_TEMP/tht-sign.ks"

@@ -88,7 +88,7 @@ public final class ShellServer {
         invoke("moveTaskToStack",new Class<?>[]{int.class,int.class,boolean.class},taskId,target,true);
         if(stackId(taskId)!=target)throw new IOException("Firmware không chuyển app sang stack riêng");
     }
-    private static void clearPrimary()throws Exception {
+    private static void clearPrimary(String leftPkg,String rightPkg,boolean preserveOemStacks)throws Exception {
         List<?> infos=(List<?>)invoke("getAllStackInfos",new Class<?>[]{});
         // Snapshot IDs before changing stacks; changing the primary also collapses secondaries.
         List<Integer> primary=new ArrayList<>();
@@ -98,6 +98,11 @@ public final class ShellServer {
             Object wc=config.getClass().getField("windowConfiguration").get(config);
             if((Integer)wc.getClass().getMethod("getWindowingMode").invoke(wc)!=3)continue;
             int[] ids=(int[])info.getClass().getField("taskIds").get(info);
+            if(preserveOemStacks){
+                String[] names=(String[])info.getClass().getField("taskNames").get(info);
+                if(names==null||names.length!=ids.length||!com.tht.split.core.StackScope.owns(names,leftPkg,rightPkg))
+                    throw new IOException("Giữ nguyên stack chia có ứng dụng ngoài cặp đang chọn. Thoát phiên chia cũ trước khi mở cặp khác.");
+            }
             if(ids.length>0)primary.add(ids[ids.length-1]);
         }
         for(int id:primary)setMode(id,1);
@@ -177,7 +182,7 @@ public final class ShellServer {
             String lc=component(q,"leftComponent",leftPkg),rc=component(q,"rightComponent",rightPkg);
             Rect l=rect(q,"leftBounds"),r=rect(q,"rightBounds");
             PairController controller=new PairController(new PairController.Tasks(){
-                public void clearPrimary()throws Exception{ShellServer.clearPrimary();}
+                public void clearPrimary()throws Exception{ShellServer.clearPrimary(leftPkg,rightPkg,q.optBoolean("preserveOemStacks",false));}
                 public int launch(boolean left,int windowMode)throws Exception{ShellServer.launch(left?lc:rc,windowMode);return awaitTask(left?leftPkg:rightPkg);}
                 public int find(boolean left)throws Exception{return task(left?leftPkg:rightPkg);}
                 public int mode(int id)throws Exception{return windowMode(id);}
@@ -201,4 +206,5 @@ public final class ShellServer {
         throw new IllegalArgumentException("Lệnh không hỗ trợ");
     }
 }
+
 

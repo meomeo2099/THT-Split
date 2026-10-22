@@ -757,3 +757,10 @@ Chủ dự án báo: đảo bên (chế độ chia đôi hệ thống) làm kh�
   persistent, Android tự chạy lại) — bridge: `am force-stop --user all com.android.systemui`.
 - Bản platform hiện nút Bật/Khôi phục cửa sổ tự do; khai báo WRITE_SECURE_SETTINGS, FORCE_STOP_PACKAGES.
 - Vẫn không force-stop app bên thứ ba khi thử lại (khác R02). Chưa thử trên xe.
+
+## 0.3.23-ex2-cr — gỡ kẹt không cần mở Split
+- Lệnh Voice API `recover` (VoiceReceiver, SplitService, AccessRules: luôn cho phép như stop/home/hide) = RECOVER.
+- BootReceiver: BOOT_COMPLETED mà trước đó đang chia (session_active) và bản platform/system → op `BOOT_CHECK`:
+  so nhật ký crash với `divider_seen`; có lỗi thanh chia mới thì chỉ thoát chia + về Home (không dựng lại SystemUI),
+  ghi `last_error` hướng dẫn nói "gỡ kẹt màn hình" hoặc bấm Gỡ kẹt. Lần đầu (chưa có `divider_seen`) dòng cũ cũng tính.
+- THT Voice cần thêm câu "gỡ kẹt màn hình" gửi `recover`. Chưa thử trên xe.

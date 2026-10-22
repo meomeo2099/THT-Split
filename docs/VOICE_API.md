@@ -37,6 +37,7 @@ Không truyền token trong callback. V1 token không callback vẫn được gi
 | hide / show | Không | Ẩn/hiện thanh, vẫn giữ cặp |
 | stop | Không | ADB/system: tắt chia, ưu tiên app trái. Off: dừng overlay, giữ cửa sổ Android |
 | home | Không | Về launcher xe, bỏ overlay |
+| recover | Không | Gỡ kẹt: thoát chia, về Home, dựng lại giao diện hệ thống (từ 0.3.23-ex2-cr; Off không hỗ trợ) |
 | status | Không | Kiểm tra phương thức; ADB tự mở bridge nếu cần; không cần quyền nổi |
 
 ## Kết quả

@@ -25,7 +25,7 @@ public final class PerformanceLog {
     private static String label(String action){switch(action){
         case "connect":return "Kết nối Bridge";case "start":return "Mở cặp";case "preset":return "Mở cặp đã lưu";case "ratio":return "Đổi tỷ lệ";
         case "swap":return "Đổi bên";case "replace":return "Đổi ứng dụng";case "fullscreen":return "Toàn màn hình";case "restore":return "Khôi phục cặp";
-        case "hide":return "Ẩn thanh";case "show":return "Hiện thanh";case "home":return "Về Home";case "stop":return "Tắt chia";case "status":return "Kiểm tra";default:return "Điều khiển cửa sổ";
+        case "hide":return "Ẩn thanh";case "show":return "Hiện thanh";case "home":return "Về Home";case "stop":return "Tắt chia";case "recover":return "Gỡ kẹt";case "status":return "Kiểm tra";default:return "Điều khiển cửa sổ";
     }}
     public static String summary(Context c){JSONArray values=samples(c);if(values.length()==0)return "Chưa có số đo. Kết nối hoặc chia màn hình để ghi thời gian.";
         StringBuilder text=new StringBuilder();for(int n=values.length()-1;n>=Math.max(0,values.length()-10);n--){JSONObject value=values.optJSONObject(n);if(value==null)continue;

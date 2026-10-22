@@ -25,4 +25,6 @@ public final class SplitEngine {
     public void fullscreen(String side)throws Exception{call(fullscreenRequest("FULLSCREEN",side));}
     public void stop()throws Exception{call(fullscreenRequest("STOP","left"));}
     public void home()throws Exception{call(new JSONObject().put("op","HOME"));}
+    /** "Gỡ kẹt": leave split, go home, redraw the status bar (see ShellServer RECOVER). */
+    public void recover()throws Exception{call(new JSONObject().put("op","RECOVER"));}
 }

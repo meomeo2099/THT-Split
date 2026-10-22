@@ -10,6 +10,6 @@ public final class AccessRules {
         return "";
     }
     public static boolean exitCommand(String action) {
-        return "stop".equals(action) || "home".equals(action) || "hide".equals(action);
+        return "stop".equals(action) || "home".equals(action) || "hide".equals(action) || "recover".equals(action);
     }
 }

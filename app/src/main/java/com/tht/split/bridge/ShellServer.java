@@ -240,6 +240,17 @@ public final class ShellServer {
             catch(Exception e){for(int n=0;n<2;n++)try{writeSetting(keys[n],before[n]);}catch(Exception ignored){}throw e;}
             return out;
         }
+        if(op.equals("BOOT_CHECK")){
+            // After a restart caused by the ROM divider: leave split and go home, nothing else.
+            String log=crashLog();
+            boolean crashed=log!=null&&DividerCrashGuard.crashedSince(q.optString("seen",""),log);
+            if(crashed){
+                try{dismissSplit();}catch(Exception ignored){}
+                if(systemContext!=null)systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+                else exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");
+            }
+            return out.put("verified",true).put("dismissed",crashed).put("log",log==null?q.optString("seen",""):log);
+        }
         if(op.equals("RECOVER")){
             // R02 "Gỡ kẹt": leave split, go home, then let SystemUI redraw the status bar / divider.
             try{dismissSplit();}catch(Exception ignored){}

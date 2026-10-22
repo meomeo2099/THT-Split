@@ -61,6 +61,7 @@ public final class SplitService extends Service {
                     if(i.hasExtra("left"))session.set("left",i.getStringExtra("left"));if(i.hasExtra("right"))session.set("right",i.getStringExtra("right"));if(i.hasExtra("ratio"))session.set("ratio",LayoutMath.clamp(i.getIntExtra("ratio",50)));engine.layout(visible);nextActive=true;nextFull=false;
                 }else if(action.equals("stop")){if(!session.s("left","").isEmpty()&&!session.s("right","").isEmpty())engine.stop();stop=true;nextActive=false;
                 }else if(action.equals("home")){engine.home();nextActive=false;nextFull=false;
+                }else if(action.equals("recover")){engine.recover();stop=true;nextActive=false;nextFull=false;
                 }else {if(!active)throw new IllegalStateException("Chưa có cặp đang chạy; bấm Bắt đầu chia");
                     switch(action){
                         case "ratio":if(full)throw new IllegalStateException("Khôi phục cặp trước khi đổi tỷ lệ");session.set("ratio",LayoutMath.clamp(i.getIntExtra("ratio",50)));engine.resize(visible);break;

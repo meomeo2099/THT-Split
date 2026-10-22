@@ -17,7 +17,7 @@ public final class VoiceReceiver extends BroadcastReceiver {
     static void dispatch(Context c,Intent request){
         try{
             String cmd=request.getStringExtra("command");
-            if(cmd==null||!Arrays.asList("start","preset","ratio","swap","replace","fullscreen","restore","hide","show","stop","home","status").contains(cmd)){VoiceReplies.send(c,request,"error","INVALID_COMMAND","Lệnh không hỗ trợ",null);return;}
+            if(cmd==null||!Arrays.asList("start","preset","ratio","swap","replace","fullscreen","restore","hide","show","stop","home","recover","status").contains(cmd)){VoiceReplies.send(c,request,"error","INVALID_COMMAND","Lệnh không hỗ trợ",null);return;}
             if(request.hasExtra("requestId")||request.hasExtra("result")){PendingIntent pi=request.getParcelableExtra("result");if(!VoiceReplies.validId(request.getStringExtra("requestId"))||!VoiceReplies.allowed(pi))return;}
             if(!new Store(c).b("voice_enabled",false)){VoiceReplies.send(c,request,"error","API_DISABLED","Bật nhận lệnh trong Cài đặt THT Split",null);return;}
             if(!cmd.equals("status")&&!Settings.canDrawOverlays(c)){VoiceReplies.send(c,request,"error","OVERLAY_REQUIRED","Cần cấp quyền hiển thị nổi cho Split",null);return;}

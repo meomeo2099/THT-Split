@@ -63,22 +63,22 @@ jobs:
           "$tools/apksigner" verify --verbose --print-certs THT-Split.apk > "$RUNNER_TEMP/sig.txt"
           grep -Fx "Signer #1 certificate SHA-256 digest: $PLATFORM_CERT" "$RUNNER_TEMP/sig.txt"
           "$tools/aapt" dump badging THT-Split.apk > "$RUNNER_TEMP/badging.txt"
-          grep "package: name='com.tht.split' versionCode='34' versionName='0.3.22-ex2-cr'" "$RUNNER_TEMP/badging.txt"
+          grep "package: name='com.tht.split' versionCode='35' versionName='0.3.23-ex2-cr'" "$RUNNER_TEMP/badging.txt"
           grep "application-label:'THT Split'" "$RUNNER_TEMP/badging.txt"
           "$tools/aapt" dump xmltree THT-Split.apk AndroidManifest.xml > "$RUNNER_TEMP/manifest.txt"
           grep 'com.tht.split.permission.CONTROL_SPLIT' "$RUNNER_TEMP/manifest.txt"
           ! grep 'android:sharedUserId' "$RUNNER_TEMP/manifest.txt"
           ! grep 'android:debuggable.*0xffffffff' "$RUNNER_TEMP/manifest.txt"
-          EXPECTED_CERT_SHA256="$PLATFORM_CERT" python3 server/release-metadata.py THT-Split.apk --tag v0.3.22-ex2-cr
+          EXPECTED_CERT_SHA256="$PLATFORM_CERT" python3 server/release-metadata.py THT-Split.apk --tag v0.3.23-ex2-cr
           cp docs/PLATFORM_UPDATE_0318.md HUONG_DAN_PLATFORM.md
       - name: Phát hành APK (prerelease)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete v0.3.22-ex2-cr --yes --cleanup-tag 2>/dev/null || true
-          gh release create v0.3.22-ex2-cr THT-Split.apk THT-Split.apk.sha256 update.json HUONG_DAN_PLATFORM.md \
-            --prerelease --latest=false --target "$GITHUB_SHA" --title "THT Split 0.3.22-ex2-cr — EX2, cửa sổ tự do trước, Gỡ kẹt" \
-            --notes "Bản EX2 (ex2-cr), làm theo cách chia của R02: chế độ Tự động dùng cửa sổ tự do trước (tránh lỗi thanh chia đôi làm khởi động lại màn khi đảo bên), chỉ dùng chia đôi hệ thống khi cửa sổ tự do chưa bật; nút Gỡ kẹt giao diện xe (thoát chia, về màn chính, dựng lại SystemUI) khi mất thanh trạng thái; chặn lỗi thanh chia + tạm ngưng 10 phút; báo khi app bị đóng sau khi chia. Ký THT_SIGN_* (platform c8a2e9bc…). Cài đè: adb install -r. Lần đầu: Kết nối & quyền → Bật hỗ trợ cửa sổ tự do → khởi động lại màn. Chưa thử trên xe."
+          gh release delete v0.3.23-ex2-cr --yes --cleanup-tag 2>/dev/null || true
+          gh release create v0.3.23-ex2-cr THT-Split.apk THT-Split.apk.sha256 update.json HUONG_DAN_PLATFORM.md \
+            --prerelease --latest=false --target "$GITHUB_SHA" --title "THT Split 0.3.23-ex2-cr — EX2, Gỡ kẹt bằng giọng nói" \
+            --notes "Bản EX2 (ex2-cr), làm theo cách chia của R02: chế độ Tự động dùng cửa sổ tự do trước (tránh lỗi thanh chia đôi làm khởi động lại màn khi đảo bên), chỉ dùng chia đôi hệ thống khi cửa sổ tự do chưa bật; Gỡ kẹt giao diện xe bằng nút hoặc giọng nói qua THT Voice (lệnh recover); sau khi màn khởi động lại vì lỗi thanh chia, tự thoát chia và về màn chính; chặn lỗi thanh chia + tạm ngưng 10 phút; báo khi app bị đóng sau khi chia. Ký THT_SIGN_* (platform c8a2e9bc…). Cài đè: adb install -r. Lần đầu: Kết nối & quyền → Bật hỗ trợ cửa sổ tự do → khởi động lại màn. Chưa thử trên xe."
       - name: Xóa keystore khỏi runner
         if: always()
         run: rm -f "$RUNNER_TEMP/tht-sign.ks"

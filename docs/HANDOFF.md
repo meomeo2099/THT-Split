@@ -741,3 +741,5 @@ Nền `release/platform-update-0.3.18`; chưa đổi versionCode/versionName, ch
 - Bridge v8 (ShellServer đổi): bản ADB cần khởi động lại màn một lần để nạp bridge mới, như các lần trước.
 - Test: `DividerCrashGuardTest`. Chưa thử trên xe/LDPlayer.
 - Chưa làm từ R02: watchdog đưa freeform lên trước + sai số 32 px, gợi ý app phải nằm bên trái.
+- CI test build (`android.yml`) chuyển sang `THT_SIGN_*` và kiểm chứng thư platform `c8a2e9bc…` (chủ dự án đồng ý
+  22/10/2026; 4 Secrets `THT_KEYSTORE_*` cũ đã trống nên CI cũ luôn dừng). APK test cùng chữ ký bản platform.

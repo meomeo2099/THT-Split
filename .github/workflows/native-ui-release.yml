@@ -1,5 +1,6 @@
 name: THT Split EX2 — tương thích giao diện xe 2026
 on:
+  workflow_dispatch:
   push:
     branches: [fix/coolray2026-system-ui]
     paths: [app/**, .github/workflows/native-ui-release.yml]

@@ -1,5 +1,12 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## 22/10 — Yêu cầu build lại bản 2026 trên nền EX2
+Chủ dự án yêu cầu build; repo hiện public. Run cũ39800897559 đã startup_failure
+và API từ chối retry (This workflow run cannot be retried). Thêm workflow_dispatch
+để hỗ trợ chạy thủ công về sau, đồng thời push cấu hình tạo run mới trên nhánh
+fix/coolray2026-system-ui. Không sửa Java/version/package/chữ ký hoặc main.
+Chờ Gradle/lint/instrumentation và xác minh APK trước khi phát hành.
+
 ## 22/10/2026 — Bản thử 0.3.21-thtsign trên nền EX2 cho Coolray2026
 Chủ dự án làm rõ xe là2026, dùng nền EX2; không phải nhánh Coolray2025.
 Nguồn gốc022315f (release/tht-sign); package com.tht.split/code33/name0.3.21-thtsign,

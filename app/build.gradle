@@ -48,6 +48,13 @@ android {
             buildConfigField 'boolean', 'PLATFORM_TEST', 'true'
             buildConfigField 'boolean', 'PLATFORM_RELEASE', 'true'
         }
+        // Same app as platformRelease; CI signs it with the shared THT_SIGN_* key (also the platform cert).
+        thtSignRelease {
+            initWith platformRelease
+            versionNameSuffix '-thtsign'
+            signingConfig null
+            matchingFallbacks = ['release']
+        }
     }
 }
 dependencies { testImplementation 'junit:junit:4.13.2'; testImplementation 'org.json:json:20240303' }

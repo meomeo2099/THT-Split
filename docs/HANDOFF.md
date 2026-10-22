@@ -729,3 +729,16 @@ Nguồn0.2.2 cũng có cast này; khác provider có thể giải thích bản A
 - CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37280998296.
   Chưa thử APK sửa trên LDPlayer/xe; xem VALIDATION cho checksum và giới hạn.
 
+
+## Bản ký THT_SIGN — 0.3.18-thtsign (22/10/2026)
+Chủ dự án yêu cầu THT Split dùng chung Secrets `THT_SIGN_*` với THT Voice. APK THT Voice 1.0.8
+đã kiểm: chứng thư `c8a2e9bc…2ab8` (AOSP platform), trùng bản 0.3.17/0.3.18-platform.
+- Biến thể `thtSignRelease` = `platformRelease` + versionName `0.3.18-thtsign`, versionCode 30 (nền release/platform-update-0.3.18).
+- Workflow `tht-sign-release.yml` (workflow_dispatch hoặc push `release/tht-sign`): thiếu Secret hoặc
+  `THT_SIGN_CERT_SHA256` khác chứng thư platform thì dừng (để không mất MANAGE_ACTIVITY_STACKS);
+  ký bằng keystore `THT_SIGN_*`, kiểm lại chứng thư/package/quyền, phát hành prerelease `v0.3.18-thtsign`.
+- Cùng chứng thư với 0.3.18-platform nên cài đè `adb install -r` được, giữ dữ liệu/token.
+- Voice cùng chứng thư → Android cấp `CONTROL_SPLIT`; Voice dùng SignatureVoiceReceiver, không cần token.
+  Android 9 chỉ cấp quyền này khi cài Voice, nên cài/cập nhật Voice **sau** khi đã có Split.
+- Cần thêm 5 Secrets `THT_SIGN_*` vào repo THT-Split. Workflow cũ (`THT_KEYSTORE_*`, platform-release) giữ nguyên.
+- Chưa chạy trên xe; chưa build cục bộ (container không tải được Android Gradle Plugin).

@@ -1,0 +1,84 @@
+name: THT Split Release ký THT_SIGN (chung khóa THT Voice)
+on:
+  workflow_dispatch:
+  push:
+    branches: [release/tht-sign, split/r02-stability]
+    paths: [app/**, .github/workflows/tht-sign-release.yml]
+permissions:
+  contents: read
+concurrency:
+  group: tht-split-tht-sign
+  cancel-in-progress: false
+jobs:
+  tht-sign-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      # Chứng thư platform firmware tin; khác giá trị này thì Split mất MANAGE_ACTIVITY_STACKS.
+      PLATFORM_CERT: c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bắt buộc có THT_SIGN_* và đúng chứng thư platform
+        env:
+          KEYSTORE_B64: ${{ secrets.THT_SIGN_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.THT_SIGN_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.THT_SIGN_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.THT_SIGN_KEY_PASSWORD }}
+          CERT_SHA256: ${{ secrets.THT_SIGN_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [[ -n "$KEYSTORE_B64" ]] || missing+=(THT_SIGN_KEYSTORE_BASE64)
+          [[ -n "$STORE_PASSWORD" ]] || missing+=(THT_SIGN_STORE_PASSWORD)
+          [[ -n "$KEY_ALIAS" ]] || missing+=(THT_SIGN_KEY_ALIAS)
+          [[ -n "$KEY_PASSWORD" ]] || missing+=(THT_SIGN_KEY_PASSWORD)
+          [[ -n "$CERT_SHA256" ]] || missing+=(THT_SIGN_CERT_SHA256)
+          if (( ${#missing[@]} )); then echo "::error::Thiếu Secrets: ${missing[*]}"; exit 1; fi
+          pin="$(echo "$CERT_SHA256" | tr -d ': ' | tr 'A-F' 'a-f')"
+          [[ "$pin" == "$PLATFORM_CERT" ]] || { echo "::error::THT_SIGN_CERT_SHA256 không phải chứng thư platform; dừng để không mất quyền hệ thống"; exit 1; }
+          umask 077
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/tht-sign.ks"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platforms;android-35 build-tools;35.0.0 platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Kiểm thử, lint và build bản THT_SIGN
+        run: chmod +x gradlew && ./gradlew :app:testThtSignReleaseUnitTest :app:lintThtSignRelease :app:assembleThtSignRelease
+      - name: Ký bằng THT_SIGN_* và xác minh package, quyền, chứng thư
+        env:
+          STORE_PASSWORD: ${{ secrets.THT_SIGN_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.THT_SIGN_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.THT_SIGN_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          "$tools/apksigner" sign --ks "$RUNNER_TEMP/tht-sign.ks" --ks-key-alias "$KEY_ALIAS" \
+            --ks-pass env:STORE_PASSWORD --key-pass env:KEY_PASSWORD \
+            --out THT-Split.apk app/build/outputs/apk/thtSignRelease/app-thtSignRelease-unsigned.apk
+          "$tools/apksigner" verify --verbose --print-certs THT-Split.apk > "$RUNNER_TEMP/sig.txt"
+          grep -Fx "Signer #1 certificate SHA-256 digest: $PLATFORM_CERT" "$RUNNER_TEMP/sig.txt"
+          "$tools/aapt" dump badging THT-Split.apk > "$RUNNER_TEMP/badging.txt"
+          grep "package: name='com.tht.split' versionCode='33' versionName='0.3.21-ex2-cr'" "$RUNNER_TEMP/badging.txt"
+          grep "application-label:'THT Split'" "$RUNNER_TEMP/badging.txt"
+          "$tools/aapt" dump xmltree THT-Split.apk AndroidManifest.xml > "$RUNNER_TEMP/manifest.txt"
+          grep 'com.tht.split.permission.CONTROL_SPLIT' "$RUNNER_TEMP/manifest.txt"
+          ! grep 'android:sharedUserId' "$RUNNER_TEMP/manifest.txt"
+          ! grep 'android:debuggable.*0xffffffff' "$RUNNER_TEMP/manifest.txt"
+          EXPECTED_CERT_SHA256="$PLATFORM_CERT" python3 server/release-metadata.py THT-Split.apk --tag v0.3.21-ex2-cr
+          cp docs/PLATFORM_UPDATE_0318.md HUONG_DAN_PLATFORM.md
+      - name: Phát hành APK (prerelease)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete v0.3.21-ex2-cr --yes --cleanup-tag 2>/dev/null || true
+          gh release create v0.3.21-ex2-cr THT-Split.apk THT-Split.apk.sha256 update.json HUONG_DAN_PLATFORM.md \
+            --prerelease --latest=false --target "$GITHUB_SHA" --title "THT Split 0.3.21-ex2-cr — EX2, chặn lỗi thanh chia" \
+            --notes "Bản EX2 (ex2-cr): dừng khi ROM lỗi thanh chia đôi và tạm ngưng chia hệ thống 10 phút; báo lỗi khi app bị đóng ngay sau khi chia. Ký THT_SIGN_* (chứng thư platform c8a2e9bc…, cùng THT Voice). Cài đè lên 0.3.18-platform bằng adb install -r. Chế độ ADB nội bộ: khởi động lại màn một lần để nạp Bridge v8. Chưa thử trên xe."
+      - name: Xóa keystore khỏi runner
+        if: always()
+        run: rm -f "$RUNNER_TEMP/tht-sign.ks"

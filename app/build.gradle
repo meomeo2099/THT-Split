@@ -6,7 +6,7 @@ android {
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
-        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 30; versionName '0.3.18'
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 33; versionName '0.3.21'
         manifestPlaceholders = [appLabel: 'THT Split']
         buildConfigField 'boolean', 'PLATFORM_TEST', 'false'
         buildConfigField 'boolean', 'PLATFORM_RELEASE', 'false'
@@ -47,6 +47,14 @@ android {
             manifestPlaceholders = [appLabel: 'THT Split']
             buildConfigField 'boolean', 'PLATFORM_TEST', 'true'
             buildConfigField 'boolean', 'PLATFORM_RELEASE', 'true'
+        }
+        // Same app as platformRelease; CI signs it with the shared THT_SIGN_* key (also the platform cert).
+        // "ex2-cr": EX2 build with the ROM divider crash guard (DividerCrashGuard).
+        thtSignRelease {
+            initWith platformRelease
+            versionNameSuffix '-ex2-cr'
+            signingConfig null
+            matchingFallbacks = ['release']
         }
     }
 }

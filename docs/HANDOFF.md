@@ -743,3 +743,5 @@ Nền `release/platform-update-0.3.18`; chưa đổi versionCode/versionName, ch
 - Chưa làm từ R02: watchdog đưa freeform lên trước + sai số 32 px, gợi ý app phải nằm bên trái.
 - CI test build (`android.yml`) chuyển sang `THT_SIGN_*` và kiểm chứng thư platform `c8a2e9bc…` (chủ dự án đồng ý
   22/10/2026; 4 Secrets `THT_KEYSTORE_*` cũ đã trống nên CI cũ luôn dừng). APK test cùng chữ ký bản platform.
+- Phát hành theo yêu cầu chủ dự án: **0.3.21-ex2-cr** (versionCode 33; 31–32 đã dùng ở nhánh Coolray), biến thể
+  `thtSignRelease` ký `THT_SIGN_*`, workflow `tht-sign-release.yml` (push nhánh này) đăng prerelease `v0.3.21-ex2-cr`.

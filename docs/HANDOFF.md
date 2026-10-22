@@ -745,3 +745,15 @@ Nền `release/platform-update-0.3.18`; chưa đổi versionCode/versionName, ch
   22/10/2026; 4 Secrets `THT_KEYSTORE_*` cũ đã trống nên CI cũ luôn dừng). APK test cùng chữ ký bản platform.
 - Phát hành theo yêu cầu chủ dự án: **0.3.21-ex2-cr** (versionCode 33; 31–32 đã dùng ở nhánh Coolray), biến thể
   `thtSignRelease` ký `THT_SIGN_*`, workflow `tht-sign-release.yml` (push nhánh này) đăng prerelease `v0.3.21-ex2-cr`.
+
+## 0.3.22-ex2-cr (22/10/2026) — làm theo cách chia của R02
+Chủ dự án báo: đảo bên (chế độ chia đôi hệ thống) làm khởi động lại màn; lên lại mất thanh trạng thái xe và thanh
+điều khiển Split, chỉ còn 2 app; phải gỡ app bằng ADB mới hiện lại. R02 né đúng lỗi này. Chủ dự án yêu cầu làm giống R02.
+- Chế độ chia mới `auto` (mặc định): cửa sổ tự do trước; chỉ khi không giữ được freeform mới chia đôi hệ thống (vẫn qua
+  DividerCrashGuard). Lựa chọn "Chia đôi hệ thống"/"Cửa sổ tự do" giữ nguyên cho ai đã chọn.
+- Freeform: sau khi mở, tối đa 3 vòng đặt lại mode 5 + bounds khi lệch quá 32 px, `moveTaskToFront` cả hai; đọc lại bounds sai số 32 px.
+- Thoát chia (STOP) gọi `dismissSplitScreenMode` → `moveTasksToFullscreenStack` → clearPrimary trước khi đưa app về toàn màn.
+- "Gỡ kẹt giao diện xe" (Kết nối & quyền): thoát chia, về Home, `forceStopPackage(com.android.systemui)` (SystemUI là
+  persistent, Android tự chạy lại) — bridge: `am force-stop --user all com.android.systemui`.
+- Bản platform hiện nút Bật/Khôi phục cửa sổ tự do; khai báo WRITE_SECURE_SETTINGS, FORCE_STOP_PACKAGES.
+- Vẫn không force-stop app bên thứ ba khi thử lại (khác R02). Chưa thử trên xe.

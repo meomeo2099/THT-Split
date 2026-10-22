@@ -29,7 +29,7 @@ public final class SettingsSnapshot {
                 case "launch_wait_ms":v=number(v,0,3000);break;
                 case "adb_port":v=number(v,1,65535);break;
                 case "auto_hide":case "adb_at_boot":case "voice_enabled":if(!(v instanceof Boolean))throw invalid("Tùy chọn bật/tắt không hợp lệ");break;
-                case "mode":v=choice(v,"native","freeform");break;
+                case "mode":v=choice(v,"auto","native","freeform");break;
                 case "transport":v=choice(v,"adb","off","system");break;
                 case "toolbar_side":v=choice(v,"left","right");break;
                 case "button_size":v=choice(v,"small","large");break;

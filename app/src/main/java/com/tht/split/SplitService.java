@@ -47,7 +47,7 @@ public final class SplitService extends Service {
         final boolean opening=java.util.Arrays.asList("start","restore","preset","swap","replace").contains(action);
         worker.execute(()->{
             PerformanceLog.Measure measure=new PerformanceLog.Measure(this,action,session.s("transport","adb"));
-            String oldL=session.s("left",""),oldR=session.s("right","");int oldRatio=session.i("ratio",50),oldTop=session.i("top_px",72),oldBottom=session.i("bottom_px",112);String oldMode=session.s("mode","native"),oldTransport=session.s("transport","adb");
+            String oldL=session.s("left",""),oldR=session.s("right","");int oldRatio=session.i("ratio",50),oldTop=session.i("top_px",72),oldBottom=session.i("bottom_px",112);String oldMode=session.s("mode","auto"),oldTransport=session.s("transport","adb");
             try {
                 new com.tht.split.remote.RemoteControl(this).require(action);
                 if(opening){FutureTask<Void> prepare=new FutureTask<>(()->{if(destroyed)throw new IllegalStateException("Phiên đã dừng");showLoading();dismissConfiguration();return null;});main.post(prepare);prepare.get(5,TimeUnit.SECONDS);}
@@ -84,7 +84,7 @@ public final class SplitService extends Service {
             }finally{measure.finish();}
         });return START_NOT_STICKY;
     }
-    private void captureLayoutSettings(){session.set("transport",store.s("transport","adb"));session.set("mode",store.s("mode","native"));session.set("top_px",store.i("top_px",72));session.set("bottom_px",store.i("bottom_px",112));}
+    private void captureLayoutSettings(){session.set("transport",store.s("transport","adb"));session.set("mode",store.s("mode","auto"));session.set("top_px",store.i("top_px",72));session.set("bottom_px",store.i("bottom_px",112));}
     private void scheduleHide(){main.removeCallbacks(autoHide);if(active&&visible&&store.b("auto_hide",true)&&!full)main.postDelayed(autoHide,store.i("hide_seconds",5)*1000L);}
     private WindowManager.LayoutParams params(int w,int h,int x,int y){WindowManager.LayoutParams p=new WindowManager.LayoutParams(w,h,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,android.graphics.PixelFormat.TRANSLUCENT);p.gravity=Gravity.TOP|Gravity.LEFT;p.x=x;p.y=y;p.alpha=store.i("opacity",90)/100f;return p;}
     private void remove(View v){if(v!=null&&v.getParent()!=null)try{wm.removeView(v);}catch(IllegalArgumentException ignored){}}
@@ -112,7 +112,7 @@ public final class SplitService extends Service {
     }
     private void render(){
         if(!active){clear();return;}Point size=new Point();wm.getDefaultDisplay().getRealSize(size);
-        String key=size.x+":"+size.y+":"+getResources().getDisplayMetrics().density+":"+engine.toolbarPx()+":"+engine.supportsTaskResize()+":"+session.s("mode","native")+":"+session.i("top_px",72)+":"+session.i("bottom_px",112)+":"+store.s("toolbar_side","right")+":"+store.s("mini_position","center")+":"+store.i("opacity",90);
+        String key=size.x+":"+size.y+":"+getResources().getDisplayMetrics().density+":"+engine.toolbarPx()+":"+engine.supportsTaskResize()+":"+session.s("mode","auto")+":"+session.i("top_px",72)+":"+session.i("bottom_px",112)+":"+store.s("toolbar_side","right")+":"+store.s("mini_position","center")+":"+store.i("opacity",90);
         if(!key.equals(overlayKey)||loading!=null){clear();overlayKey=key;}
         LayoutMath g=engine.geometry(visible&&!full);boolean controls=engine.supportsTaskResize();
         if(visible&&!full){
@@ -143,7 +143,7 @@ public final class SplitService extends Service {
             if(pos.equals("left"))x=Ui.dp(this,8);if(pos.equals("right"))x=size.x-w-Ui.dp(this,8);attach(mini,params(w,h,x,session.i("top_px",72)));
         }
         if(!full&&controls){
-            boolean nativeHandle=session.s("mode","native").equals("native");
+            boolean nativeHandle=engine.lastResult.optString("usedMode",session.s("mode","auto").equals("native")?"native":"freeform").equals("native");
             int seam=nativeHandle?DividerPlacement.centerX(g.splitX,size.x,Ui.dp(this,40),observedBox("actualLeftBounds"),observedBox("actualRightBounds")):g.splitX;
             int w=Ui.dp(this,48),h=g.left.height();WindowManager.LayoutParams p=params(w,h,seam-w/2,g.left.top);
             if(divider==null){

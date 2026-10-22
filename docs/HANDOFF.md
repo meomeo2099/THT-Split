@@ -729,3 +729,15 @@ Nguồn0.2.2 cũng có cast này; khác provider có thể giải thích bản A
 - CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37280998296.
   Chưa thử APK sửa trên LDPlayer/xe; xem VALIDATION cho checksum và giới hạn.
 
+
+## Nhánh split/r02-stability (22/10/2026) — học cách chia của R02 1.3.0
+Nguồn: phân tích tĩnh R02 1.3.0, THTVoice `docs/reference/ihu629g-20261022-r02-130/SPLIT_SCREEN.md`.
+Nền `release/platform-update-0.3.18`; chưa đổi versionCode/versionName, chưa build release.
+- `DividerCrashGuard`: chế độ chia hệ thống (native) đọc `logcat -b crash -d -e DockedStackDividerController|WindowState.getFrameLw`
+  trước và 400 ms sau LAYOUT/RESIZE. Có dòng dấu hiệu mới → dừng, báo lỗi rõ ràng, không thử lại;
+  từ chối chia hệ thống 10 phút (nhắc chọn Cửa sổ tự do). Không tự đổi phương thức, không force-stop app.
+  Không đọc được log (thiếu quyền) thì không coi là lỗi. Platform build khai báo `READ_LOGS`.
+- Sau LAYOUT/RESIZE kiểm cả hai app còn task; mất task → lỗi "Ứng dụng bị Android đóng ngay sau khi chia".
+- Bridge v8 (ShellServer đổi): bản ADB cần khởi động lại màn một lần để nạp bridge mới, như các lần trước.
+- Test: `DividerCrashGuardTest`. Chưa thử trên xe/LDPlayer.
+- Chưa làm từ R02: watchdog đưa freeform lên trước + sai số 32 px, gợi ý app phải nằm bên trái.

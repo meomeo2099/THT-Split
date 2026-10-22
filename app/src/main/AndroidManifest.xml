@@ -2,6 +2,8 @@
     <permission android:name="${applicationId}.permission.CONTROL_SPLIT" android:protectionLevel="signature" />
     <!-- Conditional system backend; ordinary installs stay on ADB/Off. Checked before use. -->
     <uses-permission android:name="android.permission.MANAGE_ACTIVITY_STACKS" tools:ignore="ProtectedPermissions" />
+    <!-- Platform builds: read the crash buffer to stop on a ROM divider crash (DividerCrashGuard). -->
+    <uses-permission android:name="android.permission.READ_LOGS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />

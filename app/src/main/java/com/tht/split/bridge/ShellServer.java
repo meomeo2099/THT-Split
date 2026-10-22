@@ -5,6 +5,7 @@ import android.os.Process;
 import com.tht.split.core.TaskParser;
 import com.tht.split.core.PairController;
 import com.tht.split.core.BoundsCheck;
+import com.tht.split.core.DividerCrashGuard;
 import com.tht.split.core.LayoutMath;
 import org.json.*;
 import java.io.*;
@@ -19,6 +20,8 @@ import java.util.concurrent.*;
 public final class ShellServer {
     private static String secret;
     private static Object manager;
+    /** Last ROM divider crash seen after a native layout (0 = none); lives as long as the bridge/app process. */
+    private static long dividerCrashAt;
     @android.annotation.SuppressLint("StaticFieldLeak") // Set only inside a synchronized call; cleared in finally.
     private static android.content.Context systemContext;
     public static synchronized JSONObject systemCall(android.content.Context context,JSONObject q)throws Exception {
@@ -110,6 +113,8 @@ public final class ShellServer {
         try{return CommandRunner.run(command,Process.myUid()==0?new File("/data/local/tmp"):null,12000);}
         catch(IOException e){throw new IOException(e.getMessage()+" [UID "+Process.myUid()+", context "+securityContext()+"]",e);}
     }
+    /** Crash-buffer lines with divider markers; null when logs cannot be read (never treated as a crash). */
+    private static String crashLog(){try{return exec("logcat","-b","crash","-d","-e",DividerCrashGuard.PATTERN);}catch(Exception e){return null;}}
     private static String securityContext(){try(BufferedReader r=new BufferedReader(new FileReader("/proc/self/attr/current"))){String s=r.readLine();return s==null?"unknown":s.trim().replace("\u0000","");}catch(IOException e){return "unknown";}}
     private static void resize(int leftTask,int rightTask,String mode,Rect left,Rect right)throws Exception{
         if(mode.equals("native")){
@@ -161,7 +166,7 @@ public final class ShellServer {
         if(op.equals("PING")){
             out.put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
             if(systemContext!=null)return out.put("transport","system").put("systemPermission",true);
-            return out.put("bridgeVersion",7).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe");
+            return out.put("bridgeVersion",8).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe");
         }
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
@@ -194,8 +199,17 @@ public final class ShellServer {
                 int selected=controller.fullscreen(side.equals("right"),op.equals("STOP"));
                 return selected<0?out.put("verified",true).put("note","Hai ứng dụng đã đóng"):observedFullscreen(selected,expected);
             }
+            boolean nativeSplit=mode.equals("native");
+            if(nativeSplit&&DividerCrashGuard.coolingDown(dividerCrashAt,System.currentTimeMillis()))throw new IOException(DividerCrashGuard.COOLDOWN_MESSAGE);
+            String crashBefore=nativeSplit?crashLog():null;
             if(op.equals("LAYOUT"))controller.layout();else controller.resize();
+            if(crashBefore!=null){
+                Thread.sleep(400);
+                if(DividerCrashGuard.crashedSince(crashBefore,crashLog())){dividerCrashAt=System.currentTimeMillis();throw new IOException(DividerCrashGuard.CRASH_MESSAGE);}
+            }
             int lt=task(leftPkg),rt=task(rightPkg);
+            // Android can kill an app right after it is split; never report that as a layout.
+            if(lt<0||rt<0)throw new IOException("Ứng dụng bị Android đóng ngay sau khi chia: "+(lt<0?leftPkg:"")+(lt<0&&rt<0?", ":"")+(rt<0?rightPkg:""));
             return observedBounds(lt,rt,l,r).put("leftTask",lt).put("rightTask",rt).put("leftStack",stackId(lt)).put("rightStack",stackId(rt)).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
         }
         throw new IllegalArgumentException("Lệnh không hỗ trợ");

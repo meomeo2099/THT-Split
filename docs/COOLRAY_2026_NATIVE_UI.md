@@ -36,7 +36,14 @@ Không hứa sửa được tiến trình giao diện xe nếu firmware đã l�
    Cần crash/window/tasks/power cùng phiên bản APK, không chỉ ảnh sau khi đã khởi động lại.
 
 ## Xác minh
-Workflow chạy unit/lint/build, kiểm package/code/signer/no sharedUID, và test instrumentation
+Workflow được cấu hình chạy unit/lint/build, kiểm package/code/signer/no sharedUID, và test instrumentation
 Android9 giả lập1920×1080: cặp native hai app có sẵn, hide/show giữ bounds, swap bị từ chối,
 scope guard không sửa primary ngoài cặp, ngủ/thức thật khôi phục overlay. Test APK không
 phát hành. Đây chưa là kiểm thử firmware IHU689G. Không xuất metadata sang kênh OTA chung.
+
+## Trạng thái 22/10/2026
+Mã đã lưu trên fix/coolray2026-system-ui (f7763e5). CI39800897559 không khởi tạo
+được job; lần chạy lại kết thúc startup_failure trước build. Chưa có APK/Release mới.
+Local đã kiểm cú pháp Java/YAML và smoke logic policy/scope bằng JDK17; chưa chạy
+Gradle/lint/instrumentation Android. Phần xác minh trên là điều kiện phải đạt trước
+phát hành, chưa phải kết quả đã chạy. Cần chạy lại CI và xem log nếu còn thất bại.

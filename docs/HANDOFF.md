@@ -23,8 +23,20 @@ Bridge bootstrap/protocol/RSA, Voice token/API auth, Worker/Secrets giữ nguyê
 Workflow native-ui-release dùng THT_SIGN_* hiện tại, fail nếu thiếu/sai pin;
 unit/lint/build + test Android9 native hai app, hide/show bounds, swap bị chặn,
 foreign primary guard, thực sleep/wake. Chỉ publish prerelease sau marker OK;
-không update.json hay chuyển kênh OTA chung. Chưa có kết quả CI tại commit này;
-phải ghi lại kết quả sau. Chưa thử trên xe. Xem docs/COOLRAY_2026_NATIVE_UI.md.
+không update.json hay chuyển kênh OTA chung.
+Mã đã lưu tại f7763e5eb81494f53facdf6f5a4540d22adde520 trên nhánh
+fix/coolray2026-system-ui. CI39800897559 lần1/job119900934049 failure/steps rỗng,
+không có job log tải được; lần2 sau rerun kết thúc startup_failure, không có jobs.
+Connector không đọc được annotations nên chưa biết nguyên nhân runner/khởi tạo;
+không gọi đây là lỗi Java/Secrets hay tự đổi workflow/khóa để né lỗi chưa biết.
+CHƯA build/lint/instrumentation Android, CHƯA tạo Release v0.3.21-thtsign hay APK.
+Local: git diff --check và YAML parse đạt; JDK17 biên dịch/chạy smoke logic
+NativeUiPolicy/StackScope đạt (hide/show không gọi resize, legacy/freeform giữ
+transitions, swap block, guard loại foreign/mixed/prefix-like). Parser JDK đọc13
+file Java snapshot không lỗi cú pháp; không resolve Android types, không thay thế
+Gradle/JUnit/instrumentation. Cần chạy lại CI khi khởi tạo Actions hoạt động,
+sửa lỗi build/test nếu có rồi mới publish; không bỏ marker hoặc gate signer.
+Chưa thử trên xe, chưa chứng minh thanh OEM được phục hồi. Xem docs/COOLRAY_2026_NATIVE_UI.md.
 
 
 ## Release 0.3.18-platform — thử cập nhật trực tiếp từ 0.3.17-platform (16/10/2026)

@@ -175,11 +175,14 @@ public final class MainActivity extends Activity {
         LinearLayout row=settingRow(label);Button b=AppUi.button(this,store.i(key,def)+" px",false);row.addView(b,controlParams());
         b.setOnClickListener(v->{EditText input=AppUi.input(this);input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);input.setText(String.valueOf(store.i(key,def)));AppUi.dialog(this).setTitle(label).setView(input).setPositiveButton("Lưu",(d,n)->{try{int x=Integer.parseInt(input.getText().toString());if(x<0||x>max)throw new NumberFormatException();store.set(key,x);render();}catch(NumberFormatException e){toast("Giá trị từ 0 đến "+max);}}).setNegativeButton("Hủy",null).show();});
     }
-    private void layoutSettings(){body.addView(title("Chia màn hình"));choice("Chế độ chia","mode",new String[]{"native","freeform"},new String[]{"Chia đôi (EX2)","Cửa sổ tự do"},"native");
-        note("ADB nội bộ hoặc quyền hệ thống dùng chế độ đã chọn. Off luôn mở cửa sổ tự do, không xác minh bố cục trên firmware xe. App tự nhớ cặp và tỷ lệ lần trước; không tự mở app khi xe khởi động.");number("Chừa phía trên","top_px",72,400);number("Chừa điều hòa phía dưới","bottom_px",112,400);
+    private void layoutSettings(){body.addView(title("Chia màn hình"));choice("Chế độ chia","mode",new String[]{"auto","native","freeform"},new String[]{"Tự động (cửa sổ tự do trước)","Chia đôi hệ thống","Cửa sổ tự do"},"auto");
+        note("Muốn chia chỉ bằng quyền hệ thống: chọn Phương thức Quyền hệ thống trong Kết nối & quyền, rồi chọn bố cục tại đây. Thiếu quyền sẽ báo lỗi, không tự dùng ADB/Off.");
+        note("Tự động: dùng cửa sổ tự do trước để tránh lỗi thanh chia đôi của ROM (đảo bên làm khởi động lại màn); có thể thử native nếu freeform lỗi và tùy chọn tương thích đang tắt. ADB nội bộ hoặc quyền hệ thống dùng chế độ đã chọn. Off luôn mở cửa sổ tự do, không xác minh bố cục trên firmware xe. App tự nhớ cặp và tỷ lệ lần trước; không tự mở app khi xe khởi động.");number("Chừa phía trên","top_px",72,400);number("Chừa điều hòa phía dưới","bottom_px",112,400);
         button(body,"Khôi phục khoảng chừa EX2",false,()->{store.set("top_px",72);store.set("bottom_px",112);render();});note("Thay đổi chế độ/khoảng chừa áp dụng khi Bắt đầu chia hoặc Khôi phục cặp.");}
     private void toolbarSettings(){
         body.addView(title("Thanh điều khiển"));space(body,12);
+        toggle("Tương thích giao diện xe","oem_ui_compat",OemUiCompat.detected(this));
+        note("Bật khi đổi bên hoặc ẩn thanh làm mất giao diện xe. Native: giữ vùng chia khi ẩn/hiện, tạm khóa đổi bên trong phiên. Auto: giữ freeform, báo lỗi nếu không chạy được thay vì tự dùng native. Áp dụng khi mở lại cặp.");line(body);
         choice("Vị trí nhóm nút","toolbar_side",new String[]{"left","right"},new String[]{"Bên trái","Bên phải"},"right");line(body);
         toggle("Tự ẩn thanh điều khiển","auto_hide",true);line(body);
         intChoice("Ẩn sau","hide_seconds",new int[]{3,5,8,10},new String[]{"3 giây","5 giây","8 giây","10 giây"},5);line(body);
@@ -211,15 +214,17 @@ public final class MainActivity extends Activity {
             button(body,"Lấy lệnh bridge thủ công dự phòng",false,()->{String cmd=new ShellClient(store).startCommand();TextView t=AppUi.text(this,cmd,15,AppUi.TEXT);t.setTextIsSelectable(true);AppUi.pad(t,16);AppUi.dialog(this).setTitle("Chạy adb shell rồi dán lệnh này").setView(t).setPositiveButton("Sao chép",(d,n)->copy(cmd)).setNegativeButton("Đóng",null).show();});
         }else if(method.equals("off"))note("Off mở bằng ActivityOptions, không kết nối ADB và không dùng bridge. Cần freeform bật sẵn. Khóa tỷ lệ, kéo, đổi bên, đổi app và toàn màn hình trên thanh công cụ. X dừng điều khiển, giữ cửa sổ hiện tại để tránh lần mở tiếp bị fullscreen. Android có thể bỏ qua bounds của task cũ; nếu cửa sổ từ phiên cũ đã sai, đóng chúng bằng nút của Android rồi mở cặp lại. Dùng ADB để điều khiển đầy đủ.");
         else note("Chỉ chạy khi Android cấp MANAGE_ACTIVITY_STACKS. Bản ký thông thường không tự có quyền này; không dùng shared UID trong bản cài thường.");
-        if(!BuildConfig.PLATFORM_TEST){button(body,"Bật hỗ trợ cửa sổ tự do",false,()->AppUi.dialog(this).setTitle("Bật freeform?").setMessage("Đổi enable_freeform_support và force_resizable_activities. Có thể cần reboot. Off không tự đổi được; dùng ADB nội bộ hoặc lệnh máy tính lần đầu.").setPositiveButton("Bật",(d,n)->freeform(true)).setNegativeButton("Hủy",null).show());
+        if(!method.equals("off")){button(body,"Bật hỗ trợ cửa sổ tự do",false,()->AppUi.dialog(this).setTitle("Bật freeform?").setMessage("Đổi enable_freeform_support và force_resizable_activities. Có thể cần reboot. Off không tự đổi được; dùng ADB nội bộ hoặc lệnh máy tính lần đầu.").setPositiveButton("Bật",(d,n)->freeform(true)).setNegativeButton("Hủy",null).show());
         button(body,"Khôi phục tùy chọn freeform",false,()->freeform(false));}
+        // R02 "Gỡ kẹt": status bar / toolbar gone after a ROM divider crash, without uninstalling the app.
+        if(!method.equals("off"))button(body,"Gỡ kẹt giao diện xe",false,()->AppUi.dialog(this).setTitle("Gỡ kẹt giao diện xe?").setMessage("Thoát chia màn, về màn chính và khởi động lại giao diện hệ thống. Màn chớp một nhịp; app đang chạy giữ nguyên. Dùng khi mất thanh trạng thái hoặc thanh điều khiển sau khi chia.").setPositiveButton("Gỡ kẹt",(d,n)->recover()).setNegativeButton("Hủy",null).show());
     }
-    private String methodLabel(String m){return m.equals("off")?"Off — mở trực tiếp":m.equals("system")?"Quyền hệ thống":"ADB nội bộ";}
+    private String methodLabel(String m){return m.equals("off")?"Off — mở trực tiếp":m.equals("system")?"Quyền hệ thống — không ADB/Bridge":"ADB nội bộ / Bridge";}
     private void chooseTransport(){
-        if(BuildConfig.PLATFORM_TEST){toast("Bản platform dùng trực tiếp Quyền hệ thống; xem quyền đã cấp trong Kết nối & quyền");return;}
+        if(BuildConfig.SYSTEM_ONLY){toast("Bản thử này chỉ dùng quyền hệ thống");return;}
         if(connectionChecking){toast("Đang kiểm tra kết nối, vui lòng đợi kết quả");return;}
         if(store.b("session_active",false)||store.b("session_busy",false)){toast("Tắt chia màn hiện tại trước khi chuyển phương thức");return;}
-        String[] values={"adb","off","system"};AppUi.dialog(this).setTitle("Phương thức điều khiển").setItems(new String[]{"ADB nội bộ (mặc định)","Off — mở trực tiếp","Quyền hệ thống"},(d,n)->{
+        String[] values={"system","adb","off"};AppUi.dialog(this).setTitle("Phương thức điều khiển").setItems(new String[]{"Quyền hệ thống — không ADB/Bridge","ADB nội bộ / Bridge","Off — mở trực tiếp"},(d,n)->{
             if(values[n].equals("system")&&!Backend.systemGranted(this)){toast("Bản APK này chưa được cấp quyền hệ thống");return;}
             store.set("transport",values[n]);store.set("connection_status","Đã chọn "+methodLabel(values[n])+"; chưa kiểm tra");render();
         }).setNegativeButton("Hủy",null).show();
@@ -244,10 +249,11 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->{connectionChecking=false;refreshHandler.removeCallbacks(connectionTick);if(connectionDialog!=null){connectionDialog.dismiss();connectionDialog=null;}if(isFinishing()||isDestroyed())return;render();AppUi.dialog(this).setTitle("Kết quả kết nối").setMessage(message).setPositiveButton("Đóng",null).show();});
         });
     }
+    private void recover(){if(store.s("transport","adb").equals("off")){toast("Off không hỗ trợ gỡ kẹt. Chọn Quyền hệ thống hoặc ADB nội bộ.");return;}runIo(()->{store.set("session_active",false);stopService(new Intent(this,SplitService.class));JSONObject out=new Backend(this,store.s("transport","adb")).call(new JSONObject().put("op","RECOVER"));return out.optString("note","Đã gỡ kẹt");});}
     private void freeform(boolean enable){runIo(()->{if(!enable&&!store.b("freeform_backup",false))return "Chưa có bản lưu tùy chọn cũ; không thay đổi.";JSONObject q=new JSONObject().put("op",enable?"FREEFORM_ENABLE":"FREEFORM_RESTORE");if(!enable)for(String key:new String[]{"enable_freeform_support","force_resizable_activities"})q.put(key,store.s("old_"+key,"null"));JSONObject out=new Backend(this,store.s("transport","adb")).call(q);if(enable&&!store.b("freeform_backup",false)){for(String key:new String[]{"enable_freeform_support","force_resizable_activities"})store.set("old_"+key,out.getString(key));store.set("freeform_backup",true);}if(!enable)store.set("freeform_backup",false);return enable?"Đã bật hỗ trợ freeform. Có thể cần reboot; ADB nội bộ tự thử kết nối lại khi dùng.":"Đã khôi phục tùy chọn cũ.";});}
     private void updateSettings(){
         if(BuildConfig.PLATFORM_TEST&&!BuildConfig.PLATFORM_RELEASE){body.addView(title("Bản thử platform"));note("THT Split "+BuildConfig.VERSION_NAME+"\n"+PlatformDiagnostics.describe(this));note("Cập nhật bản thử bằng APK riêng. Không dùng nguồn cập nhật của bản THT Split thường.");button(body,"Xuất log hỗ trợ",false,this::exportLog);return;}
-        if(BuildConfig.PLATFORM_RELEASE)note("Bản quyền hệ thống • package com.tht.split • cập nhật phải cùng chữ ký platform.\n"+PlatformDiagnostics.describe(this));
+        if(BuildConfig.PLATFORM_RELEASE)note("Bản THT_SIGN nhiều phương thức • package com.tht.split • cập nhật phải cùng chữ ký platform.\n"+PlatformDiagnostics.describe(this));
         body.addView(title("Phiên bản & cập nhật"));note("THT Split "+BuildConfig.VERSION_NAME);
         RemoteControl remote=new RemoteControl(this);note(remote.status());
         note("Không cần đăng ký hoặc nhập key. Cài xong có thể dùng ngay, kể cả khi chưa kết nối mạng.");
@@ -394,7 +400,7 @@ public final class MainActivity extends Activity {
         supportQr(content,ContactProfile.ZALO_QR_ASSET,"QR Zalo liên hệ THT",width,"Không đọc được QR Zalo. Hãy liên hệ qua Facebook.");
         space(card,12);card.addView(AppUi.text(this,"Quét QR bằng Zalo trên điện thoại.",13,AppUi.MUTED));
     }
-    private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+(BuildConfig.PLATFORM_TEST?"\n"+PlatformDiagnostics.describe(this):"")+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmode="+store.s("mode","native")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nperformance="+PerformanceLog.samples(this)+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
+    private void exportLog(){exportedLog="THT Split "+BuildConfig.VERSION_NAME+(BuildConfig.PLATFORM_TEST?"\n"+PlatformDiagnostics.describe(this):"")+"\nAndroid="+Build.VERSION.RELEASE+" sdk="+Build.VERSION.SDK_INT+"\ntransport="+store.s("transport","adb")+"\nconnection="+store.s("connection_status","")+"\nmodel="+Build.MODEL+" compat="+OemUiCompat.enabled(this,store)+" screen_event="+store.s("last_screen_event","")+"\nmode="+store.s("mode","auto")+" ratio="+store.i("ratio",50)+"\ntop="+store.i("top_px",72)+" bottom="+store.i("bottom_px",112)+"\nlast_layout="+store.s("last_layout","")+"\nlast_error="+store.s("last_error","")+"\nperformance="+PerformanceLog.samples(this)+"\nKhông chứa token kết nối.\n";Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"THT-Split-log.txt");try{startActivityForResult(intent,31);}catch(ActivityNotFoundException e){toast("Máy không có trình chọn tệp; xem lỗi gần nhất trong app");}}
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);if(request<31||request>33||result!=RESULT_OK||data==null||data.getData()==null)return;
         Uri uri=data.getData();if(request==33&&!canRestore())return;backupWorking=true;String log=exportedLog;
@@ -409,4 +415,5 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onDestroy(){refreshHandler.removeCallbacksAndMessages(null);if(connectionDialog!=null){connectionDialog.dismiss();connectionDialog=null;}if(downloadDialog!=null)downloadDialog.dismiss();io.shutdownNow();networkIo.shutdownNow();super.onDestroy();}
 }
+
 

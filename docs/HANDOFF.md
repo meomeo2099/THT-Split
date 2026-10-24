@@ -1,5 +1,82 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## 24/10 — Kết quả 0.3.24-methods đã kiểm chứng
+Nguồn09fdd4d42779ddb34c6d53df8b7427fb166dd490, nhánh feature/split-methods; PR#1 vào main.
+CI40110298903/job120920428803 completed/success: 84 unit tests/0 lỗi/0 bỏ qua,
+lint/assemble/sign/package/code36/name0.3.24-methods/no sharedUID/nondebuggable đạt.
+CI PR40110341986/job120920548507 cũng success (debug/Node/QR/Worker dry-run).
+Instrumentation AOSP Android9/1920×1080 có marker THT_NATIVE_UI_TEST_OK:
+migration một lần giữ System+settings; sau đó nhớ Off/ADB/System; Off PING thật
+không biến thành System; ADB cố ý cổng1 thất bại và không fallback; System với
+Context từ chối quyền trả lỗi. Native hai app: giữ bounds hide/show, scope guard
+không chạm primary ngoài cặp, swap bị chặn khi compat, SCREEN_OFF/ON tạo lại toolbar.
+Freeform: swap giữ mode5, ratio40/hide/show; Auto chọn freeform; cooldown System
+đọc timestamp prefs và chỉ chặn native; Off mở phiên/hiện toolbar đúng transport.
+Đã xem ảnh sau wake có hai app/thanh THT; không chứng minh thanh OEM xe được sửa.
+Release422837552/v0.3.24-methods draft=false/prerelease=true; không đổi OTA/main.
+APK672709427/284052bytes/SHA256
+13e28029d586525e452aba518a2e04e90dda9923d973ede1cc8883218747dfb9; checksum672709425.
+Artifact12566441284 tải lại, ZIP SHA11371635212be2f1c7ec6b406689f4f5b7b9bfb1a56d9ff0491e6e09916c424c
+và APK/checksum khớp; HTML unit report84/0/0 và marker đã đọc từ artifact.
+Chưa thử xe/LDPlayer9 bootstrap thật: ADB cần nạp Bridge9 sau reboot một lần,
+không lấy phép thử cổng đóng làm bằng chứng kết nối ADB thành công. User chọn
+System không cần Bridge. Giới hạn native compat và Off ghi trong SPLIT_METHODS.md.
+
+## 24/10/2026 — Thêm đủ phương thức, giữ System trực tiếp
+Chủ dự án yêu cầu thêm cách chỉ chia bằng quyền hệ thống và các cách còn lại.
+Nhánh feature/split-methods dựa f02e7c9/0.3.23-ex2-cr; ghép logic tương thích từ
+51b45a5/0.3.21-thtsign, không nhập profile/lề trái Coolray2025. Code36/name0.3.24-methods,
+package com.tht.split/signer THT_SIGN giữ nguyên. Không đổi main/Worker/OTA/Secrets.
+Sửa nguyên nhân menu bị ép System: tách SYSTEM_ONLY (chỉ true ở platformtest)
+khỏi PLATFORM_TEST diagnostic. Store/Backend/UI cho chọn System, ADB nội bộ/Bridge,
+Off; mỗi lựa chọn không fallback phương thức khác. Migration một lần giữ phương
+thức System thực tế của bản platform cũ, sau đó nhớ lựa chọn người dùng. Không đổi
+preset/RSA/token. Session giữ transport; boot chỉ chuẩn bị ADB nếu đã chọn ADB.
+Bố cục độc lập Auto/native/freeform. Explicit native/freeform không fallback;
+Auto tương thích không quay về native khi freeform lỗi. Đọc used_mode thực tế cho
+handle và ẩn/hiện; compat native khóa swap cả service/UI, giữ toolbar reservation.
+Tạo lại THT overlay sau SCREEN_ON khi service còn sống; không gọi task backend
+trên sự kiện màn. clearPrimary scope guard cho cặp khi bật compat; explicit RECOVER
+vẫn là thao tác toàn giao diện đã có của0.3.23, không tự restart SystemUI khi wake.
+System cooldown10phút lưu SharedPreferences riêng, Boot crash marker cũng ghi mốc;
+ADB daemon vẫn RAM. Không đọc được log hoặc chết trước ghi thì không hứa phát hiện.
+System bật/khôi phục freeform qua Settings.Global; Off ẩn nút thiếu quyền và chặn
+recover ở policy. Voice auth/token/callback không đổi; cập nhật VOICE_API cách chọn.
+Bridgev9 để app không dùng daemonv8 thiếu policy mới; cần reboot một lần cho ADB.
+Bootstrap sleep1/marker+12 PING250ms và RSA giữ nguyên; chưa test LDPlayer9 bootstrap.
+Workflow riêng test/sign/instrumentation Android9 rồi prerelease riêng, không metadata
+OTA; marker bắt buộc. Chưa có kết quả CI ở commit triển khai này. Cần ghi kết quả sau.
+Xem docs/SPLIT_METHODS.md; chưa khẳng định hết lỗi OEM trên EX2/Coolray2026.
+
+
+## Release 0.3.18-platform — thử cập nhật trực tiếp từ 0.3.17-platform (16/10/2026)
+Yêu cầu chủ dự án: build bản 0.3.18-platform package chính để kiểm tra cài đè.
+Nhánh release/platform-update-0.3.18 xuất phát release/platform-original;
+chưa merge main hay thay release/worker cũ. Chỉ nâng app/build.gradle
+versionCode 29→30, versionName 0.3.17→0.3.18; variant platformRelease
+giữ versionNameSuffix "-platform", applicationId com.tht.split, không shared UID
+hay UID1000, cert SHA256 AOSP9 c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8.
+Không thay Java/Bridge/Voice/UI. Workflow riêng trên branch này kiểm chứng
+build test/lint, signer/package/code30/name 0.3.18-platform/manifest no shared
+UID/nondebuggable, metadata update.json từ APK đã ký. Bản UID1000 trước đó ở
+test/uid1000-platform-0.3.18 không thuộc kênh cập nhật này.
+CI các lần đầu gặp 403 khi tạo Release; mốc cuối cùng 38779199155 /
+job116574809305 completed/success, test/lint/build/apksigner/aapt/publish OK.
+Release v0.3.18-platform published/prerelease/not draft:
+https://github.com/meomeo2099/THT-Split/releases/tag/v0.3.18-platform
+THT-Split.apk 275860 bytes, SHA APK
+5ef6fbfce9471d687ee0038270953a245a886573e45eff6a5b60b3ae296bc6c5;
+đủ checksum, update.json và HUONG_DAN_PLATFORM.md. Artifact upload step báo
+success nhưng API liệt kê artifacts rỗng sau run; GitHub Release asset đã xác nhận.
+Đã bổ sung docs/PLATFORM_UPDATE_0318.md: thử adb install -r 0.3.17→0.3.18,
+không tự gỡ/dọn app, sao lưu trước, kiểm dữ liệu và reboot trên xe.
+Server Github Worker hiện normalizeCertSha256 chỉ chấp nhận 1 SHA, giá trị
+RELEASE_CERT_SHA256 gồm dấu phẩy là lỗi, không phải allowlist. Chưa deploy/sửa
+Worker/chuyển SHA/mandatory/minimum để tránh ảnh hưởng khách Legacy; in-app OTA
+cần thay đổi kênh có kiểm tra tương thích trước khi thử. Chưa xác nhận update
+hoạt động trên xe chỉ từ CI.
+
+
 ## Release platform package gốc —15/10
 Chủ dự án gửi platform.pk8/platform.x509.pem, xác minh bằng openssl: publickey
 khớp, certSHA c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8,
@@ -700,4 +777,40 @@ Nguồn0.2.2 cũng có cast này; khác provider có thể giải thích bản A
   có; reboot rồi thử tự mở lại. Không yêu cầu chạy lệnh dự phòng như điều kiện test.
 - CI build/unit/lint đạt: https://github.com/meomeo2099/THT-Split/actions/runs/37280998296.
   Chưa thử APK sửa trên LDPlayer/xe; xem VALIDATION cho checksum và giới hạn.
+
+
+## Nhánh split/r02-stability (22/10/2026) — học cách chia của R02 1.3.0
+Nguồn: phân tích tĩnh R02 1.3.0, THTVoice `docs/reference/ihu629g-20261022-r02-130/SPLIT_SCREEN.md`.
+Nền `release/platform-update-0.3.18`; chưa đổi versionCode/versionName, chưa build release.
+- `DividerCrashGuard`: chế độ chia hệ thống (native) đọc `logcat -b crash -d -e DockedStackDividerController|WindowState.getFrameLw`
+  trước và 400 ms sau LAYOUT/RESIZE. Có dòng dấu hiệu mới → dừng, báo lỗi rõ ràng, không thử lại;
+  từ chối chia hệ thống 10 phút (nhắc chọn Cửa sổ tự do). Không tự đổi phương thức, không force-stop app.
+  Không đọc được log (thiếu quyền) thì không coi là lỗi. Platform build khai báo `READ_LOGS`.
+- Sau LAYOUT/RESIZE kiểm cả hai app còn task; mất task → lỗi "Ứng dụng bị Android đóng ngay sau khi chia".
+- Bridge v8 (ShellServer đổi): bản ADB cần khởi động lại màn một lần để nạp bridge mới, như các lần trước.
+- Test: `DividerCrashGuardTest`. Chưa thử trên xe/LDPlayer.
+- Chưa làm từ R02: watchdog đưa freeform lên trước + sai số 32 px, gợi ý app phải nằm bên trái.
+- CI test build (`android.yml`) chuyển sang `THT_SIGN_*` và kiểm chứng thư platform `c8a2e9bc…` (chủ dự án đồng ý
+  22/10/2026; 4 Secrets `THT_KEYSTORE_*` cũ đã trống nên CI cũ luôn dừng). APK test cùng chữ ký bản platform.
+- Phát hành theo yêu cầu chủ dự án: **0.3.21-ex2-cr** (versionCode 33; 31–32 đã dùng ở nhánh Coolray), biến thể
+  `thtSignRelease` ký `THT_SIGN_*`, workflow `tht-sign-release.yml` (push nhánh này) đăng prerelease `v0.3.21-ex2-cr`.
+
+## 0.3.22-ex2-cr (22/10/2026) — làm theo cách chia của R02
+Chủ dự án báo: đảo bên (chế độ chia đôi hệ thống) làm khởi động lại màn; lên lại mất thanh trạng thái xe và thanh
+điều khiển Split, chỉ còn 2 app; phải gỡ app bằng ADB mới hiện lại. R02 né đúng lỗi này. Chủ dự án yêu cầu làm giống R02.
+- Chế độ chia mới `auto` (mặc định): cửa sổ tự do trước; chỉ khi không giữ được freeform mới chia đôi hệ thống (vẫn qua
+  DividerCrashGuard). Lựa chọn "Chia đôi hệ thống"/"Cửa sổ tự do" giữ nguyên cho ai đã chọn.
+- Freeform: sau khi mở, tối đa 3 vòng đặt lại mode 5 + bounds khi lệch quá 32 px, `moveTaskToFront` cả hai; đọc lại bounds sai số 32 px.
+- Thoát chia (STOP) gọi `dismissSplitScreenMode` → `moveTasksToFullscreenStack` → clearPrimary trước khi đưa app về toàn màn.
+- "Gỡ kẹt giao diện xe" (Kết nối & quyền): thoát chia, về Home, `forceStopPackage(com.android.systemui)` (SystemUI là
+  persistent, Android tự chạy lại) — bridge: `am force-stop --user all com.android.systemui`.
+- Bản platform hiện nút Bật/Khôi phục cửa sổ tự do; khai báo WRITE_SECURE_SETTINGS, FORCE_STOP_PACKAGES.
+- Vẫn không force-stop app bên thứ ba khi thử lại (khác R02). Chưa thử trên xe.
+
+## 0.3.23-ex2-cr — gỡ kẹt không cần mở Split
+- Lệnh Voice API `recover` (VoiceReceiver, SplitService, AccessRules: luôn cho phép như stop/home/hide) = RECOVER.
+- BootReceiver: BOOT_COMPLETED mà trước đó đang chia (session_active) và bản platform/system → op `BOOT_CHECK`:
+  so nhật ký crash với `divider_seen`; có lỗi thanh chia mới thì chỉ thoát chia + về Home (không dựng lại SystemUI),
+  ghi `last_error` hướng dẫn nói "gỡ kẹt màn hình" hoặc bấm Gỡ kẹt. Lần đầu (chưa có `divider_seen`) dòng cũ cũng tính.
+- THT Voice cần thêm câu "gỡ kẹt màn hình" gửi `recover`. Chưa thử trên xe.
 

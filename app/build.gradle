@@ -6,9 +6,11 @@ android {
     // Automotive sideload build; target 32 is deliberate, not a Google Play upload.
     lint { disable 'ExpiredTargetSdkVersion' }
     defaultConfig {
-        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 29; versionName '0.3.17'
+        applicationId 'com.tht.split'; minSdk 26; targetSdk 32; versionCode 36; versionName '0.3.24'
+        testInstrumentationRunner 'com.tht.split.NativeUiTestRunner'
         manifestPlaceholders = [appLabel: 'THT Split']
         buildConfigField 'boolean', 'PLATFORM_TEST', 'false'
+        buildConfigField 'boolean', 'SYSTEM_ONLY', 'false'
         buildConfigField 'boolean', 'PLATFORM_RELEASE', 'false'
         def controlUrl = providers.environmentVariable('THT_CONTROL_URL').getOrElse('').trim()
         if (!controlUrl) controlUrl = 'https://chiamanhinh.mavoice.workers.dev'
@@ -26,12 +28,14 @@ android {
         }
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    testBuildType 'thtSignRelease'
     buildTypes {
         debug { if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
         release { minifyEnabled false; if (System.getenv('THT_KEYSTORE_PATH')) signingConfig signingConfigs.stable }
         platformTest {
             initWith release
             applicationIdSuffix '.platformtest'
+            buildConfigField 'boolean', 'SYSTEM_ONLY', 'true'
             versionNameSuffix '-platformtest1'
             signingConfig null
             matchingFallbacks = ['release']
@@ -42,11 +46,20 @@ android {
         platformRelease {
             initWith release
             versionNameSuffix '-platform'
+            buildConfigField 'boolean', 'SYSTEM_ONLY', 'false'
             signingConfig null
             matchingFallbacks = ['release']
             manifestPlaceholders = [appLabel: 'THT Split']
             buildConfigField 'boolean', 'PLATFORM_TEST', 'true'
             buildConfigField 'boolean', 'PLATFORM_RELEASE', 'true'
+        }
+        // Same app as platformRelease; CI signs it with the shared THT_SIGN_* key (also the platform cert).
+        // Selectable system/ADB/Off with EX2 and Coolray compatibility controls.
+        thtSignRelease {
+            initWith platformRelease
+            versionNameSuffix '-methods'
+            signingConfig null
+            matchingFallbacks = ['release']
         }
     }
 }
@@ -66,4 +79,5 @@ tasks.register('hiddenApiStubsJar', Jar) {
     destinationDirectory = layout.buildDirectory.dir('hidden-api-stubs')
 }
 dependencies { compileOnly files(tasks.named('hiddenApiStubsJar')) }
+
 

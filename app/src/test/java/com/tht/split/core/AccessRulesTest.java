@@ -16,7 +16,7 @@ public class AccessRulesTest {
         assertEquals("",AccessRules.denial(true,"enabled",19,19));
     }
     @Test public void exitIsAlwaysAvailable(){
-        for(String action:new String[]{"stop","home","hide"})assertTrue(AccessRules.exitCommand(action));
+        for(String action:new String[]{"stop","home","hide","recover"})assertTrue(AccessRules.exitCommand(action));
         for(String action:new String[]{"start","restore","ratio","prepare","status"})assertFalse(AccessRules.exitCommand(action));
     }
 }

@@ -7,7 +7,7 @@ public final class SettingsSnapshot {
     public static final int MAX_BYTES=1048576,MAX_PAIRS=100;
     public static final Set<String> KEYS=Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(
         "left","right","ratio","mode","top_px","bottom_px","toolbar_side","auto_hide","hide_seconds",
-        "button_size","opacity","mini_position","launch_wait_ms","transport","adb_host","adb_port","adb_at_boot","voice_enabled")));
+        "button_size","opacity","mini_position","launch_wait_ms","transport","adb_host","adb_port","adb_at_boot","voice_enabled","oem_ui_compat")));
     public final Map<String,Object> settings;
     public final List<Map<String,Object>> pairs;
     public interface Editor {void remove(String key);void put(String key,Object value);void pairs(List<Map<String,Object>> pairs);boolean commit();}
@@ -28,8 +28,8 @@ public final class SettingsSnapshot {
                 case "opacity":v=number(v,40,100);break;
                 case "launch_wait_ms":v=number(v,0,3000);break;
                 case "adb_port":v=number(v,1,65535);break;
-                case "auto_hide":case "adb_at_boot":case "voice_enabled":if(!(v instanceof Boolean))throw invalid("Tùy chọn bật/tắt không hợp lệ");break;
-                case "mode":v=choice(v,"native","freeform");break;
+                case "auto_hide":case "adb_at_boot":case "voice_enabled":case "oem_ui_compat":if(!(v instanceof Boolean))throw invalid("Tùy chọn bật/tắt không hợp lệ");break;
+                case "mode":v=choice(v,"auto","native","freeform");break;
                 case "transport":v=choice(v,"adb","off","system");break;
                 case "toolbar_side":v=choice(v,"left","right");break;
                 case "button_size":v=choice(v,"small","large");break;
@@ -63,3 +63,4 @@ public final class SettingsSnapshot {
         if(!s.matches("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*")||s.equals("com.tht.split"))throw invalid("Tên ứng dụng không hợp lệ");return s;}
     private static String choice(Object v,String...allowed){for(String s:allowed)if(s.equals(v))return s;throw invalid("Lựa chọn không được hỗ trợ");}
 }
+

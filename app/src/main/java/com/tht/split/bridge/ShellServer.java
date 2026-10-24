@@ -5,6 +5,7 @@ import android.os.Process;
 import com.tht.split.core.TaskParser;
 import com.tht.split.core.PairController;
 import com.tht.split.core.BoundsCheck;
+import com.tht.split.core.DividerCrashGuard;
 import com.tht.split.core.LayoutMath;
 import org.json.*;
 import java.io.*;
@@ -19,6 +20,8 @@ import java.util.concurrent.*;
 public final class ShellServer {
     private static String secret;
     private static Object manager;
+    /** Last ROM divider crash seen after a native layout (0 = none); lives as long as the bridge/app process. */
+    private static long dividerCrashAt;
     @android.annotation.SuppressLint("StaticFieldLeak") // Set only inside a synchronized call; cleared in finally.
     private static android.content.Context systemContext;
     public static synchronized JSONObject systemCall(android.content.Context context,JSONObject q)throws Exception {
@@ -88,7 +91,8 @@ public final class ShellServer {
         invoke("moveTaskToStack",new Class<?>[]{int.class,int.class,boolean.class},taskId,target,true);
         if(stackId(taskId)!=target)throw new IOException("Firmware không chuyển app sang stack riêng");
     }
-    private static void clearPrimary()throws Exception {
+    private static void clearPrimary()throws Exception {clearPrimary(null,null,false);}
+    private static void clearPrimary(String leftPkg,String rightPkg,boolean preserveOemStacks)throws Exception {
         List<?> infos=(List<?>)invoke("getAllStackInfos",new Class<?>[]{});
         // Snapshot IDs before changing stacks; changing the primary also collapses secondaries.
         List<Integer> primary=new ArrayList<>();
@@ -98,6 +102,11 @@ public final class ShellServer {
             Object wc=config.getClass().getField("windowConfiguration").get(config);
             if((Integer)wc.getClass().getMethod("getWindowingMode").invoke(wc)!=3)continue;
             int[] ids=(int[])info.getClass().getField("taskIds").get(info);
+            if(preserveOemStacks&&ids.length>0){
+                String[] names=(String[])info.getClass().getField("taskNames").get(info);
+                if(names==null||names.length!=ids.length||!com.tht.split.core.StackScope.owns(names,leftPkg,rightPkg))
+                    throw new IOException("Giữ nguyên stack chia có ứng dụng ngoài cặp đang chọn. Thoát phiên chia cũ trước khi mở cặp khác.");
+            }
             if(ids.length>0)primary.add(ids[ids.length-1]);
         }
         for(int id:primary)setMode(id,1);
@@ -110,6 +119,10 @@ public final class ShellServer {
         try{return CommandRunner.run(command,Process.myUid()==0?new File("/data/local/tmp"):null,12000);}
         catch(IOException e){throw new IOException(e.getMessage()+" [UID "+Process.myUid()+", context "+securityContext()+"]",e);}
     }
+    /** Crash-buffer lines with divider markers; null when logs cannot be read (never treated as a crash). */
+    private static String crashLog(){try{return exec("logcat","-b","crash","-d","-e",DividerCrashGuard.PATTERN);}catch(Exception e){return null;}}
+    private static long lastDividerCrash(){return systemContext==null?dividerCrashAt:systemContext.getSharedPreferences("tht_split_guard",0).getLong("divider_crash_at",0);}
+    private static void rememberDividerCrash(){dividerCrashAt=System.currentTimeMillis();if(systemContext!=null)systemContext.getSharedPreferences("tht_split_guard",0).edit().putLong("divider_crash_at",dividerCrashAt).commit();}
     private static String securityContext(){try(BufferedReader r=new BufferedReader(new FileReader("/proc/self/attr/current"))){String s=r.readLine();return s==null?"unknown":s.trim().replace("\u0000","");}catch(IOException e){return "unknown";}}
     private static void resize(int leftTask,int rightTask,String mode,Rect left,Rect right)throws Exception{
         if(mode.equals("native")){
@@ -127,14 +140,47 @@ public final class ShellServer {
         // Null inherits display bounds. preserveWindows=false lets Android reconfigure the app.
         invoke("resizeStack",new Class<?>[]{int.class,Rect.class,boolean.class,boolean.class,boolean.class,int.class},stackId(taskId),null,true,false,false,-1);
     }
+    /**
+     * R02 1.3.0: Android 9 can drop a just-opened freeform window back to fullscreen or let one cover the other.
+     * Re-apply mode/bounds with a 32 px tolerance and raise both windows, a few rounds at most.
+     */
+    private static void settleFreeform(int leftTask,int rightTask,Rect left,Rect right)throws Exception {
+        for(int round=0;round<3;round++){
+            boolean ok=true;
+            for(int n=0;n<2;n++){int id=n==0?leftTask:rightTask;Rect want=n==0?left:right;
+                if(windowMode(id)!=5){setMode(id,5);ok=false;}
+                Rect actual=(Rect)invoke("getTaskBounds",new Class<?>[]{int.class},id);
+                if(!BoundsCheck.matches(box(want),box(actual),32)){invoke("resizeTask",new Class<?>[]{int.class,Rect.class,int.class},id,want,0);ok=false;}
+            }
+            for(int id:new int[]{leftTask,rightTask})try{invoke("moveTaskToFront",new Class<?>[]{int.class,int.class,android.os.Bundle.class},id,0,null);}catch(ReflectiveOperationException ignored){}
+            if(ok)return;
+            Thread.sleep(250);
+        }
+    }
+    /** System split exit (R02): dismissSplitScreenMode, else move the docked stack to fullscreen, else clear primaries. */
+    private static void dismissSplit()throws Exception {
+        try{invoke("dismissSplitScreenMode",new Class<?>[]{boolean.class},true);return;}catch(ReflectiveOperationException ignored){}
+        try{
+            for(Object info:(List<?>)invoke("getAllStackInfos",new Class<?>[]{})){
+                Object config=info.getClass().getField("configuration").get(info);Object wc=config.getClass().getField("windowConfiguration").get(config);
+                if((Integer)wc.getClass().getMethod("getWindowingMode").invoke(wc)==3){invoke("moveTasksToFullscreenStack",new Class<?>[]{int.class,boolean.class},info.getClass().getField("stackId").getInt(info),true);return;}
+            }
+        }catch(ReflectiveOperationException ignored){}
+        clearPrimary();
+    }
+    /** SystemUI is persistent: Android starts it again, which redraws the car status bar after a broken split. */
+    private static void restartSystemUi()throws Exception {
+        if(systemContext!=null){invoke("forceStopPackage",new Class<?>[]{String.class,int.class},"com.android.systemui",-1);return;}
+        exec("am","force-stop","--user","all","com.android.systemui");
+    }
     private static LayoutMath.Box box(Rect r){return new LayoutMath.Box(r.left,r.top,r.right,r.bottom);}
     private static JSONArray bounds(Rect r)throws JSONException{return new JSONArray(new int[]{r.left,r.top,r.right,r.bottom});}
-    private static JSONObject observedBounds(int lt,int rt,Rect left,Rect right)throws Exception {
+    private static JSONObject observedBounds(int lt,int rt,Rect left,Rect right,int tolerance)throws Exception {
         Rect actualLeft=null,actualRight=null;boolean match=false;
         for(int i=0;i<5;i++){
             actualLeft=(Rect)invoke("getTaskBounds",new Class<?>[]{int.class},lt);
             actualRight=(Rect)invoke("getTaskBounds",new Class<?>[]{int.class},rt);
-            match=BoundsCheck.matches(box(left),box(actualLeft),2)&&BoundsCheck.matches(box(right),box(actualRight),2);
+            match=BoundsCheck.matches(box(left),box(actualLeft),tolerance)&&BoundsCheck.matches(box(right),box(actualRight),tolerance);
             if(match)break;
             if(i<4)Thread.sleep(100);
         }
@@ -151,54 +197,103 @@ public final class ShellServer {
         return new JSONObject().put("verified",match).put("fullscreenTask",taskId).put("fullscreenStack",stackId(taskId)).put("fullscreenMode",mode).put("expectedFullscreenBounds",bounds(expected)).put("actualFullscreenBounds",bounds(actual))
             .put("note",match?"Android giữ bounds toàn màn hình; nội dung do ứng dụng vẽ":"Android chưa giữ đúng vùng toàn màn hình; hãy xuất log hỗ trợ");
     }
-    private static String mode(JSONObject q){String m=q.optString("mode","native");if(!m.equals("native")&&!m.equals("freeform"))throw new IllegalArgumentException("Mode");return m;}
+    private static String mode(JSONObject q){String m=q.optString("mode","auto");if(!m.equals("native")&&!m.equals("freeform")&&!m.equals("auto"))throw new IllegalArgumentException("Mode");return m;}
     private static void writeSetting(String key,String value)throws Exception {
+        if(systemContext!=null){
+            if(!value.equals("null")&&!value.matches("[0-9]+"))throw new IllegalArgumentException("Setting");
+            if(!android.provider.Settings.Global.putString(systemContext.getContentResolver(),key,value.equals("null")?null:value))throw new IOException("Không lưu được thiết lập cửa sổ tự do");
+            return;
+        }
         if(value.equals("null"))exec("settings","delete","global",key);
         else{if(!value.matches("[0-9]+"))throw new IllegalArgumentException("Setting");exec("settings","put","global",key,value);}
+    }
+    private static PairController controller(boolean nativeMode,String leftPkg,String rightPkg,String lc,String rc,Rect l,Rect r,boolean preserveOemStacks){
+        String used=nativeMode?"native":"freeform";
+        return new PairController(new PairController.Tasks(){
+            public void clearPrimary()throws Exception{ShellServer.clearPrimary(leftPkg,rightPkg,preserveOemStacks);}
+            public int launch(boolean left,int windowMode)throws Exception{ShellServer.launch(left?lc:rc,windowMode);return awaitTask(left?leftPkg:rightPkg);}
+            public int find(boolean left)throws Exception{return task(left?leftPkg:rightPkg);}
+            public int mode(int id)throws Exception{return windowMode(id);}
+            public int stack(int id)throws Exception{return stackId(id);}
+            public void isolate(int id)throws Exception{ShellServer.isolate(id);}
+            public void setMode(int id,int windowMode)throws Exception{ShellServer.setMode(id,windowMode);}
+            public void resize(int lt,int rt)throws Exception{ShellServer.resize(lt,rt,used,l,r);}
+            public void resetBounds(int id)throws Exception{ShellServer.resetBounds(id);}
+            public void focus(int id)throws Exception{invoke("setFocusedTask",new Class<?>[]{int.class},id);}
+        },nativeMode);
+    }
+    /** One LAYOUT/RESIZE in one mode, with the divider crash guard (native) and freeform settling. */
+    private static JSONObject pair(String op,boolean nativeSplit,String leftPkg,String rightPkg,String lc,String rc,Rect l,Rect r,boolean preserveOemStacks)throws Exception{
+        PairController controller=controller(nativeSplit,leftPkg,rightPkg,lc,rc,l,r,preserveOemStacks);
+        if(nativeSplit&&DividerCrashGuard.coolingDown(lastDividerCrash(),System.currentTimeMillis()))throw new IOException(DividerCrashGuard.COOLDOWN_MESSAGE);
+        String crashBefore=nativeSplit?crashLog():null;
+        if(op.equals("LAYOUT"))controller.layout();else controller.resize();
+        if(crashBefore!=null){
+            Thread.sleep(400);
+            if(DividerCrashGuard.crashedSince(crashBefore,crashLog())){rememberDividerCrash();throw new IOException(DividerCrashGuard.CRASH_MESSAGE);}
+        }
+        int lt=task(leftPkg),rt=task(rightPkg);
+        // Android can kill an app right after it is split; never report that as a layout.
+        if(lt<0||rt<0)throw new IOException("Ứng dụng bị Android đóng ngay sau khi chia: "+(lt<0?leftPkg:"")+(lt<0&&rt<0?", ":"")+(rt<0?rightPkg:""));
+        if(!nativeSplit)settleFreeform(lt,rt,l,r);
+        return observedBounds(lt,rt,l,r,nativeSplit?2:32).put("usedMode",nativeSplit?"native":"freeform").put("leftTask",lt).put("rightTask",rt).put("leftStack",stackId(lt)).put("rightStack",stackId(rt)).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
     }
     private static JSONObject handle(JSONObject q)throws Exception{
         String op=q.getString("op");JSONObject out=new JSONObject();
         if(op.equals("PING")){
             out.put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
             if(systemContext!=null)return out.put("transport","system").put("systemPermission",true);
-            return out.put("bridgeVersion",7).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe");
+            return out.put("bridgeVersion",9).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe");
         }
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
             String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];
-            for(int n=0;n<2;n++)before[n]=exec("settings","get","global",keys[n]).trim();
+            for(int n=0;n<2;n++)before[n]=systemContext==null?exec("settings","get","global",keys[n]).trim():android.provider.Settings.Global.getString(systemContext.getContentResolver(),keys[n]);
+            for(int n=0;n<2;n++)if(before[n]==null)before[n]="null";
             try{for(int n=0;n<2;n++){String value=op.equals("FREEFORM_ENABLE")?"1":q.optString(keys[n],"null");writeSetting(keys[n],value);out.put(keys[n],before[n]);}}
             catch(Exception e){for(int n=0;n<2;n++)try{writeSetting(keys[n],before[n]);}catch(Exception ignored){}throw e;}
             return out;
         }
+        if(op.equals("BOOT_CHECK")){
+            // After a restart caused by the ROM divider: leave split and go home, nothing else.
+            String log=crashLog();
+            boolean crashed=log!=null&&DividerCrashGuard.crashedSince(q.optString("seen",""),log);
+            if(crashed){
+                rememberDividerCrash();
+                try{dismissSplit();}catch(Exception ignored){}
+                if(systemContext!=null)systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+                else exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");
+            }
+            return out.put("verified",true).put("dismissed",crashed).put("log",log==null?q.optString("seen",""):log);
+        }
+        if(op.equals("RECOVER")){
+            // R02 "Gỡ kẹt": leave split, go home, then let SystemUI redraw the status bar / divider.
+            try{dismissSplit();}catch(Exception ignored){}
+            if(systemContext!=null)systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+            else exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");
+            Thread.sleep(300);
+            restartSystemUi();
+            return out.put("verified",true).put("note","Đã thoát chia, về màn chính và dựng lại giao diện hệ thống");
+        }
         String leftPkg=pkg(q,"left"),rightPkg=pkg(q,"right");if(leftPkg.equals(rightPkg))throw new IllegalArgumentException("Chọn hai ứng dụng khác nhau");
-        String mode=mode(q);
+        String mode=mode(q);boolean preserveOemStacks=q.optBoolean("preserveOemStacks",false);
         if(op.equals("LAYOUT")||op.equals("RESIZE")||op.equals("FULLSCREEN")||op.equals("STOP")){
             String lc=component(q,"leftComponent",leftPkg),rc=component(q,"rightComponent",rightPkg);
             Rect l=rect(q,"leftBounds"),r=rect(q,"rightBounds");
-            PairController controller=new PairController(new PairController.Tasks(){
-                public void clearPrimary()throws Exception{ShellServer.clearPrimary();}
-                public int launch(boolean left,int windowMode)throws Exception{ShellServer.launch(left?lc:rc,windowMode);return awaitTask(left?leftPkg:rightPkg);}
-                public int find(boolean left)throws Exception{return task(left?leftPkg:rightPkg);}
-                public int mode(int id)throws Exception{return windowMode(id);}
-                public int stack(int id)throws Exception{return stackId(id);}
-                public void isolate(int id)throws Exception{ShellServer.isolate(id);}
-                public void setMode(int id,int windowMode)throws Exception{ShellServer.setMode(id,windowMode);}
-                public void resize(int lt,int rt)throws Exception{ShellServer.resize(lt,rt,mode,l,r);}
-                public void resetBounds(int id)throws Exception{ShellServer.resetBounds(id);}
-                public void focus(int id)throws Exception{invoke("setFocusedTask",new Class<?>[]{int.class},id);}
-            },mode.equals("native"));
             if(op.equals("FULLSCREEN")||op.equals("STOP")){
                 String side=q.optString("side","left");if(!side.equals("left")&&!side.equals("right"))throw new IllegalArgumentException("Side");
                 Rect expected=rect(q,"fullscreenBounds");
-                int selected=controller.fullscreen(side.equals("right"),op.equals("STOP"));
+                if(op.equals("STOP"))try{if(preserveOemStacks)clearPrimary(leftPkg,rightPkg,true);else dismissSplit();}catch(Exception ignored){/* fullscreen below still clears both tasks */}
+                int selected=controller(mode.equals("native"),leftPkg,rightPkg,lc,rc,l,r,preserveOemStacks).fullscreen(side.equals("right"),op.equals("STOP"));
                 return selected<0?out.put("verified",true).put("note","Hai ứng dụng đã đóng"):observedFullscreen(selected,expected);
             }
-            if(op.equals("LAYOUT"))controller.layout();else controller.resize();
-            int lt=task(leftPkg),rt=task(rightPkg);
-            return observedBounds(lt,rt,l,r).put("leftTask",lt).put("rightTask",rt).put("leftStack",stackId(lt)).put("rightStack",stackId(rt)).put("leftMode",windowMode(lt)).put("rightMode",windowMode(rt));
+            JSONObject result=com.tht.split.core.SplitModePolicy.run(mode,preserveOemStacks,
+                nativeMode->pair(op,nativeMode,leftPkg,rightPkg,lc,rc,l,r,preserveOemStacks));
+            if(mode.equals("auto")&&result.optString("usedMode").equals("native"))result.put("note",result.optString("note")+" • Cửa sổ tự do chưa chạy; đã dùng chia đôi hệ thống. Bật hỗ trợ cửa sổ tự do rồi khởi động lại màn.");
+            return result;
         }
         throw new IllegalArgumentException("Lệnh không hỗ trợ");
     }
 }
+
 

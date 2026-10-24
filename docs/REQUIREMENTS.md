@@ -1,5 +1,14 @@
 # Yêu cầu chốt ngày 04/10/2026
 
+## Chốt24/10 — System trực tiếp và các phương thức còn lại
+- Có lựa chọn Quyền hệ thống không ADB/Bridge, chỉ chạy khi Android cấp quyền.
+- Cùng APK THT_SIGN cho chọn ADB nội bộ/Bridge và Off; không tự đổi phương thức.
+- Tách phương thức cấp quyền khỏi bố cục Auto/native/freeform; giữ giới hạn Off.
+- Ghép phần tương thích ngủ/thức từ0.3.21 vào nền0.3.23, giữ cặp/quyền/chữ ký.
+- Không thêm Telnet/Shizuku; không gọi riêng Geely/GSplit nếu không có backend thực.
+- Kiểm thử các đường chọn và lỗi quyền, không nói đã sửa firmware chỉ từ CI.
+
+
 ## Chốt15/10 — Release chữ ký platform, package gốc
 - Dùng cặp khóa gửi15/10 đã xác minh khớp cert AOSP của bản thử.
 - Chủ dự án yêu cầu com.tht.split gốc; không dùng suffix platformtest cho APK này.
@@ -162,4 +171,5 @@ Android để tránh lần mở sau tái dùng fullscreen. ADB/system giữ đ�
 - Sao lưu chỉ cài đặt/cặp, không credential/policy/session; khôi phục có xác
   nhận và chỉ khi đã tắt chia. Không tự gỡ/cài app hoặc bỏ kiểm signer.
 - Không gọi tối ưu là đã mượt trên xe khi mới có build/unit test.
+
 

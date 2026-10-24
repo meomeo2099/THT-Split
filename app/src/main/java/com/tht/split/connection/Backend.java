@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public final class Backend {
     private final Context context;private final Store settings;private final String method;
-    public Backend(Context c,String selected){context=c;settings=new Store(c);method=com.tht.split.BuildConfig.PLATFORM_TEST?"system":selected;}
+    public Backend(Context c,String selected){context=c;settings=new Store(c);method=com.tht.split.core.TransportPolicy.select(com.tht.split.BuildConfig.SYSTEM_ONLY,selected);}
     public static boolean systemGranted(Context c){return c.checkSelfPermission("android.permission.MANAGE_ACTIVITY_STACKS")==PackageManager.PERMISSION_GRANTED;}
     public JSONObject call(JSONObject q)throws Exception {
         if(method.equals("off"))return new DirectWindows(context).call(q).put("transport",method);
@@ -26,3 +26,4 @@ public final class Backend {
     public JSONObject ping()throws Exception{return call(new JSONObject().put("op","PING"));}
     public boolean resizeSupported(){return !method.equals("off");}
 }
+

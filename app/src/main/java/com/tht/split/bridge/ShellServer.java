@@ -91,7 +91,8 @@ public final class ShellServer {
         invoke("moveTaskToStack",new Class<?>[]{int.class,int.class,boolean.class},taskId,target,true);
         if(stackId(taskId)!=target)throw new IOException("Firmware không chuyển app sang stack riêng");
     }
-    private static void clearPrimary()throws Exception {
+    private static void clearPrimary()throws Exception {clearPrimary(null,null,false);}
+    private static void clearPrimary(String leftPkg,String rightPkg,boolean preserveOemStacks)throws Exception {
         List<?> infos=(List<?>)invoke("getAllStackInfos",new Class<?>[]{});
         // Snapshot IDs before changing stacks; changing the primary also collapses secondaries.
         List<Integer> primary=new ArrayList<>();
@@ -101,6 +102,11 @@ public final class ShellServer {
             Object wc=config.getClass().getField("windowConfiguration").get(config);
             if((Integer)wc.getClass().getMethod("getWindowingMode").invoke(wc)!=3)continue;
             int[] ids=(int[])info.getClass().getField("taskIds").get(info);
+            if(preserveOemStacks&&ids.length>0){
+                String[] names=(String[])info.getClass().getField("taskNames").get(info);
+                if(names==null||names.length!=ids.length||!com.tht.split.core.StackScope.owns(names,leftPkg,rightPkg))
+                    throw new IOException("Giữ nguyên stack chia có ứng dụng ngoài cặp đang chọn. Thoát phiên chia cũ trước khi mở cặp khác.");
+            }
             if(ids.length>0)primary.add(ids[ids.length-1]);
         }
         for(int id:primary)setMode(id,1);
@@ -115,6 +121,8 @@ public final class ShellServer {
     }
     /** Crash-buffer lines with divider markers; null when logs cannot be read (never treated as a crash). */
     private static String crashLog(){try{return exec("logcat","-b","crash","-d","-e",DividerCrashGuard.PATTERN);}catch(Exception e){return null;}}
+    private static long lastDividerCrash(){return systemContext==null?dividerCrashAt:systemContext.getSharedPreferences("tht_split_guard",0).getLong("divider_crash_at",0);}
+    private static void rememberDividerCrash(){dividerCrashAt=System.currentTimeMillis();if(systemContext!=null)systemContext.getSharedPreferences("tht_split_guard",0).edit().putLong("divider_crash_at",dividerCrashAt).commit();}
     private static String securityContext(){try(BufferedReader r=new BufferedReader(new FileReader("/proc/self/attr/current"))){String s=r.readLine();return s==null?"unknown":s.trim().replace("\u0000","");}catch(IOException e){return "unknown";}}
     private static void resize(int leftTask,int rightTask,String mode,Rect left,Rect right)throws Exception{
         if(mode.equals("native")){
@@ -191,13 +199,18 @@ public final class ShellServer {
     }
     private static String mode(JSONObject q){String m=q.optString("mode","auto");if(!m.equals("native")&&!m.equals("freeform")&&!m.equals("auto"))throw new IllegalArgumentException("Mode");return m;}
     private static void writeSetting(String key,String value)throws Exception {
+        if(systemContext!=null){
+            if(!value.equals("null")&&!value.matches("[0-9]+"))throw new IllegalArgumentException("Setting");
+            if(!android.provider.Settings.Global.putString(systemContext.getContentResolver(),key,value.equals("null")?null:value))throw new IOException("Không lưu được thiết lập cửa sổ tự do");
+            return;
+        }
         if(value.equals("null"))exec("settings","delete","global",key);
         else{if(!value.matches("[0-9]+"))throw new IllegalArgumentException("Setting");exec("settings","put","global",key,value);}
     }
-    private static PairController controller(boolean nativeMode,String leftPkg,String rightPkg,String lc,String rc,Rect l,Rect r){
+    private static PairController controller(boolean nativeMode,String leftPkg,String rightPkg,String lc,String rc,Rect l,Rect r,boolean preserveOemStacks){
         String used=nativeMode?"native":"freeform";
         return new PairController(new PairController.Tasks(){
-            public void clearPrimary()throws Exception{ShellServer.clearPrimary();}
+            public void clearPrimary()throws Exception{ShellServer.clearPrimary(leftPkg,rightPkg,preserveOemStacks);}
             public int launch(boolean left,int windowMode)throws Exception{ShellServer.launch(left?lc:rc,windowMode);return awaitTask(left?leftPkg:rightPkg);}
             public int find(boolean left)throws Exception{return task(left?leftPkg:rightPkg);}
             public int mode(int id)throws Exception{return windowMode(id);}
@@ -210,14 +223,14 @@ public final class ShellServer {
         },nativeMode);
     }
     /** One LAYOUT/RESIZE in one mode, with the divider crash guard (native) and freeform settling. */
-    private static JSONObject pair(String op,boolean nativeSplit,String leftPkg,String rightPkg,String lc,String rc,Rect l,Rect r)throws Exception{
-        PairController controller=controller(nativeSplit,leftPkg,rightPkg,lc,rc,l,r);
-        if(nativeSplit&&DividerCrashGuard.coolingDown(dividerCrashAt,System.currentTimeMillis()))throw new IOException(DividerCrashGuard.COOLDOWN_MESSAGE);
+    private static JSONObject pair(String op,boolean nativeSplit,String leftPkg,String rightPkg,String lc,String rc,Rect l,Rect r,boolean preserveOemStacks)throws Exception{
+        PairController controller=controller(nativeSplit,leftPkg,rightPkg,lc,rc,l,r,preserveOemStacks);
+        if(nativeSplit&&DividerCrashGuard.coolingDown(lastDividerCrash(),System.currentTimeMillis()))throw new IOException(DividerCrashGuard.COOLDOWN_MESSAGE);
         String crashBefore=nativeSplit?crashLog():null;
         if(op.equals("LAYOUT"))controller.layout();else controller.resize();
         if(crashBefore!=null){
             Thread.sleep(400);
-            if(DividerCrashGuard.crashedSince(crashBefore,crashLog())){dividerCrashAt=System.currentTimeMillis();throw new IOException(DividerCrashGuard.CRASH_MESSAGE);}
+            if(DividerCrashGuard.crashedSince(crashBefore,crashLog())){rememberDividerCrash();throw new IOException(DividerCrashGuard.CRASH_MESSAGE);}
         }
         int lt=task(leftPkg),rt=task(rightPkg);
         // Android can kill an app right after it is split; never report that as a layout.
@@ -230,12 +243,13 @@ public final class ShellServer {
         if(op.equals("PING")){
             out.put("sdk",android.os.Build.VERSION.SDK_INT).put("uid",Process.myUid()).put("manager",manager().getClass().getName());
             if(systemContext!=null)return out.put("transport","system").put("systemPermission",true);
-            return out.put("bridgeVersion",8).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe");
+            return out.put("bridgeVersion",9).put("context",securityContext()).put("commandIo",Process.myUid()==0?"file":"pipe");
         }
         if(op.equals("HOME")){if(systemContext!=null){systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return out;}exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");return out;}
         if(op.equals("FREEFORM_ENABLE")||op.equals("FREEFORM_RESTORE")){
             String[] keys={"enable_freeform_support","force_resizable_activities"};String[] before=new String[2];
-            for(int n=0;n<2;n++)before[n]=exec("settings","get","global",keys[n]).trim();
+            for(int n=0;n<2;n++)before[n]=systemContext==null?exec("settings","get","global",keys[n]).trim():android.provider.Settings.Global.getString(systemContext.getContentResolver(),keys[n]);
+            for(int n=0;n<2;n++)if(before[n]==null)before[n]="null";
             try{for(int n=0;n<2;n++){String value=op.equals("FREEFORM_ENABLE")?"1":q.optString(keys[n],"null");writeSetting(keys[n],value);out.put(keys[n],before[n]);}}
             catch(Exception e){for(int n=0;n<2;n++)try{writeSetting(keys[n],before[n]);}catch(Exception ignored){}throw e;}
             return out;
@@ -245,6 +259,7 @@ public final class ShellServer {
             String log=crashLog();
             boolean crashed=log!=null&&DividerCrashGuard.crashedSince(q.optString("seen",""),log);
             if(crashed){
+                rememberDividerCrash();
                 try{dismissSplit();}catch(Exception ignored){}
                 if(systemContext!=null)systemContext.startActivity(new android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
                 else exec("am","start","-a","android.intent.action.MAIN","-c","android.intent.category.HOME","-f","0x10000000");
@@ -261,28 +276,24 @@ public final class ShellServer {
             return out.put("verified",true).put("note","Đã thoát chia, về màn chính và dựng lại giao diện hệ thống");
         }
         String leftPkg=pkg(q,"left"),rightPkg=pkg(q,"right");if(leftPkg.equals(rightPkg))throw new IllegalArgumentException("Chọn hai ứng dụng khác nhau");
-        String mode=mode(q);
+        String mode=mode(q);boolean preserveOemStacks=q.optBoolean("preserveOemStacks",false);
         if(op.equals("LAYOUT")||op.equals("RESIZE")||op.equals("FULLSCREEN")||op.equals("STOP")){
             String lc=component(q,"leftComponent",leftPkg),rc=component(q,"rightComponent",rightPkg);
             Rect l=rect(q,"leftBounds"),r=rect(q,"rightBounds");
             if(op.equals("FULLSCREEN")||op.equals("STOP")){
                 String side=q.optString("side","left");if(!side.equals("left")&&!side.equals("right"))throw new IllegalArgumentException("Side");
                 Rect expected=rect(q,"fullscreenBounds");
-                if(op.equals("STOP"))try{dismissSplit();}catch(Exception ignored){/* fullscreen below still clears both tasks */}
-                int selected=controller(mode.equals("native"),leftPkg,rightPkg,lc,rc,l,r).fullscreen(side.equals("right"),op.equals("STOP"));
+                if(op.equals("STOP"))try{if(preserveOemStacks)clearPrimary(leftPkg,rightPkg,true);else dismissSplit();}catch(Exception ignored){/* fullscreen below still clears both tasks */}
+                int selected=controller(mode.equals("native"),leftPkg,rightPkg,lc,rc,l,r,preserveOemStacks).fullscreen(side.equals("right"),op.equals("STOP"));
                 return selected<0?out.put("verified",true).put("note","Hai ứng dụng đã đóng"):observedFullscreen(selected,expected);
             }
-            if(!mode.equals("auto"))return pair(op,mode.equals("native"),leftPkg,rightPkg,lc,rc,l,r);
-            // R02 1.3.0: freeform first, even when the ROM has split screen, to stay away from the
-            // divider that crashes on Android 9 head units; system split only when freeform does not hold.
-            try{return pair(op,false,leftPkg,rightPkg,lc,rc,l,r);}
-            catch(Exception freeform){
-                String why=freeform.getMessage()==null?freeform.getClass().getSimpleName():freeform.getMessage();
-                JSONObject result=pair(op,true,leftPkg,rightPkg,lc,rc,l,r);
-                return result.put("note",result.optString("note")+" • Cửa sổ tự do chưa chạy ("+why+"); đã dùng chia đôi hệ thống. Bật hỗ trợ cửa sổ tự do rồi khởi động lại màn để tránh lỗi thanh chia.");
-            }
+            JSONObject result=com.tht.split.core.SplitModePolicy.run(mode,preserveOemStacks,
+                nativeMode->pair(op,nativeMode,leftPkg,rightPkg,lc,rc,l,r,preserveOemStacks));
+            if(mode.equals("auto")&&result.optString("usedMode").equals("native"))result.put("note",result.optString("note")+" • Cửa sổ tự do chưa chạy; đã dùng chia đôi hệ thống. Bật hỗ trợ cửa sổ tự do rồi khởi động lại màn.");
+            return result;
         }
         throw new IllegalArgumentException("Lệnh không hỗ trợ");
     }
 }
+
 

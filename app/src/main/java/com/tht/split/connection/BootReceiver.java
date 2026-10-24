@@ -14,6 +14,7 @@ public final class BootReceiver extends BroadcastReceiver {
         }catch(Exception ignored){}finally{pending.finish();}},"THT-boot-divider").start();
     }
     @Override public void onReceive(Context c,Intent i){if(!Intent.ACTION_BOOT_COMPLETED.equals(i.getAction())&&!Intent.ACTION_MY_PACKAGE_REPLACED.equals(i.getAction()))return;Store s=new Store(c);
-        if(Intent.ACTION_BOOT_COMPLETED.equals(i.getAction())&&s.b("session_active",false)&&(com.tht.split.BuildConfig.PLATFORM_TEST||s.s("transport","adb").equals("system")))afterDividerCrash(c,s,goAsync());
+        if(Intent.ACTION_BOOT_COMPLETED.equals(i.getAction())&&s.b("session_active",false)&&(s.s("transport","adb").equals("system")))afterDividerCrash(c,s,goAsync());
         s.set("session_busy",false);s.set("session_active",false);s.set("session_full",false);if(s.s("transport","adb").equals("adb")&&s.b("adb_at_boot",true))try{c.startForegroundService(new Intent(c,ConnectionService.class));}catch(RuntimeException e){s.set("connection_status","Không được chuẩn bị ADB ở nền; sẽ thử khi chia màn.");}}
 }
+

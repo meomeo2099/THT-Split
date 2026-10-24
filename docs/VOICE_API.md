@@ -83,3 +83,12 @@ cập nhật trả `error/ACCESS_BLOCKED`; client hiện message và hướng ng
 Cài đặt → Cập nhật của Split. Không đổi token Voice/bridge để giải quyết lỗi này.
 Stop/Home/Hide vẫn được xử lý để thoát. Cơ chế này chỉ hoạt động khi APK đã cấu
 hình Worker thật; xem REMOTE_CONTROL.md.
+
+
+## Lựa chọn phương thức từ0.3.24-methods
+APK THT_SIGN gốc cho chọn System/ADB/Off ở Kết nối & quyền. Voice dùng phương thức
+đang lưu; không gửi tùy chọn transport qua intent. System thiếu quyền trả lỗi, không
+mở Bridge; ADB lỗi không dùng System thay thế; Off tiếp tục chặn các task command
+và recover. Cùng signer có thể dùng receiver signature như cũ, không cần token.
+Chế độ native tương thích từ chối swap; freeform vẫn nhận swap. Auto tương thích
+không quay về native khi freeform lỗi. Không nói thành công khi chỉ nhận requested.

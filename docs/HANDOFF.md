@@ -1,5 +1,32 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## 24/10/2026 — Thêm đủ phương thức, giữ System trực tiếp
+Chủ dự án yêu cầu thêm cách chỉ chia bằng quyền hệ thống và các cách còn lại.
+Nhánh feature/split-methods dựa f02e7c9/0.3.23-ex2-cr; ghép logic tương thích từ
+51b45a5/0.3.21-thtsign, không nhập profile/lề trái Coolray2025. Code36/name0.3.24-methods,
+package com.tht.split/signer THT_SIGN giữ nguyên. Không đổi main/Worker/OTA/Secrets.
+Sửa nguyên nhân menu bị ép System: tách SYSTEM_ONLY (chỉ true ở platformtest)
+khỏi PLATFORM_TEST diagnostic. Store/Backend/UI cho chọn System, ADB nội bộ/Bridge,
+Off; mỗi lựa chọn không fallback phương thức khác. Migration một lần giữ phương
+thức System thực tế của bản platform cũ, sau đó nhớ lựa chọn người dùng. Không đổi
+preset/RSA/token. Session giữ transport; boot chỉ chuẩn bị ADB nếu đã chọn ADB.
+Bố cục độc lập Auto/native/freeform. Explicit native/freeform không fallback;
+Auto tương thích không quay về native khi freeform lỗi. Đọc used_mode thực tế cho
+handle và ẩn/hiện; compat native khóa swap cả service/UI, giữ toolbar reservation.
+Tạo lại THT overlay sau SCREEN_ON khi service còn sống; không gọi task backend
+trên sự kiện màn. clearPrimary scope guard cho cặp khi bật compat; explicit RECOVER
+vẫn là thao tác toàn giao diện đã có của0.3.23, không tự restart SystemUI khi wake.
+System cooldown10phút lưu SharedPreferences riêng, Boot crash marker cũng ghi mốc;
+ADB daemon vẫn RAM. Không đọc được log hoặc chết trước ghi thì không hứa phát hiện.
+System bật/khôi phục freeform qua Settings.Global; Off ẩn nút thiếu quyền và chặn
+recover ở policy. Voice auth/token/callback không đổi; cập nhật VOICE_API cách chọn.
+Bridgev9 để app không dùng daemonv8 thiếu policy mới; cần reboot một lần cho ADB.
+Bootstrap sleep1/marker+12 PING250ms và RSA giữ nguyên; chưa test LDPlayer9 bootstrap.
+Workflow riêng test/sign/instrumentation Android9 rồi prerelease riêng, không metadata
+OTA; marker bắt buộc. Chưa có kết quả CI ở commit triển khai này. Cần ghi kết quả sau.
+Xem docs/SPLIT_METHODS.md; chưa khẳng định hết lỗi OEM trên EX2/Coolray2026.
+
+
 ## Release 0.3.18-platform — thử cập nhật trực tiếp từ 0.3.17-platform (16/10/2026)
 Yêu cầu chủ dự án: build bản 0.3.18-platform package chính để kiểm tra cài đè.
 Nhánh release/platform-update-0.3.18 xuất phát release/platform-original;
@@ -764,3 +791,4 @@ Chủ dự án báo: đảo bên (chế độ chia đôi hệ thống) làm kh�
   so nhật ký crash với `divider_seen`; có lỗi thanh chia mới thì chỉ thoát chia + về Home (không dựng lại SystemUI),
   ghi `last_error` hướng dẫn nói "gỡ kẹt màn hình" hoặc bấm Gỡ kẹt. Lần đầu (chưa có `divider_seen`) dòng cũ cũng tính.
 - THT Voice cần thêm câu "gỡ kẹt màn hình" gửi `recover`. Chưa thử trên xe.
+

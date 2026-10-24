@@ -30,6 +30,7 @@ public final class ConnectionManager {
             throw new ConnectionFailure("ADB đã nhận lệnh nhưng bridge chưa chạy ở 127.0.0.1:"+ShellClient.PORT+". Xem log hỗ trợ hoặc dùng lệnh bridge dự phòng.",last);
         }finally{measure.finish();}}
     }
-    private static void checkVersion(JSONObject p)throws IOException{if(p.optInt("bridgeVersion",1)!=8)throw new IOException("Bridge phiên bản cũ còn chạy. Khởi động lại màn/LDPlayer một lần sau cập nhật rồi kết nối để nạp bridge v8; nếu dùng lệnh thủ công, lấy lại lệnh trong app mới.");}
+    private static void checkVersion(JSONObject p)throws IOException{if(p.optInt("bridgeVersion",1)!=9)throw new IOException("Bridge phiên bản cũ còn chạy. Khởi động lại màn/LDPlayer một lần sau cập nhật rồi kết nối để nạp bridge v9; nếu dùng lệnh thủ công, lấy lại lệnh trong app mới.");}
     private static void checkUid(JSONObject p)throws Exception{int uid=p.getInt("uid");if(uid!=2000&&uid!=0)throw new IOException("Bridge không có quyền shell");}
 }
+

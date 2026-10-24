@@ -1,5 +1,27 @@
 # Bàn giao THT Split — 0.3.16-test, 10/10/2026
 
+## 24/10 — Kết quả 0.3.24-methods đã kiểm chứng
+Nguồn09fdd4d42779ddb34c6d53df8b7427fb166dd490, nhánh feature/split-methods; PR#1 vào main.
+CI40110298903/job120920428803 completed/success: 84 unit tests/0 lỗi/0 bỏ qua,
+lint/assemble/sign/package/code36/name0.3.24-methods/no sharedUID/nondebuggable đạt.
+CI PR40110341986/job120920548507 cũng success (debug/Node/QR/Worker dry-run).
+Instrumentation AOSP Android9/1920×1080 có marker THT_NATIVE_UI_TEST_OK:
+migration một lần giữ System+settings; sau đó nhớ Off/ADB/System; Off PING thật
+không biến thành System; ADB cố ý cổng1 thất bại và không fallback; System với
+Context từ chối quyền trả lỗi. Native hai app: giữ bounds hide/show, scope guard
+không chạm primary ngoài cặp, swap bị chặn khi compat, SCREEN_OFF/ON tạo lại toolbar.
+Freeform: swap giữ mode5, ratio40/hide/show; Auto chọn freeform; cooldown System
+đọc timestamp prefs và chỉ chặn native; Off mở phiên/hiện toolbar đúng transport.
+Đã xem ảnh sau wake có hai app/thanh THT; không chứng minh thanh OEM xe được sửa.
+Release422837552/v0.3.24-methods draft=false/prerelease=true; không đổi OTA/main.
+APK672709427/284052bytes/SHA256
+13e28029d586525e452aba518a2e04e90dda9923d973ede1cc8883218747dfb9; checksum672709425.
+Artifact12566441284 tải lại, ZIP SHA11371635212be2f1c7ec6b406689f4f5b7b9bfb1a56d9ff0491e6e09916c424c
+và APK/checksum khớp; HTML unit report84/0/0 và marker đã đọc từ artifact.
+Chưa thử xe/LDPlayer9 bootstrap thật: ADB cần nạp Bridge9 sau reboot một lần,
+không lấy phép thử cổng đóng làm bằng chứng kết nối ADB thành công. User chọn
+System không cần Bridge. Giới hạn native compat và Off ghi trong SPLIT_METHODS.md.
+
 ## 24/10/2026 — Thêm đủ phương thức, giữ System trực tiếp
 Chủ dự án yêu cầu thêm cách chỉ chia bằng quyền hệ thống và các cách còn lại.
 Nhánh feature/split-methods dựa f02e7c9/0.3.23-ex2-cr; ghép logic tương thích từ
